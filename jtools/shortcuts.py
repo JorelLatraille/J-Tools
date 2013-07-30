@@ -25,13 +25,13 @@
 
 import mari
 
-version = "0.01"
+version = "0.02"
 
 # ------------------------------------------------------------------------------
 def quick():
     "Shortcuts for useful Mari info such as geo name, etc. To use type jtools.quick.<attribute> e.g. jtools.quick.geo_list"
     if not isProjectSuitable():
-        return
+        return False
     
     else:
         quick.geo = mari.geo.current()
@@ -110,6 +110,7 @@ def isProjectSuitable():
         
     else:
         mari.utils.message("You can only run this script in Mari 2.0v1 or newer.")
+        return False
         
 # ------------------------------------------------------------------------------
 if __name__ == "__main__":
