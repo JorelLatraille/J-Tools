@@ -34,6 +34,8 @@ USER_ROLE = 32          # PythonQt.Qt.UserRole
 g_eum_window = None
 g_eum_cancelled = False
 directory = ''
+g_file_types = ['bmp', 'jpg', 'jpeg', 'png', 'ppm', 'psd', 'tga', 'tif', 'tiff', 'xbm', 'xpm', 'tif', 'tiff']
+list.sort(g_file_types)
 
 # ------------------------------------------------------------------------------
 def exportUVMasks():
@@ -50,14 +52,15 @@ def exportUVMasks():
     showUI()    
 
 # ------------------------------------------------------------------------------    
-def exportMasks(q_geo_list):
+def exportMasks(g_eum_window, q_geo_list, file_type_combo):
 
     geo_list = q_geo_list.currentChannels()
+    file_type = file_type_combo.currentText
 
-    if geo_list == 0:
+    if len(geo_list) == 0:
         return False
         
-    print geo_list   
+    g_eum_window.reject()
      
     # geo_list = mari.geo.list()
     for geo in geo_list:
@@ -75,7 +78,7 @@ def exportMasks(q_geo_list):
             uv_mask.trigger()
             geo.patch(index).setSelected(False)        
             image_list = mari.images.list()
-            mari.images.saveImages(image_list[-1:], os.path.join(directory, "%s.mask.%d.tif" %(geo_name, patch)))
+            mari.images.saveImages(image_list[-1:], os.path.join(directory, "%s.mask.%d.%s" %(geo_name, patch, file_type)))
     mari.utils.message("Export UV Masks Complete.")
 
 # ------------------------------------------------------------------------------
@@ -153,20 +156,30 @@ def showUI():
     #Add centre layout to main layout
     eum_layout.addLayout(centre_layout)
 
-    #Add very bottom layout.
-    very_bottom_layout = gui.QHBoxLayout()
+    #Add bottom layout.
+    bottom_layout = gui.QHBoxLayout()
+    
+    #Add file type options
+    file_type_combo_text = gui.QLabel('File Types:')
+    file_type_combo = gui.QComboBox()
+    for file_type in g_file_types:
+        file_type_combo.addItem(file_type)
+    file_type_combo.setCurrentIndex(file_type_combo.findText('tif'))
+    
+    bottom_layout.addWidget(file_type_combo_text)
+    bottom_layout.addWidget(file_type_combo)
     
     #Add OK Cancel buttons layout, buttons and add
     main_ok_button = gui.QPushButton("OK")
     main_cancel_button = gui.QPushButton("Cancel")
-    main_ok_button.connect("clicked()", lambda: exportMasks(geometry_to_copy_widget))
+    main_ok_button.connect("clicked()", lambda: exportMasks(g_eum_window, geometry_to_copy_widget, file_type_combo))
     main_cancel_button.connect("clicked()", g_eum_window.reject)
     
-    very_bottom_layout.addWidget(main_ok_button)
-    very_bottom_layout.addWidget(main_cancel_button)
+    bottom_layout.addWidget(main_ok_button)
+    bottom_layout.addWidget(main_cancel_button)
     
     #Add browse lines to main layout
-    eum_layout.addLayout(very_bottom_layout)
+    eum_layout.addLayout(bottom_layout)
     
     # Display
     g_eum_window.show()
