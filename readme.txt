@@ -3,6 +3,8 @@
                           ----jorel-latraille.com----
 # ------------------------------------------------------------------------------                                        
                                    J-TOOLS
+                                   
+                             Mari Python Scripts
 # ------------------------------------------------------------------------------
 # ------------------------------------------------------------------------------
 
@@ -27,13 +29,17 @@ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 Installation Instructions:
 
-1) Extract into the following directory (if you do not have a Scripts folder create one) this should be in the same place as your Mari Logs folder:
+1) Extract into the following directory (if you do not have a Scripts folder create one)
+    this should be in the same place as your Mari Logs folder:
 
    /user/documents/Mari/Scripts/
 
 2) Open Mari and you will see a new menu in the menu bar called Scripts. Inside Scripts you will find J-Tools.
 
-3) You can assign keyboard shortcuts to these scripts the same way you assign shortcuts to other elements within Mari. If you open the shortcuts GUI in the edit menu and expand the Scripts tab, at the very bottom you will find the name and description of the scripts in the J-Tools menu. You can then double click in the Shortcut(s) column and assign them a shortcut.
+3) You can assign keyboard shortcuts to these scripts the same way you assign shortcuts to other elements 
+    within Mari. If you open the shortcuts GUI in the edit menu and expand the Scripts tab, at the very bottom
+    you will find the name and description of the scripts in the J-Tools menu. You can then double click in the
+    Shortcut(s) column and assign them a shortcut.
     
    For an example of this look at the provided keyboardShortcuts.jpg file and the red box
    highlights the J-Tools scripts and the blue box highlights where you need to double click
