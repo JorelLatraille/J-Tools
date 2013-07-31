@@ -34,7 +34,7 @@ USER_ROLE = 32          # PythonQt.Qt.UserRole
 g_eum_window = None
 g_eum_cancelled = False
 directory = ''
-g_file_types = ['bmp', 'jpg', 'jpeg', 'png', 'ppm', 'psd', 'tga', 'tif', 'tiff', 'xbm', 'xpm', 'tif', 'tiff']
+g_file_types = ['bmp', 'jpg', 'jpeg', 'png', 'ppm', 'psd', 'tga', 'tif', 'tiff', 'xbm', 'xpm']
 list.sort(g_file_types)
 
 # ------------------------------------------------------------------------------
@@ -54,7 +54,7 @@ def exportUVMasks():
 # ------------------------------------------------------------------------------    
 def exportMasks(g_eum_window, q_geo_list, file_type_combo):
 
-    geo_list = q_geo_list.currentChannels()
+    geo_list = q_geo_list.currentGeometry()
     file_type = file_type_combo.currentText
 
     if len(geo_list) == 0:
@@ -140,13 +140,13 @@ def showUI():
     geometry_to_copy_layout = gui.QVBoxLayout()
     geometry_to_copy_label = gui.QLabel("Geometry to export UV masks from.")
     setBold(geometry_to_copy_label)
-    geometry_to_copy_widget = ChannelsToCopyList()
+    geometry_to_copy_widget = GeoToExportList()
     geometry_to_copy_layout.addWidget(geometry_to_copy_label)
     geometry_to_copy_layout.addWidget(geometry_to_copy_widget)
     
     #Hook up add/remove buttons
-    remove_button.connect("clicked()", geometry_to_copy_widget.removeChannels)
-    add_button.connect("clicked()", lambda: geometry_to_copy_widget.addChannels(geo_list))
+    remove_button.connect("clicked()", geometry_to_copy_widget.removeGeometry)
+    add_button.connect("clicked()", lambda: geometry_to_copy_widget.addGeometry(geo_list))
 
     #Add widgets to centre layout
     centre_layout.addLayout(geo_layout)
@@ -168,6 +168,7 @@ def showUI():
     
     bottom_layout.addWidget(file_type_combo_text)
     bottom_layout.addWidget(file_type_combo)
+    bottom_layout.addStretch()
     
     #Add OK Cancel buttons layout, buttons and add
     main_ok_button = gui.QPushButton("OK")
@@ -185,45 +186,45 @@ def showUI():
     g_eum_window.show()
     
 # ------------------------------------------------------------------------------   
-class ChannelsToCopyList(gui.QListWidget):
+class GeoToExportList(gui.QListWidget):
     "Stores a list of operations to perform."
     
     def __init__(self, title="For Export"):
-        super(ChannelsToCopyList, self).__init__()
+        super(GeoToExportList, self).__init__()
         self._title = title
         self.setSelectionMode(self.ExtendedSelection)
         
-    def currentChannels(self):
+    def currentGeometry(self):
         return [self.item(index).data(USER_ROLE) for index in range(self.count)]
         
-    def addChannels(self, channel_list):
-        "Adds an operation from the current selections of channels and directories."
-        selected_items = channel_list.selectedItems()
+    def addGeometry(self, geo_list):
+        "Adds an operation from the current selections of geometry and directories."
+        selected_items = geo_list.selectedItems()
         if selected_items == []:
-            mari.utils.message("Please select at least one channel.")
+            mari.utils.message("Please select at least one object.")
             return
         
-        # Add channels that aren't already added
-        current_channels = set(self.currentChannels())
+        # Add geometry that aren't already added
+        current_geometry = set(self.currentGeometry())
         for item in selected_items:
-            channel = item.data(USER_ROLE)
-            if channel not in current_channels:
-                current_channels.add(channel)
-                self.addItem(channel.name())
-                self.item(self.count - 1).setData(USER_ROLE, channel)
+            geo = item.data(USER_ROLE)
+            if geo not in current_geometry:
+                current_geometry.add(geo)
+                self.addItem(geo.name())
+                self.item(self.count - 1).setData(USER_ROLE, geo)
         
-    def removeChannels(self):
+    def removeGeometry(self):
         "Removes any currently selected operations."
         for item in reversed(self.selectedItems()):     # reverse so indices aren't modified
             index = self.row(item)
             self.takeItem(index)
             
 # ------------------------------------------------------------------------------
-def updateFilter(filter_box, channel_list):
-    "For each item in the channel list display, set it to hidden if it doesn't match the filter text."
+def updateFilter(filter_box, geo_list):
+    "For each item in the geo list display, set it to hidden if it doesn't match the filter text."
     match_words = filter_box.text.lower().split()
-    for item_index in range(channel_list.count):
-        item = channel_list.item(item_index)
+    for item_index in range(geo_list.count):
+        item = geo_list.item(item_index)
         item_text_lower = item.text().lower()
         matches = all([word in item_text_lower for word in match_words])
         item.setHidden(not matches)
