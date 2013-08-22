@@ -32,6 +32,7 @@ gui = PythonQt.QtGui
 
 USER_ROLE_01 = 34          # PythonQt.Qt.UserRolea
 USER_ROLE_02 = 32          # PythonQt.Qt.UserRole
+geo_selected = []
 
 g_ec_window = None
 g_ec_cancelled = False
@@ -107,7 +108,7 @@ def showUI():
     
     #Add wrapped gui.QListWidget with custom functions
     geometry_to_export_layout = gui.QVBoxLayout()
-    geometry_to_export_label = gui.QLabel("Channels To Export")
+    geometry_to_export_label = gui.QLabel("Geometry To Export")
     setBold(geometry_to_export_label)
     geometry_to_export_widget = GeometryToExportList()
     geometry_to_export_layout.addWidget(geometry_to_export_label)
@@ -180,55 +181,16 @@ def showUI():
 
     #Add centre layout to main layout
     ec_layout.addLayout(centre_layout)
-    
-    #Add bottom layout.
-    bottom_layout = gui.QHBoxLayout()
-    
-    unlock_channels_box = gui.QCheckBox('Unlock channels')
-    uncache_layers_box = gui.QCheckBox('Uncache layers')
-    unlock_layers_box = gui.QCheckBox('Unlock layers')
-    
-    bottom_layout.addWidget(unlock_channels_box)
-    bottom_layout.addStretch()
-    bottom_layout.addWidget(uncache_layers_box)
-    bottom_layout.addStretch()
-    bottom_layout.addWidget(unlock_layers_box)
-    bottom_layout.addStretch()
-    
-    ec_layout.addLayout(bottom_layout)
 
     #Add very bottom layout.
     very_bottom_layout = gui.QHBoxLayout()
-    
-    #Create export/paste text labels
-    export_from_text = gui.QLabel("Copy from UDIM")
-    setBold(export_from_text)
-    paste_to_text = gui.QLabel("Paste to UDIM")
-    setBold(paste_to_text)
-    
-    #Create export layout and add widgets
-    export_line_layout = gui.QHBoxLayout()
-    # global export_line
-    export_line_layout.addWidget(export_from_text)
-    export_line = gui.QLineEdit()
-    export_line_layout.addWidget(export_line)
-    
-    #Create paste layout and add widgets
-    paste_line_layout = gui.QHBoxLayout()
-    # global paste_line
-    paste_line_layout.addWidget(paste_to_text)
-    paste_line = gui.QLineEdit()
-    paste_line_layout.addWidget(paste_line)
     
     #Add OK Cancel buttons layout, buttons and add
     main_ok_button = gui.QPushButton("OK")
     main_cancel_button = gui.QPushButton("Cancel")
     main_ok_button.connect("clicked()", lambda: compareInput(g_ec_window, channels_to_export_widget, unlock_channels_box, uncache_layers_box, unlock_layers_box, export_line, paste_line))
     main_cancel_button.connect("clicked()", g_ec_window.reject)
-    uncache_layers_box.connect("clicked()", lambda: uncacheBoxTicked(uncache_layers_box))
     
-    very_bottom_layout.addLayout(export_line_layout)
-    very_bottom_layout.addLayout(paste_line_layout)
     very_bottom_layout.addWidget(main_ok_button)
     very_bottom_layout.addWidget(main_cancel_button)
     
@@ -237,12 +199,6 @@ def showUI():
     
     # Display
     g_ec_window.show()
-
-# ------------------------------------------------------------------------------   
-def uncacheBoxTicked(uncache_layers_box):
-    "Warning message for uncache tick box."
-    if uncache_layers_box.isChecked():
-        mari.utils.message("Please be aware that uncaching and re-caching the layers could take some time")
         
 # ------------------------------------------------------------------------------   
 class GeometryToExportList(gui.QListWidget):
@@ -256,9 +212,9 @@ class GeometryToExportList(gui.QListWidget):
     def currentGeometry(self):
         return [self.item(index).data(USER_ROLE_01) for index in range(self.count)]
         
-    def addGeometry(self, geometry_list):
+    def addGeometry(self, geo_list):
         "Adds an operation from the current selections of geometry and directories."
-        selected_items = geometry_list.selectedItems()
+        selected_items = geo_list.selectedItems()
         if selected_items == []:
             mari.utils.message("Please select at least one object.")
             return
@@ -266,11 +222,11 @@ class GeometryToExportList(gui.QListWidget):
         # Add geometry that aren't already added
         current_geometry = set(self.currentGeometry())
         for item in selected_items:
-            geometry = item.data(USER_ROLE_01)
-            if geometry not in current_geometry:
-                current_geometry.add(geometry)
-                self.addItem(geometry.name())
-                self.item(self.count - 1).setData(USER_ROLE_01, geometry)
+            geo = item.data(USER_ROLE_01)
+            if geo not in current_geometry:
+                current_geometry.add(geo)
+                self.addItem(geo.name())
+                self.item(self.count - 1).setData(USER_ROLE_01, geo)
         
     def removeGeometry(self):
         "Removes any currently selected operations."
@@ -593,37 +549,6 @@ def setBold(widget):
     font.setWeight(75)
     widget.setFont(font)
 
-# ------------------------------------------------------------------------------
-def isProjectSuitable():
-    "Checks project state."
-    MARI_2_0V1_VERSION_NUMBER = 20001300    # see below
-    if mari.app.version().number() >= MARI_2_0V1_VERSION_NUMBER:
-    
-        if mari.projects.current() is None:
-            mari.utils.message("Currently in development this is just a place holder.")
-            return False
-            
-        geo = mari.geo.current()
-        if geo is None:
-            mari.utils.message("Please select an object to copy from.")
-            return False
-        
-        chan = geo.currentChannel()
-        if chan is None:
-            mari.utils.message("Please select a channel to copy from.")
-            return False
-            
-        if len(chan.layerList()) == 0:
-            mari.utils.message("No layers to copy from!")
-            return False
-        
-        mari.utils.message("Currently in development this is just a place holder.")
-        return False
-    
-    else:
-        mari.utils.message("You can only run this script in Mari 2.0v1 or newer.")
-        return False
-
 # ------------------------------------------------------------------------------   
 def exportUdimToUdim(export_index, paste_index, layer_list):
     "Copies udim to udim."
@@ -652,3 +577,37 @@ def exportUdimToUdim(export_index, paste_index, layer_list):
             paste.trigger()
             mari.geo.current().patch(paste_index[i]).setSelected(False)
             layer.setSelected(False)
+            
+# ------------------------------------------------------------------------------
+def isProjectSuitable():
+    "Checks project state."
+    MARI_2_0V1_VERSION_NUMBER = 20001300    # see below
+    if mari.app.version().number() >= MARI_2_0V1_VERSION_NUMBER:
+    
+        if mari.projects.current() is None:
+            mari.utils.message("Currently in development this is just a place holder.")
+            return False
+            
+        geo = mari.geo.current()
+        if geo is None:
+            mari.utils.message("Please select an object to copy from.")
+            return False
+        
+        chan = geo.currentChannel()
+        if chan is None:
+            mari.utils.message("Please select a channel to copy from.")
+            return False
+            
+        if len(chan.layerList()) == 0:
+            mari.utils.message("No layers to copy from!")
+            return False
+        
+        # mari.utils.message("Currently in development this is just a place holder.")
+        return True
+    
+    else:
+        mari.utils.message("You can only run this script in Mari 2.0v1 or newer.")
+        return False
+        
+if __name__ == "__main__":
+    showUI()
