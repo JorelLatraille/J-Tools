@@ -25,7 +25,7 @@
 # ------------------------------------------------------------------------------
 # ------------------------------------------------------------------------------
 
-version = "0.02"
+version = "0.03"
 
 # ------------------------------------------------------------------------------
 # Use from and import, to import the main function from the module
@@ -35,11 +35,12 @@ from convert_to_paintable import convertToPaintable
 from copy_channels import copyChannels
 from copy_udim_to_udim import showUI as copyUdimToUdim
 from export_images_flattened import exportImagesFlattened
+from export_selected_channels import showUI as exportSelectedChannels
+from export_uv_masks import exportUVMasks
 from layer_visibility import layerVisibility
 from resize_channels import showUI as resizeChannels
 from set_all_current_shader import setAllCurrentShader
 from shortcuts import quick
-from wip_export_channels import showUI as exportChannels
 from wip_export_token_images_flattened import exportTokenImagesFlattened
 from tools_update import update
 
@@ -51,11 +52,12 @@ del convert_to_paintable
 del copy_channels
 del copy_udim_to_udim
 del export_images_flattened
+del export_selected_channels
+del export_uv_masks
 del layer_visibility
 del resize_channels
 del set_all_current_shader
 del shortcuts
-del wip_export_channels
 del wip_export_token_images_flattened
 del tools_update
 
