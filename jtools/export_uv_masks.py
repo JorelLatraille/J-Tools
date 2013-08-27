@@ -39,12 +39,14 @@ list.sort(g_file_types)
 
 # ------------------------------------------------------------------------------
 def exportUVMasks():
-    
+    "Export UV masks initialise"
     global directory
     
+    #Check project is suitable
     if not isProjectSuitable():
         return False        
         
+    #Get directory to export to
     directory = mari.utils.misc.getExistingDirectory(parent=None, caption='Export UV Masks', dir='')
     if directory == "":
         return False
@@ -53,7 +55,7 @@ def exportUVMasks():
 
 # ------------------------------------------------------------------------------    
 def exportMasks(g_eum_window, q_geo_list, file_type_combo):
-
+    "Export the masks"
     geo_list = q_geo_list.currentGeometry()
     file_type = file_type_combo.currentText
 
@@ -62,7 +64,7 @@ def exportMasks(g_eum_window, q_geo_list, file_type_combo):
         
     g_eum_window.reject()
      
-    # geo_list = mari.geo.list()
+    #Export selected geo UV masks 
     for geo in geo_list:
         mari.geo.setCurrent(geo)
         geo_name = geo.name()
@@ -244,11 +246,6 @@ def isProjectSuitable():
         
         if mari.projects.current() is None:
             mari.utils.message("Please open a project before running.")
-            return False
-            
-        geo = mari.geo.current()
-        if geo is None:
-            mari.utils.message("Please select an object to run.")
             return False
 
         return True
