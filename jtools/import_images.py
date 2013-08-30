@@ -33,33 +33,70 @@ class importImagesGUI(QDialog):
     def __init__(self, parent=None):
         super(importImagesGUI, self).__init__(parent)
         
-        layout = QVBoxLayout()
-        self.input = QLineEdit()
+        main_layout = QVBoxLayout()
+        path_layout = QGridLayout()
+        button_layout = QGridLayout()
+        
+        #Add path line input and button
+        path_label = QLabel('Path:')
+        self.path = QLineEdit()
+        self.path.connect("textChanged()", lambda: self.getWalk())
+        path_label.setBuddy(self.path)
+        path_pixmap = QPixmap(mari.resources.path(mari.resources.ICONS) + '/ExportImages.png')
+        icon = QIcon(path_pixmap)
+        path_button = QPushButton(icon, "")
+        path_button.connect("clicked()", lambda: self.getPath())
         
         ok_button = QPushButton("&OK")
         cancel_button = QPushButton("Cancel")
         
-        layout.addWidget(self.input)
-        layout.addWidget(ok_button)
-        layout.addWidget(cancel_button)
+        path_layout.addWidget(path_label, 0, 0)
+        path_layout.addWidget(self.path, 0, 1)
+        path_layout.addWidget(path_button, 0, 2)
+        button_layout.addWidget(ok_button, 0, 0)
+        button_layout.addWidget(cancel_button, 0, 1)
         
-        self.setLayout(layout)
+        main_layout.addLayout(path_layout)
+        main_layout.addLayout(button_layout)
+        self.setLayout(main_layout)
         self.setWindowTitle("Import Images")
         
-        ok_button.connect("clicked()", self.accept)
+        ok_button.connect("clicked()", lambda: self.accepted())
         cancel_button.connect("clicked()", self.reject)
+
+    def getPath(self):
+        file_path = mari.utils.misc.getExistingDirectory(parent=self, caption='Import Images', dir='')
+        if file_path == "":
+            return False
+        else:
+            self.path.setText(file_path)
     
-    def returnInput(self):
-        return self.input.text
+    def getWalk(self):
+        print self.path.text
+        print "hello"
+        try:
+            for root, subdirs, files in os.walk(self.path.text):
+                for file in files:
+                    print file
+                    # absfile = os.path.join(root, file)
+                    # relfile = absfile[len(path)+len(os.sep):]
+                    # zip.write(absfile, relfile)
+                    # _progress()
+        except:
+            pass
+        
+    def accepted(self):
+        print "accepted"
+        self.accept()
+    
+    def returnPath(self):
+        return self.path.text
 
 def importImages():
     dialog = importImagesGUI()
     if dialog.exec_():
-        input = dialog.returnInput()
-        print input
-    # mari.utils.misc.getOpenFileName(parent=None, caption='Import Images', dir='', filter='bmp', 'jpg', 'jpeg', 'png', 'ppm', 'psd', 'tga', 'tif', 'tiff', 'xbm', 'xpm', selected_filter=None, options=0)
-    
-    
+        path = dialog.returnPath()
+        print path
     
 # NOTES:
 
