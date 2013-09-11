@@ -31,6 +31,7 @@ version = "0.01"
 image_file_types = ['.bmp', '.jpg', '.jpeg', '.png', '.ppm', '.psd', '.tga', '.tif', '.tiff', '.xbm', '.xpm', '.exr']
 resize_options = ['Patch', 'Image']
 tokens = ['$ENTITY', '$CHANNEL', '$LAYER', '$UDIM']
+layer_import_options = ['Update', 'Create New', 'Skip']
 
 class importImagesGUI(QDialog):
     
@@ -40,7 +41,7 @@ class importImagesGUI(QDialog):
         main_layout = QVBoxLayout()
         path_layout = QGridLayout()
         import_layout = QHBoxLayout()
-        resize_layout = QHBoxLayout()
+        options_layout = QHBoxLayout()
         button_layout = QGridLayout()
         
         #Add path line input and button
@@ -58,12 +59,17 @@ class importImagesGUI(QDialog):
         self.import_template.setValidator(QRegExpValidator(punctuation_re, self))
         self.import_template.setPlaceholderText('e.g. $CHANNEL.$LAYER.$UDIM.tif')
         
-        #Add import resize options
+        #Add import resize options and layer import options
         resize_label = QLabel('Resize:')
         self.resize_options = QComboBox()
         for option in resize_options:
             self.resize_options.addItem(option)
         self.resize_options.setCurrentIndex(self.resize_options.findText('Patch'))
+        layer_import_label = QLabel('Layer Import Option:')
+        self.layer_import_options = QComboBox()
+        for option in layer_import_options:
+            self.layer_import_options.addItem(option)
+        self.layer_import_options.setCurrentIndex(self.layer_import_options.findText('Update'))
         
         #Add OK/Cancel buttons
         ok_button = QPushButton("&OK")
@@ -75,16 +81,18 @@ class importImagesGUI(QDialog):
         path_layout.addWidget(path_button, 0, 2)
         import_layout.addWidget(import_label)
         import_layout.addWidget(self.import_template)
-        resize_layout.addWidget(resize_label)
-        resize_layout.addWidget(self.resize_options)
-        resize_layout.addStretch()
+        options_layout.addWidget(resize_label)
+        options_layout.addWidget(self.resize_options)
+        options_layout.addStretch()
+        options_layout.addWidget(layer_import_label)
+        options_layout.addWidget(self.layer_import_options)
         button_layout.addWidget(ok_button, 1, 0)
         button_layout.addWidget(cancel_button, 1, 1)
         
         #Add layouts to main QDialog layout
         main_layout.addLayout(path_layout)
         main_layout.addLayout(import_layout)
-        main_layout.addLayout(resize_layout)
+        main_layout.addLayout(options_layout)
         main_layout.addLayout(button_layout)
         self.setLayout(main_layout)
         self.setWindowTitle("Import Images")
@@ -136,12 +144,13 @@ class importImagesGUI(QDialog):
         
         #Get list of files in directory and check that type given matches files
         self.file_dict = {}
+        self.file_path_dict = {}
         try:
             for root, subdirs, files in os.walk(file_path):
                 for file in files:
-                    # file_list.append(file)
                     if file.lower().endswith(type):
                         self.file_dict[file] = os.path.abspath(os.path.join(root, file))
+                        self.file_path_dict[file] = os.path.abspath(root)
             if len(self.file_dict) == 0:
                 mari.utils.message('Files of type %s do not exist in this directory' %type)
                 return
@@ -161,26 +170,43 @@ class importImagesGUI(QDialog):
         image_names = {}
         for file in self.file_dict:
             image_names[file] = file[:-len(self.type)]
-        split_names = {}
+        self.split_names = {}
         for file in image_names:
-            split_names[file] = image_names.get(file).split(spliter)
+            self.split_names[file] = image_names[file].split(spliter)
         self.match_image_template = {}
-        for file in split_names:
-            if len(self.template) == len(split_names.get(file)):
-                self.match_image_template[file] = split_names.get(file)
+        self.image_template = []
+        self.file_names_short = []
+        self.file_names_long = []
+        for file in self.split_names:
+            if len(self.template) == len(self.split_names[file]):
+                if '$UDIM' in self.template:
+                    it = self.template.index('$UDIM')
+                    copy_split_names = self.split_names[file]
+                    copy_split_names.pop(it)
+                    join_names = ".".join(copy_split_names)
+                    if join_names in self.file_names_short:
+                        pass
+                    else:
+                        self.file_names_short.append(join_names)
+                        self.file_names_long.append(file)
+                self.match_image_template[file] = self.split_names[file]
+                if tuple(self.split_names[file]) in self.image_template:
+                    pass
+                else:
+                    self.image_template.append(tuple(self.split_names[file]))
         if len(self.match_image_template) == 0:
             mari.utils.misc.message('Import template and image name(s) do not match')
             return
-            
-        #Iterate through match_image_template and file_dict, compare token_dict and run appropriate command
+        
+        #Create geo dictionary with geo name as key, and geo dictionary index 0 as geo and subsequent indexes as channels        
         geo_list = mari.geo.list()
         self.geo_dict = {}
-        #Create geo dictionary with geo name as key, and geo dictionary index 0 as geo and subsequent indexes as channels
         for geo in geo_list:
             geo_info = []
             geo_info.append(geo)
             geo_info.extend(geo.channelList())
             self.geo_dict[geo.name()] = geo_info
+        #Iterate through match_image_template and file_dict, compare token_dict and run appropriate command
         for mkey in self.match_image_template:
             for fkey in self.file_dict:
                 if fkey == mkey:
@@ -188,11 +214,17 @@ class importImagesGUI(QDialog):
                         if self.template[index] == '$ENTITY':
                             entity = self.match_image_template[mkey][index]
                             if entity in self.geo_dict:
-                                self.geo_dict[entity][0].setSelected(True)
+                                pass
                             else:
                                 mari.utils.misc.message("Import template $ENTITY image file name '%s' does not match geo name(s) in project" %entity)
                                 return
         
+        #Get a list of file paths that co-inside with file names
+        self.file_paths = []
+        for name in self.file_names_long:
+            if name in self.file_path_dict:
+                self.file_paths.append(self.file_path_dict[name])
+                
         print "accepted"
         self.accept()
     
@@ -226,6 +258,21 @@ class importImagesGUI(QDialog):
         
     def returnFileDict(self):
         return self.file_dict
+        
+    def returnFilePathDict(self):
+        return self.file_path_dict
+        
+    def returnFileNamesShort(self):
+        return self.file_names_short
+        
+    def returnFileNamesLong(self):
+        return self.file_names_long
+        
+    def returnFilePaths(self):
+        return self.file_paths
+        
+    def returnImageTemplate(self):
+        return self.image_template
 
 # ------------------------------------------------------------------------------        
 def importImages():
@@ -240,6 +287,11 @@ def importImages():
         geo_dict = dialog.returnGeoDict()
         match_image_template = dialog.returnMatchImageTemplate()
         file_dict = dialog.returnFileDict()
+        file_path_dict = dialog.returnFilePathDict()
+        file_names_short = dialog.returnFileNamesShort()
+        file_names_long = dialog.returnFileNamesLong()
+        file_paths = dialog.returnFilePaths()
+        image_template = dialog.returnImageTemplate()
         print path
         print import_template
         print type
@@ -247,25 +299,45 @@ def importImages():
         print resize_option
         print template
         print geo_dict
+        print '==============AHAHAHHAA===================='
         print match_image_template
         print file_dict
+        print file_path_dict
+        print '********************BALLS********************'
+        print file_names_short
+        print file_names_long
+        print "\n".join(file_names_short)
+        print "\n".join(file_names_long)
+        print "\n".join(file_paths)
+        print image_template
         
         #Import images onto corresponding token info
-        for mkey in match_image_template:
-            for fkey in file_dict:
-                if fkey == mkey:
-                    if '$ENTITY' in template:
-                        for it in range(len(template)):
-                            if template[it] == '$ENTITY':
-                                entity = match_image_template[mkey][it]
-                                geo_dict[entity][0].setSelected(True)
-                                if '$CHANNEL' in template:
-                                    for ic in range(len(geo_dict.get(entity))):
-                                        if ic == 0:
-                                            pass
-                                        if geo_dict[ic].name() in match_image_template[mkey]:
-                                            geo_dict[ic].makeCurrent()
-                                            geo_dict[ic].importImages(file_dict[fkey])
+        for file in file_names_short:
+            ifile = file_names_short.index(file)
+            if '$ENTITY' in template:
+                ient = template.index('$ENTITY')
+                entity = image_template[ifile][ient]
+                geo_dict[entity][0].setSelected(True)
+                if '$CHANNEL' in template:
+                    ichan = template.index('$CHANNEL')
+                    channel = image_template[ifile][ichan]
+                    item_list = []
+                    for item in geo_dict[entity]:
+                        item_list.append(item.name())
+                    if channel in item_list:
+                        ilist = item_list.index(channel)
+                        channel = geo_dict[entity][ilist]
+                        channel.makeCurrent()
+                        channel.importImages(os.path.join(file_paths[ifile], import_template), resize_option)
+                        layer_list = channel.layerList()
+                        if '$LAYER' in template:
+                            ilay = template.index('$LAYER')
+                            layer_list[0].setName(image_template[ifile][ilay])
+                        else:
+                            layer_list[0].setName(file_names_short[ifile])
+                    else:
+                        channel = geo_dict[entity][0].createChannel(channel, 2048, 2048, 16)
+                        channel.importImages(os.path.join(file_paths[ifile], import_template), resize_option)
 
 if __name__ == "__main__":
     importImages()
