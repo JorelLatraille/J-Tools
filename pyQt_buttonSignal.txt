@@ -1,0 +1,4 @@
+('clicked()', QDialog (QDialog 0x38efb40), None)
+ The following slots are available:
+bool connect(QByteArray signal, PyObject* callable)
+bool connect(QByteArray signal, QObject* receiver, QByteArray slot)
