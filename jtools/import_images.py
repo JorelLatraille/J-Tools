@@ -248,15 +248,24 @@ class importImagesGUI(QDialog):
                 
         print "accepted"
         self.accept()
-    
-    def returnPath(self):
-        return self.path.text
         
     def returnImportTemplate(self):
         return self.import_template.text
-    
-    def returnType(self):
-        return self.type
+        
+    def returnChannelResOption(self):
+        return int(self.channel_res_options.currentText)
+        
+    def returnChannelBitOption(self):
+        return int(self.channel_bit_options.currentText)
+        
+    def returnLayerImportOption(self):
+        if self.layer_import_options.currentText == 'Update':
+            layer_import_option = 1
+        elif self.layer_import_options.currentText == 'Create New':
+            layer_import_option = 2
+        else:
+            layer_import_option = 3
+        return layer_import_option
         
     def returnResizeOption(self):
         if self.resize_options.currentText == 'Patch':
@@ -271,20 +280,8 @@ class importImagesGUI(QDialog):
     def returnGeoDict(self):
         return self.geo_dict
         
-    def returnMatchImageTemplate(self):
-        return self.match_image_template
-        
-    def returnFileDict(self):
-        return self.file_dict
-        
-    def returnFilePathDict(self):
-        return self.file_path_dict
-        
     def returnFileNamesShort(self):
         return self.file_names_short
-        
-    def returnFileNamesLong(self):
-        return self.file_names_long
         
     def returnFilePaths(self):
         return self.file_paths
@@ -296,34 +293,28 @@ class importImagesGUI(QDialog):
 def importImages():
     dialog = importImagesGUI()
     if dialog.exec_():
-        path = dialog.returnPath()
         import_template = dialog.returnImportTemplate()
-        type = dialog.returnType()
+        channel_res = dialog.returnChannelResOption()
+        channel_bit = dialog.returnChannelBitOption()
+        layer_option = dialog.returnLayerImportOption()
         resize_option = dialog.returnResizeOption()
         template = dialog.returnTemplate()
         geo_dict = dialog.returnGeoDict()
-        match_image_template = dialog.returnMatchImageTemplate()
-        file_dict = dialog.returnFileDict()
-        file_path_dict = dialog.returnFilePathDict()
         file_names_short = dialog.returnFileNamesShort()
-        file_names_long = dialog.returnFileNamesLong()
         file_paths = dialog.returnFilePaths()
         image_template = dialog.returnImageTemplate()
-        print path
         print import_template
         print type
+        print channel_res
+        print channel_bit
+        print layer_option
         print resize_option
+        print '==================AAAAHHHHH=================='
         print template
         print geo_dict
-        print '==============AHAHAHHAA===================='
-        print match_image_template
-        print file_dict
-        print file_path_dict
         print '********************BALLS********************'
         print file_names_short
-        print file_names_long
         print "\n".join(file_names_short)
-        print "\n".join(file_names_long)
         print "\n".join(file_paths)
         print image_template
         
@@ -352,8 +343,8 @@ def importImages():
                         else:
                             layer_list[0].setName(file_names_short[ifile])
                     else:
-                        channel = geo_dict[entity][0].createChannel(channel, 2048, 2048, 16)
-                        channel.importImages(os.path.join(file_paths[ifile], import_template), resize_option)
+                        channel = geo_dict[entity][0].createChannel(channel, channel_res, channel_res, channel_bit)
+                        channel.importImages(os.path.join(file_paths[ifile], import_template), resize_option, layer_option)
                         layer_list = channel.layerList()
                         if '$LAYER' in template:
                             ilay = template.index('$LAYER')
@@ -361,8 +352,8 @@ def importImages():
                         else:
                             layer_list[0].setName(file_names_short[ifile])
                 else:
-                    channel = geo_dict[entity][0].createChannel(file, 2048, 2048, 16)
-                    channel.importImages(os.path.join(file_paths[ifile], import_template), resize_option)
+                    channel = geo_dict[entity][0].createChannel(file, channel_res, channel_res, channel_bit)
+                    channel.importImages(os.path.join(file_paths[ifile], import_template), resize_option, layer_option)
                     layer_list = channel.layerList()
                     if '$LAYER' in template:
                         ilay = template.index('$LAYER')
@@ -380,7 +371,7 @@ def importImages():
                     ilist = item_list.index(channel)
                     channel = mari.geo.current().channelList()[ilist]
                     channel.makeCurrent()
-                    channel.importImages(os.path.join(file_paths[ifile], import_template), resize_option)
+                    channel.importImages(os.path.join(file_paths[ifile], import_template), resize_option, layer_option)
                     layer_list = channel.layerList()
                     if '$LAYER' in template:
                         ilay = template.index('$LAYER')
@@ -388,8 +379,8 @@ def importImages():
                     else:
                         layer_list[0].setName(file_names_short[ifile])
                 else:
-                    channel = mari.geo.current().createChannel(channel, 2048, 2048, 16)
-                    channel.importImages(os.path.join(file_paths[ifile], import_template), resize_option)
+                    channel = mari.geo.current().createChannel(channel, channel_res, channel_res, channel_bit)
+                    channel.importImages(os.path.join(file_paths[ifile], import_template), resize_option, layer_option)
                     layer_list = channel.layerList()
                     if '$LAYER' in template:
                         ilay = template.index('$LAYER')
@@ -400,13 +391,13 @@ def importImages():
             elif '$LAYER' in template:
                 ilay = template.index('$LAYER')
                 channel = mari.geo.current().currentChannel()
-                channel.importImages(os.path.join(file_paths[ifile], import_template), resize_option)
+                channel.importImages(os.path.join(file_paths[ifile], import_template), resize_option, layer_option)
                 layer_list = channel.layerList()
                 layer_list[0].setName(image_template[ifile][ilay])
                 
             else:
                 channel = mari.geo.current().currentChannel()
-                channel.importImages(os.path.join(file_paths[ifile], import_template), resize_option)
+                channel.importImages(os.path.join(file_paths[ifile], import_template), resize_option, layer_option)
                 layer_list = channel.layerList()
                 layer_list[0].setName(file)
 
