@@ -34,7 +34,6 @@ USER_ROLE_01 = 34          # PythonQt.Qt.UserRole
 USER_ROLE_02 = 34          # PythonQt.Qt.UserRole
 
 current_geometry = ""
-_bool = True
 
 g_esc_window = None
 
@@ -175,7 +174,7 @@ def showUI():
 
     #Hide parts of interface if export everything is ticked
     def exportEverything():
-        global _bool
+        _bool = export_everything_box.isChecked()
         geometry_label.setHidden(_bool)
         geometry_search_icon.setHidden(_bool)
         filter_geometry_box.setHidden(_bool)
@@ -188,11 +187,7 @@ def showUI():
         remove_channel_button.setHidden(_bool)
         channels_to_export_label.setHidden(_bool)
         channels_to_export_widget.setHidden(_bool)
-        if _bool:
-            _bool = False
-        else:
-            _bool = True
-        
+            
     #Add to middle layout    
     middle_layout.addWidget(export_everything_box)
     #Add to main layout

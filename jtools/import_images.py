@@ -248,8 +248,8 @@ class importImagesGUI(QDialog):
         for name in self.file_names_long:
             if name in self.file_path_dict:
                 self.file_paths.append(self.file_path_dict[name])
-                
-        print "accepted"
+        
+        #Accept the inputs and close the dialog
         self.accept()
         
     def returnImportTemplate(self):
