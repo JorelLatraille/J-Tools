@@ -37,6 +37,7 @@ from copy_udim_to_udim import showUI as copyUdimToUdim
 from export_images_flattened import exportImagesFlattened
 from export_selected_channels import showUI as exportSelectedChannels
 from export_uv_masks import exportUVMasks
+from import_images import importImages
 from layer_visibility import layerVisibility
 from resize_channels import showUI as resizeChannels
 from set_all_current_shader import setAllCurrentShader
@@ -54,6 +55,7 @@ del copy_udim_to_udim
 del export_images_flattened
 del export_selected_channels
 del export_uv_masks
+del import_images
 del layer_visibility
 del resize_channels
 del set_all_current_shader
