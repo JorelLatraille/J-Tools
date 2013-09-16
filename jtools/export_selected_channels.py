@@ -204,10 +204,14 @@ def showUI():
     #Add path line input and button
     path_label = gui.QLabel('Path:')
     path_line_edit = gui.QLineEdit()
+    path_line_edit.connect("textChanged()", lambda: printPaht())
     path_pixmap = gui.QPixmap(mari.resources.path(mari.resources.ICONS) + '/ExportImages.png')
     icon = gui.QIcon(path_pixmap)
     path_button = gui.QPushButton(icon, "")
     path_button.connect("clicked()", lambda: getPath())
+    
+    def printPath():
+        print path_line_edit.text
     
     #Get the path from existing directory
     def getPath():
