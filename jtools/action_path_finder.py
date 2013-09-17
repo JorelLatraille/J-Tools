@@ -60,15 +60,16 @@ class actionPathFinderGUI(QDialog):
         for action in action_path_list:
             action_list.addItem(action)
             action_list.item(action_list.count - 1).setData(USER_ROLE_01, action)
-        
-        selected_action_box = QLineEdit
-        selected_action_box.setText(
+       
+        selected_action_box = QLineEdit()
+        action_list.connect('currentTextChanged(QString)', selected_action_box, 'setText(QString)')
         
         action_layout.addLayout(action_header_layout)
         action_layout.addWidget(action_list)
+        action_layout.addWidget(selected_action_box)
         
         self.setLayout(action_layout)
-
+        
 # ------------------------------------------------------------------------------
 def updateActionPathFilter(filter_action_box, action_list):
     "For each item in the channel list display, set it to hidden if it doesn't match the filter text."
@@ -92,7 +93,7 @@ def actionPathFinder():
     if not isProjectSuitable():
         return
 
-    #Create dialog and return inputs
+    #Create dialog
     dialog = actionPathFinderGUI()
     dialog.show()
         
