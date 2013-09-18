@@ -25,7 +25,7 @@
 
 import zipfile, sys, getopt, os, uuid, re
 
-version = "0.01"
+version = "0.02"
 
 cache_path = ''
 archive_path = ''
@@ -67,6 +67,9 @@ def _extract(zip_file, extract_path, uuid4):
     num_files = len(zip_file.namelist())
     extracted_files = 0
 
+    for num in range(10):
+        os.makedirs(os.path.join(extract_path, str(num)))
+    
     for file in zip_file.namelist():
         if file == "Summary.txt":
             zip_file.extract(file, extract_path)
@@ -93,6 +96,11 @@ def _extract(zip_file, extract_path, uuid4):
             new_zip = zipfile.ZipFile(os.path.join(extract_path, file), 'w')
             new_zip.write('Project.mri')
             new_zip.close()
+        elif '-' in file and len(file) >= 100:
+            split_file = file.split('-')
+            num = split_file[0][-1:]
+            new_extract_path = os.path.join(extract_path, num)
+            zip_file.extract(file, new_extract_path)
         else:
             zip_file.extract(file, extract_path)
         extracted_files += 1
