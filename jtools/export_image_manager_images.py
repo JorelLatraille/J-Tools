@@ -29,7 +29,7 @@ from PythonQt.QtGui import *
 version = "0.01"
 
 USER_ROLE = 34
-image_file_types = ['bmp', 'jpg', 'jpeg', 'png', 'ppm', 'psd', 'tga', 'tif', 'tiff', 'xbm', 'xpm']
+image_file_types = ['.bmp', '.jpg', '.jpeg', '.png', '.ppm', '.psd', '.tga', '.tif', '.tiff', '.xbm', '.xpm']
 list.sort(image_file_types)
 
 # ------------------------------------------------------------------------------
@@ -39,7 +39,7 @@ def exportImageManagerImages():
         return
 
     dialog = exportImageManagerImagesGUI()
-    dialog.show()
+    dialog.show() 
         
 # ------------------------------------------------------------------------------
 class exportImageManagerImagesGUI(QDialog):
@@ -49,7 +49,7 @@ class exportImageManagerImagesGUI(QDialog):
 
         eimi_layout = QVBoxLayout()
         self.setLayout(eimi_layout)
-        self.setWindowTitle("Export UV Masks")
+        self.setWindowTitle("Export Image Manager Images")
         
         #Create layout for middle section
         centre_layout = QHBoxLayout()
@@ -78,8 +78,8 @@ class exportImageManagerImagesGUI(QDialog):
             split_image_path = os.path.abspath(image.filePath()).split('\\')
             image_list.extend(split_image_path[-1:])    
         
-        for image in image_list:
-            images_list.addItem(image)
+        for image in mari.images.list():
+            images_list.addItem("".join(os.path.abspath(image.filePath()).split('\\')[-1:]))
             images_list.item(images_list.count - 1).setData(USER_ROLE, image)
         
         images_layout.addLayout(images_header_layout)
@@ -98,13 +98,13 @@ class exportImageManagerImagesGUI(QDialog):
         images_to_export_layout = QVBoxLayout()
         images_to_export_label = QLabel("Images to export")
         setBold(images_to_export_label)
-        images_to_export_widget = ImagesToExportList()
+        self.images_to_export = ImagesToExportList()
         images_to_export_layout.addWidget(images_to_export_label)
-        images_to_export_layout.addWidget(images_to_export_widget)
+        images_to_export_layout.addWidget(self.images_to_export)
         
         #Hook up add/remove buttons
-        remove_button.connect("clicked()", images_to_export_widget.removeImages)
-        add_button.connect("clicked()", lambda: images_to_export_widget.addImages(images_list))
+        remove_button.connect("clicked()", self.images_to_export.removeImages)
+        add_button.connect("clicked()", lambda: self.images_to_export.addImages(images_list))
 
         #Add widgets to centre layout
         centre_layout.addLayout(images_layout)
@@ -119,26 +119,57 @@ class exportImageManagerImagesGUI(QDialog):
         
         #Add file type options
         file_type_combo_text = QLabel('File Types:')
-        file_type_combo = QComboBox()
+        self.file_type_combo = QComboBox()
         for file_type in image_file_types:
-            file_type_combo.addItem(file_type)
-        file_type_combo.setCurrentIndex(file_type_combo.findText('tif'))
+            self.file_type_combo.addItem(file_type)
+        self.file_type_combo.setCurrentIndex(self.file_type_combo.findText('.tif'))
         
+        #Add path line input and button
+        path_label = QLabel('Path:')
+        self.path = QLineEdit()
+        path_pixmap = QPixmap(mari.resources.path(mari.resources.ICONS) + '/ExportImages.png')
+        icon = QIcon(path_pixmap)
+        path_button = QPushButton(icon, "")
+        path_button.connect("clicked()", self.getPath)
+        
+        bottom_layout.addWidget(path_label)
+        bottom_layout.addWidget(self.path)
+        bottom_layout.addWidget(path_button)
         bottom_layout.addWidget(file_type_combo_text)
-        bottom_layout.addWidget(file_type_combo)
-        bottom_layout.addStretch()
+        bottom_layout.addWidget(self.file_type_combo)
         
         #Add OK Cancel buttons layout, buttons and add
-        main_ok_button = QPushButton("OK")
+        main_apply_button = QPushButton("Apply")
         main_cancel_button = QPushButton("Cancel")
-        main_ok_button.connect("clicked()", lambda: exportMasks(self, images_to_export_widget, file_type_combo))
+        main_apply_button.connect("clicked()", self.accepted)
         main_cancel_button.connect("clicked()", self.reject)
         
-        bottom_layout.addWidget(main_ok_button)
+        bottom_layout.addWidget(main_apply_button)
         bottom_layout.addWidget(main_cancel_button)
         
         #Add browse lines to main layout
         eimi_layout.addLayout(bottom_layout)
+
+    def getPath(self):
+        "Get export path and set the text in path LineEdit widget"
+        file_path = mari.utils.misc.getExistingDirectory(parent=self, caption='Export Path', dir='')
+        if file_path == "":
+            return
+        else:
+            self.path.setText(file_path)        
+    
+    def accepted(self):
+        export_path = os.path.abspath(self.path.text)
+        image_list = self.images_to_export.currentImageNames()
+        for image in image_list:
+            image_object = image.data(USER_ROLE)
+            for type in image_file_types:
+                if image.text().endswith(type):
+                    image_name = image.text().split(type)
+                    image_name = "".join(image_name)
+                    break
+            image_object.saveAs(os.path.join(export_path, image_name + self.file_type_combo.currentText), None, 0)
+        mari.utils.message("Export Complete.")
     
 # ------------------------------------------------------------------------------   
 class ImagesToExportList(QListWidget):
@@ -152,12 +183,12 @@ class ImagesToExportList(QListWidget):
     def currentImages(self):
         return [self.item(index).data(USER_ROLE) for index in range(self.count)]
         
+    def currentImageNames(self):
+        return [self.item(index) for index in range(self.count)]
+        
     def addImages(self, images_list):
         "Adds an operation from the current selections of images and directories."
         selected_items = images_list.selectedItems()
-        if selected_items == []:
-            mari.utils.message("Please select at least one image.")
-            return
         
         # Add images that aren't already added
         current_images = set(self.currentImages())
@@ -165,7 +196,7 @@ class ImagesToExportList(QListWidget):
             image = item.data(USER_ROLE)
             if image not in current_images:
                 current_images.add(image)
-                self.addItem(image)
+                self.addItem(item.text())
                 self.item(self.count - 1).setData(USER_ROLE, image)
         
     def removeImages(self):
@@ -196,10 +227,6 @@ def isProjectSuitable():
     "Checks project state and Mari version."
     MARI_2_0V1_VERSION_NUMBER = 20001300    # see below
     if mari.app.version().number() >= MARI_2_0V1_VERSION_NUMBER:
-        
-        if mari.projects.current() is None:
-            mari.utils.message("Please open a project before running.")
-            return False
 
         return True
         
