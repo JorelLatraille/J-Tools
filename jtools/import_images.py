@@ -25,7 +25,7 @@
 
 import mari, os
 from PythonQt.QtGui import *
-from PythonQt.QtCore import QRegExp
+from PythonQt.QtCore import *
 
 version = "0.01"
 image_file_types = ['.bmp', '.jpg', '.jpeg', '.png', '.ppm', '.psd', '.tga', '.tif', '.tiff', '.xbm', '.xpm', '.exr']
@@ -159,6 +159,9 @@ class ImportImagesGUI(QDialog):
         elif '_' in import_template:
             self.template = import_template.split('_')
             spliter = '_'
+        else:
+            self.template = import_template
+            spliter = ''
         self.template_no_token = list(self.template)
         for item in self.template:
             if item in tokens:
@@ -202,7 +205,10 @@ class ImportImagesGUI(QDialog):
             image_names[file] = file[:-len(self.type)]
         self.split_names = {}
         for file in image_names:
-            self.split_names[file] = image_names[file].split(spliter)
+            if not spliter == '':
+                self.split_names[file] = image_names[file].split(spliter)
+            else:
+                self.split_names[file] = image_names[file]
         self.match_image_template = {}
         self.image_template = []
         self.file_names_short = []
