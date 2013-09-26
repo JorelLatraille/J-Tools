@@ -169,8 +169,11 @@ class ImportImagesGUI(QDialog):
         self.file_dict = {}
         self.file_path_dict = {}
         try:
+            search = SearchingGUI()
+            search.show()
             for root, subdirs, files in os.walk(file_path):
                 for file in files:
+                    search.updateProgressBar()
                     if file.lower().endswith(type):
                         found = False
                         if len(self.template_no_token) > 0:
@@ -185,8 +188,10 @@ class ImportImagesGUI(QDialog):
                             self.file_dict[file] = os.path.abspath(os.path.join(root, file))
                             self.file_path_dict[file] = os.path.abspath(root)
             if len(self.file_dict) == 0:
+                search.reject()
                 mari.utils.message('No files match import template %s' %self.import_template.text)
                 return
+            search.reject()
         except:
             raise
         
@@ -297,22 +302,36 @@ class ImportImagesGUI(QDialog):
 class SearchingGUI(QDialog):
 
     def __init__(self, parent=None):
-        super(SearchGUI, self).__init__(parent)
+        super(SearchingGUI, self).__init__(parent)
         
         main_layout = QVBoxLayout()
-        self.windowTitle('Search')
+        self.setWindowTitle('Search')
+        self.setWindowModality(Qt.WindowModal)
         
-        #Add path line input and button
-        path_label = QLabel('Searching for images...')
+        #Add label, progress bar and cancel button
+        search_label = QLabel('Searching for images...')
         self.progressBar = QProgressBar()
+        self.progressBar.setMaximum(100)
+        self.progressBar.setTextVisible(False)
+        cancel_button = QPushButton("Cancel")
+        #Connect cancel button clicked to reject the GUI
+        cancel_button.connect("clicked()", self.reject)
         
-        self.progressBar.setMaximum(10)
+        main_layout.addWidget(search_label)
+        main_layout.addWidget(self.progressBar)
+        main_layout.addWidget(cancel_button)
+        
+        self.setLayout(main_layout)
         
     def setProgressBar(self, value):
         self.progressBar.setValue(value)
         
     def updateProgressBar(self):
-        current_value = self.progressBar.currentValue()
+        current_value = self.progressBar.value
+        if current_value < 100:
+            self.setProgressBar(current_value + 1)
+        else:
+            self.setProgressBar(0)
         
 # ------------------------------------------------------------------------------        
 def importImages():
