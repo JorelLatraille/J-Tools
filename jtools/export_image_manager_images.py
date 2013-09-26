@@ -39,7 +39,22 @@ def exportImageManagerImages():
         return
 
     dialog = exportImageManagerImagesGUI()
-    dialog.show() 
+    if dialog.exec_():
+        export_path = dialog.getExportPath()
+        image_list = dialog.getImagesToExport()
+        combo_text = dialog.getComboText()
+        mari.app.startProcessing('Exporting images...', len(image_list), can_cancel=False)
+        for image in image_list:
+            mari.app.stepProgress()
+            image_object = image.data(USER_ROLE)
+            for type in image_file_types:
+                if image.text().endswith(type):
+                    image_name = image.text().split(type)
+                    image_name = "".join(image_name)
+                    break
+            image_object.saveAs(os.path.join(export_path, image_name + combo_text), None, 0)
+        mari.app.stopProcessing()
+        mari.utils.message("Export Complete.")        
         
 # ------------------------------------------------------------------------------
 class exportImageManagerImagesGUI(QDialog):
@@ -156,20 +171,28 @@ class exportImageManagerImagesGUI(QDialog):
         if file_path == "":
             return
         else:
-            self.path.setText(file_path)        
+            self.path.setText(file_path)
     
     def accepted(self):
-        export_path = os.path.abspath(self.path.text)
-        image_list = self.images_to_export.currentImageNames()
-        for image in image_list:
-            image_object = image.data(USER_ROLE)
-            for type in image_file_types:
-                if image.text().endswith(type):
-                    image_name = image.text().split(type)
-                    image_name = "".join(image_name)
-                    break
-            image_object.saveAs(os.path.join(export_path, image_name + self.file_type_combo.currentText), None, 0)
-        mari.utils.message("Export Complete.")
+        if len(self.images_to_export.currentImageNames()) == 0:
+            mari.utils.message('Please add some images to export.')
+            return
+        if self.path.text == "":
+            mari.utils.message('Please provide a path to export to.')
+            return
+        if not os.path.exists(os.path.abspath(self.path.text)):
+            mari.utils.message('The path "%s" does not exist.' %(os.path.abspath(self.path.text)))
+            return
+        self.accept()
+        
+    def getExportPath(self):
+        return os.path.abspath(r'%s' %self.path.text)
+        
+    def getImagesToExport(self):
+        return self.images_to_export.currentImageNames()
+        
+    def getComboText(self):
+        return self.file_type_combo.currentText
     
 # ------------------------------------------------------------------------------   
 class ImagesToExportList(QListWidget):

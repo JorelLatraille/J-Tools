@@ -35,10 +35,11 @@ channel_bit_depth_options = ['8', '16', '32']
 layer_import_options = ['Update', 'Create New', 'Skip']
 resize_options = ['Patch', 'Image']
 
-class importImagesGUI(QDialog):
+# ------------------------------------------------------------------------------ 
+class ImportImagesGUI(QDialog):
     
     def __init__(self, parent=None):
-        super(importImagesGUI, self).__init__(parent)
+        super(ImportImagesGUI, self).__init__(parent)
         
         main_layout = QVBoxLayout()
         path_layout = QGridLayout()
@@ -291,7 +292,28 @@ class importImagesGUI(QDialog):
         
     def returnImageTemplate(self):
         return self.image_template
+        
+# ------------------------------------------------------------------------------       
+class SearchingGUI(QDialog):
 
+    def __init__(self, parent=None):
+        super(SearchGUI, self).__init__(parent)
+        
+        main_layout = QVBoxLayout()
+        self.windowTitle('Search')
+        
+        #Add path line input and button
+        path_label = QLabel('Searching for images...')
+        self.progressBar = QProgressBar()
+        
+        self.progressBar.setMaximum(10)
+        
+    def setProgressBar(self, value):
+        self.progressBar.setValue(value)
+        
+    def updateProgressBar(self):
+        current_value = self.progressBar.currentValue()
+        
 # ------------------------------------------------------------------------------        
 def importImages():
     "Import images using template given and rename layers to match file image names"
@@ -299,7 +321,7 @@ def importImages():
         return
 
     #Create dialog and return inputs
-    dialog = importImagesGUI()
+    dialog = ImportImagesGUI()
     if dialog.exec_():
         import_template = dialog.returnImportTemplate()
         channel_res = dialog.returnChannelResOption()
