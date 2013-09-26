@@ -168,35 +168,14 @@ class ImportImagesGUI(QDialog):
                 i = self.template_no_token.index(item)
                 self.template_no_token.pop(i)
         
-        #Get list of files in directory and check that type given matches files
-        self.file_dict = {}
-        self.file_path_dict = {}
-        try:
-            search = SearchingGUI()
-            search.show()
-            for root, subdirs, files in os.walk(file_path):
-                for file in files:
-                    search.updateProgressBar()
-                    if file.lower().endswith(type):
-                        found = False
-                        if len(self.template_no_token) > 0:
-                            for item in self.template_no_token:
-                                if item in file:
-                                    found = True
-                                else:
-                                    pass
-                        else:
-                            found = True
-                        if found:
-                            self.file_dict[file] = os.path.abspath(os.path.join(root, file))
-                            self.file_path_dict[file] = os.path.abspath(root)
-            if len(self.file_dict) == 0:
-                search.reject()
-                mari.utils.message('No files match import template %s' %self.import_template.text)
-                return
-            search.reject()
-        except:
-            raise
+        #Create searching dialog and return values if it completes its search
+        search = SearchingGUI(file_path, type, self.template_no_token)
+        if search.exec_():
+            self.file_dict = search.getFileDict()
+            self.file_path_dict = search.getFilePathDict()
+        else:
+            mari.utils.message('No files match import template %s' %self.import_template.text)
+            return
         
         #Check import_template and image name match
         #Get a list of split image names to compare
@@ -307,12 +286,11 @@ class ImportImagesGUI(QDialog):
 # ------------------------------------------------------------------------------       
 class SearchingGUI(QDialog):
 
-    def __init__(self, parent=None):
+    def __init__(self, file_path, type, template_no_token, parent=None):
         super(SearchingGUI, self).__init__(parent)
         
         main_layout = QVBoxLayout()
         self.setWindowTitle('Search')
-        self.setWindowModality(Qt.WindowModal)
         
         #Add label, progress bar and cancel button
         search_label = QLabel('Searching for images...')
@@ -328,6 +306,47 @@ class SearchingGUI(QDialog):
         main_layout.addWidget(cancel_button)
         
         self.setLayout(main_layout)
+        
+        #Start searching for files
+        if self.search(file_path, type, template_no_token):
+            QDialog.accept(self)
+        else:
+            QDialog.reject(self)
+        
+    def search(self, file_path, type, template_no_token):
+        #Get list of files in directory and check that type given matches files
+        self.file_dict = {}
+        self.file_path_dict = {}
+        try:
+            for root, subdirs, files in os.walk(file_path):
+                for file in files:
+                    self.updateProgressBar()
+                    if file.lower().endswith(type):
+                        found = False
+                        if len(template_no_token) > 0:
+                            for item in template_no_token:
+                                if item in file:
+                                    found = True
+                                else:
+                                    pass
+                        else:
+                            found = True
+                        if found:
+                            self.file_dict[file] = os.path.abspath(os.path.join(root, file))
+                            self.file_path_dict[file] = os.path.abspath(root)
+        except:
+            raise
+        
+        if len(self.file_dict) == 0:
+            return False
+        else:
+            return True
+
+    def getFileDict(self):
+        return self.file_dict
+        
+    def getFilePathDict(self):
+        return self.file_path_dict
         
     def setProgressBar(self, value):
         self.progressBar.setValue(value)
