@@ -25,7 +25,7 @@
 
 import mari, os
 from PythonQt.QtGui import *
-from PythonQt.QtCore import *
+from PythonQt.QtCore import QRegExp
 
 version = "0.01"
 image_file_types = ['.bmp', '.jpg', '.jpeg', '.png', '.ppm', '.psd', '.tga', '.tif', '.tiff', '.xbm', '.xpm', '.exr']
@@ -35,11 +35,10 @@ channel_bit_depth_options = ['8', '16', '32']
 layer_import_options = ['Update', 'Create New', 'Skip']
 resize_options = ['Patch', 'Image']
 
-# ------------------------------------------------------------------------------ 
-class ImportImagesGUI(QDialog):
+class importImagesGUI(QDialog):
     
     def __init__(self, parent=None):
-        super(ImportImagesGUI, self).__init__(parent)
+        super(importImagesGUI, self).__init__(parent)
         
         main_layout = QVBoxLayout()
         path_layout = QGridLayout()
@@ -130,16 +129,16 @@ class ImportImagesGUI(QDialog):
         #Check path provided exists
         file_path = os.path.abspath(self.path.text)
         if file_path == '':
-            mari.utils.message('Must provide a valid directory.')
+            mari.utils.message('Please provide a valid directory.')
             return
         if not os.path.exists(file_path):
-            mari.utils.message('Must provide a valid directory.')
+            mari.utils.message('Please provide a valid directory.')
             return
             
         #Check import template has supported image file type extension
         import_template = self.import_template.text
         if import_template == '':
-            mari.utils.message('Must provide import template.')
+            mari.utils.message('Please provide import template.')
             return
         type_found = False
         for type in image_file_types:
@@ -168,14 +167,40 @@ class ImportImagesGUI(QDialog):
                 i = self.template_no_token.index(item)
                 self.template_no_token.pop(i)
         
-        #Create searching dialog and return values if it completes its search
-        search = SearchingGUI(file_path, type, self.template_no_token)
-        if search.exec_():
-            self.file_dict = search.getFileDict()
-            self.file_path_dict = search.getFilePathDict()
-        else:
+        #Get list of files in directory and check that type given matches files
+        searching = SearchingGUI()
+        searching.show()
+        self.file_dict = {}
+        self.file_path_dict = {}
+        try:
+            for root, subdirs, files in os.walk(file_path):
+                for file in files:
+                    if not searching.getRejected():
+                        searching.updateProgressBar()
+                        if file.lower().endswith(type):
+                            found = False
+                            if len(self.template_no_token) > 0:
+                                for item in self.template_no_token:
+                                    if item in file:
+                                        found = True
+                                    else:
+                                        pass
+                            else:
+                                found = True
+                            if found:
+                                self.file_dict[file] = os.path.abspath(os.path.join(root, file))
+                                self.file_path_dict[file] = os.path.abspath(root)
+                    else:
+                        searching.reject()
+                        mari.utils.message('Searching for files cancelled.')
+                        return
+        except:
+            raise
+        searching.reject()
+        if len(self.file_dict) == 0:
             mari.utils.message('No files match import template %s' %self.import_template.text)
             return
+        
         
         #Check import_template and image name match
         #Get a list of split image names to compare
@@ -186,8 +211,11 @@ class ImportImagesGUI(QDialog):
         for file in image_names:
             if not spliter == '':
                 self.split_names[file] = image_names[file].split(spliter)
-            else:
+            elif file == self.import_template.text:
                 self.split_names[file] = image_names[file]
+        if len(self.split_names) == 0:
+            mari.utils.message('No files match import template %s' %self.import_template.text)
+            return
         self.match_image_template = {}
         self.image_template = []
         self.file_names_short = []
@@ -208,7 +236,10 @@ class ImportImagesGUI(QDialog):
                         pass
                     else:
                         self.image_template.append(tuple(copy_split_names))
-                self.match_image_template[file] = self.split_names[file]
+                else:
+                    self.file_names_short.append(file)
+                    self.file_names_long.append(file)
+                    self.match_image_template[file] = self.split_names[file]
         if len(self.match_image_template) == 0:
             mari.utils.misc.message('Import template and image name(s) do not match')
             return
@@ -239,8 +270,7 @@ class ImportImagesGUI(QDialog):
         for name in self.file_names_long:
             if name in self.file_path_dict:
                 self.file_paths.append(self.file_path_dict[name])
-        
-        #Accept the inputs and close the dialog
+
         self.accept()
         
     def returnImportTemplate(self):
@@ -282,24 +312,26 @@ class ImportImagesGUI(QDialog):
         
     def returnImageTemplate(self):
         return self.image_template
-        
+
 # ------------------------------------------------------------------------------       
 class SearchingGUI(QDialog):
 
-    def __init__(self, file_path, type, template_no_token, parent=None):
+    def __init__(self, parent=None):
         super(SearchingGUI, self).__init__(parent)
         
-        main_layout = QVBoxLayout()
+        self.setModal(True)
         self.setWindowTitle('Search')
+        main_layout = QVBoxLayout()
         
         #Add label, progress bar and cancel button
         search_label = QLabel('Searching for images...')
         self.progressBar = QProgressBar()
-        self.progressBar.setMaximum(100)
+        self.progressBar.setMaximum(0)
         self.progressBar.setTextVisible(False)
         cancel_button = QPushButton("Cancel")
         #Connect cancel button clicked to reject the GUI
-        cancel_button.connect("clicked()", self.reject)
+        cancel_button.connect("clicked()", self.setRejected)
+        self.rejected_status = False
         
         main_layout.addWidget(search_label)
         main_layout.addWidget(self.progressBar)
@@ -307,56 +339,22 @@ class SearchingGUI(QDialog):
         
         self.setLayout(main_layout)
         
-        #Start searching for files
-        if self.search(file_path, type, template_no_token):
-            QDialog.accept(self)
-        else:
-            QDialog.reject(self)
+    def setRejected(self):
+        self.rejected_status = True
         
-    def search(self, file_path, type, template_no_token):
-        #Get list of files in directory and check that type given matches files
-        self.file_dict = {}
-        self.file_path_dict = {}
-        try:
-            for root, subdirs, files in os.walk(file_path):
-                for file in files:
-                    self.updateProgressBar()
-                    if file.lower().endswith(type):
-                        found = False
-                        if len(template_no_token) > 0:
-                            for item in template_no_token:
-                                if item in file:
-                                    found = True
-                                else:
-                                    pass
-                        else:
-                            found = True
-                        if found:
-                            self.file_dict[file] = os.path.abspath(os.path.join(root, file))
-                            self.file_path_dict[file] = os.path.abspath(root)
-        except:
-            raise
-        
-        if len(self.file_dict) == 0:
-            return False
-        else:
-            return True
-
-    def getFileDict(self):
-        return self.file_dict
-        
-    def getFilePathDict(self):
-        return self.file_path_dict
+    def getRejected(self):
+        return self.rejected_status
         
     def setProgressBar(self, value):
         self.progressBar.setValue(value)
+        QApplication.processEvents()
         
     def updateProgressBar(self):
         current_value = self.progressBar.value
         if current_value < 100:
             self.setProgressBar(current_value + 1)
         else:
-            self.setProgressBar(0)
+            self.setProgressBar(0)        
         
 # ------------------------------------------------------------------------------        
 def importImages():
@@ -365,7 +363,7 @@ def importImages():
         return
 
     #Create dialog and return inputs
-    dialog = ImportImagesGUI()
+    dialog = importImagesGUI()
     if dialog.exec_():
         import_template = dialog.returnImportTemplate()
         channel_res = dialog.returnChannelResOption()
