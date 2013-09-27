@@ -1,6 +1,6 @@
 # ------------------------------------------------------------------------------
 # ------------------------------------------------------------------------------
-# Import selected images into layer or channel and rename layer/channel to match image name
+# Import images into geo layer or channel and rename layer/channel to match image name
 # coding: utf-8
 # Written by Jorel Latraille
 # ------------------------------------------------------------------------------

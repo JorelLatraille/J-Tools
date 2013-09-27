@@ -29,11 +29,14 @@ version = "0.03"
 
 # ------------------------------------------------------------------------------
 # Use from and import, to import the main function from the module
+from action_path_finder import actionPathFinder
 from batch_archive import batchArchive
+from class_method_finder import classMethodFinder
 from convert_mask_color_to_scalar import convertMaskColorToScalar
 from convert_to_paintable import convertToPaintable
 from copy_channels import copyChannels
 from copy_udim_to_udim import showUI as copyUdimToUdim
+from export_image_manager_images import exportImageManagerImages
 from export_images_flattened import exportImagesFlattened
 from export_selected_channels import showUI as exportSelectedChannels
 from export_uv_masks import exportUVMasks
@@ -47,11 +50,14 @@ from tools_update import update
 
 # ------------------------------------------------------------------------------
 # Only del the module name if you dont wish users to have access to its other functions
+del action_path_finder
 del batch_archive
+del class_method_finder
 del convert_mask_color_to_scalar
 del convert_to_paintable
 del copy_channels
 del copy_udim_to_udim
+del export_image_manager_images
 del export_images_flattened
 del export_selected_channels
 del export_uv_masks

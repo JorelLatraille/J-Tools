@@ -1,6 +1,6 @@
 # ------------------------------------------------------------------------------
 # ------------------------------------------------------------------------------
-# Export UV Masks for selected geo
+# Export selected Image Manager images in your specified file type
 # coding: utf-8
 # Written by Jorel Latraille
 # ------------------------------------------------------------------------------
