@@ -40,6 +40,7 @@ from export_image_manager_images import exportImageManagerImages
 from export_images_flattened import exportImagesFlattened
 from export_selected_channels import showUI as exportSelectedChannels
 from export_uv_masks import exportUVMasks
+from flatten_selected_channels import flattenSelectedChannels
 from import_images import importImages
 from layer_visibility import layerVisibility
 from resize_channels import showUI as resizeChannels
@@ -61,6 +62,7 @@ del export_image_manager_images
 del export_images_flattened
 del export_selected_channels
 del export_uv_masks
+del flatten_selected_channels
 del import_images
 del layer_visibility
 del resize_channels
