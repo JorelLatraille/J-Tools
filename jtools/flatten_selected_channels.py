@@ -26,13 +26,13 @@
 import mari
 from PythonQt.QtGui import *
 
-version = "0.01"
+version = "0.02"
 
 USER_ROLE = 32          # PythonQt.Qt.UserRole
 
 # ------------------------------------------------------------------------------       
 class FlattenSelectedChannelsGUI(QDialog):
-    "Create main UI"
+    "Create main UI."
     def __init__(self, parent=None):
         super(FlattenSelectedChannelsGUI, self).__init__(parent)
 
@@ -43,7 +43,7 @@ class FlattenSelectedChannelsGUI(QDialog):
         #Create layout for middle section
         centre_layout = QHBoxLayout()
         
-        #Create channels layout, label, and widget. Finally populate.
+        #Create channel layout, label, and widget. Finally populate.
         channel_layout = QVBoxLayout()
         channel_header_layout = QHBoxLayout()
         channel_label = QLabel("Channels")
@@ -51,9 +51,11 @@ class FlattenSelectedChannelsGUI(QDialog):
         channel_list = QListWidget()
         channel_list.setSelectionMode(channel_list.ExtendedSelection)
         
+        #Create filter box for channel list
         channel_filter_box = QLineEdit()
         mari.utils.connect(channel_filter_box.textEdited, lambda: updateChannelFilter(channel_filter_box, channel_list))
         
+        #Create layout and icon/label for channel filter
         channel_header_layout.addWidget(channel_label)
         channel_header_layout.addStretch()
         channel_search_icon = QLabel()
@@ -62,6 +64,7 @@ class FlattenSelectedChannelsGUI(QDialog):
         channel_header_layout.addWidget(channel_search_icon)
         channel_header_layout.addWidget(channel_filter_box)
         
+        #Populate geo : channel list widget
         geo_list = mari.geo.list()
         chan_list = []
         for geo in geo_list:
@@ -71,6 +74,7 @@ class FlattenSelectedChannelsGUI(QDialog):
                 channel_list.addItem(item[0] + ' : ' + channel.name())
                 channel_list.item(channel_list.count - 1).setData(USER_ROLE, channel)
         
+        #Add filter layout and channel list to channel layout
         channel_layout.addLayout(channel_header_layout)
         channel_layout.addWidget(channel_list)
         
@@ -91,9 +95,11 @@ class FlattenSelectedChannelsGUI(QDialog):
         self.flatten_list = ChannelsToFlattenList()
         self.flatten_list.setSelectionMode(self.flatten_list.ExtendedSelection)
         
+        #Create filter box for flatten list
         flatten_filter_box = QLineEdit()
         mari.utils.connect(flatten_filter_box.textEdited, lambda: updateFlattenFilter(flatten_filter_box, self.flatten_list))
         
+        #Create layout and icon/label for flatten filter
         flatten_header_layout.addWidget(flatten_label)
         flatten_header_layout.addStretch()
         flatten_search_icon = QLabel()
@@ -101,6 +107,7 @@ class FlattenSelectedChannelsGUI(QDialog):
         flatten_header_layout.addWidget(flatten_search_icon)
         flatten_header_layout.addWidget(flatten_filter_box)
         
+        #Add filter layout and flatten list to flatten layout
         flatten_layout.addLayout(flatten_header_layout)
         flatten_layout.addWidget(self.flatten_list)
         
@@ -121,6 +128,7 @@ class FlattenSelectedChannelsGUI(QDialog):
         button_layout.addWidget(ok_button)
         button_layout.addWidget(cancel_button)
         
+        #Hook up OK/Cancel button clicked signal to accept/reject slot
         ok_button.connect("clicked()", self.accept)
         cancel_button.connect("clicked()", self.reject)
         
@@ -178,7 +186,7 @@ def updateChannelFilter(channel_filter_box, channel_list):
         
 # ------------------------------------------------------------------------------
 def updateFlattenFilter(flatten_filter_box, flatten_list):
-    "For each item in the channel list display, set it to hidden if it doesn't match the filter text."
+    "For each item in the flatten list display, set it to hidden if it doesn't match the filter text."
     match_words = flatten_filter_box.text.lower().split()
     for item_index in range(flatten_list.count):
         item = flatten_list.item(item_index)
@@ -218,7 +226,7 @@ def isProjectSuitable():
 
 # ------------------------------------------------------------------------------                  
 def flattenSelectedChannels():
-    "Duplicate and flatten selected channels"
+    "Duplicate and flatten selected channels."
     if not isProjectSuitable():
         return
     
@@ -228,9 +236,12 @@ def flattenSelectedChannels():
         channels_to_flatten = dialog.getChannelsToFlatten()
         
         for channel in channels_to_flatten:
+            orig_name = channel.name()
             geo = channel.geoEntity()
-            geo.createDuplicateChannel(channel, channel.name() + '_copy')
-            channel.flatten()
+            flatten_channel = geo.createDuplicateChannel(channel, channel.name() + '_flatten')
+            flatten_channel.flatten()
+            channel.setName(channel.name() + '_original')
+            flatten_channel.setName(orig_name)
     
 # ------------------------------------------------------------------------------            
 if __name__ == "__main__":
