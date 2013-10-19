@@ -46,23 +46,23 @@ class ExportSelectedChannelsGUI(QDialog):
         #Create channel layout, label, and widget. Finally populate.
         channel_layout = QVBoxLayout()
         channel_header_layout = QHBoxLayout()
-        channel_label = QLabel("Channels")
-        setBold(channel_label)
-        channel_list = QListWidget()
-        channel_list.setSelectionMode(channel_list.ExtendedSelection)
+        self.channel_label = QLabel("Channels")
+        setBold(self.channel_label)
+        self.channel_list = QListWidget()
+        self.channel_list.setSelectionMode(self.channel_list.ExtendedSelection)
         
         #Create filter box for channel list
-        channel_filter_box = QLineEdit()
-        mari.utils.connect(channel_filter_box.textEdited, lambda: updateChannelFilter(channel_filter_box, channel_list))
+        self.channel_filter_box = QLineEdit()
+        mari.utils.connect(self.channel_filter_box.textEdited, lambda: updateChannelFilter(self.channel_filter_box, self.channel_list))
         
         #Create layout and icon/label for channel filter
-        channel_header_layout.addWidget(channel_label)
+        channel_header_layout.addWidget(self.channel_label)
         channel_header_layout.addStretch()
-        channel_search_icon = QLabel()
+        self.channel_search_icon = QLabel()
         search_pixmap = QPixmap(mari.resources.path(mari.resources.ICONS) + '/Lookup.png')
-        channel_search_icon.setPixmap(search_pixmap)
-        channel_header_layout.addWidget(channel_search_icon)
-        channel_header_layout.addWidget(channel_filter_box)
+        self.channel_search_icon.setPixmap(search_pixmap)
+        channel_header_layout.addWidget(self.channel_search_icon)
+        channel_header_layout.addWidget(self.channel_filter_box)
         
         #Populate geo : channel list widget
         geo_list = mari.geo.list()
@@ -71,99 +71,67 @@ class ExportSelectedChannelsGUI(QDialog):
             chan_list.append((geo.name(), geo.channelList()))
         for item in chan_list:
             for channel in item[1]:
-                channel_list.addItem(item[0] + ' : ' + channel.name())
-                channel_list.item(channel_list.count - 1).setData(USER_ROLE, channel)
+                self.channel_list.addItem(item[0] + ' : ' + channel.name())
+                self.channel_list.item(self.channel_list.count - 1).setData(USER_ROLE, channel)
         
         #Add filter layout and channel list to channel layout
         channel_layout.addLayout(channel_header_layout)
-        channel_layout.addWidget(channel_list)
+        channel_layout.addWidget(self.channel_list)
         
         #Create middle button section
         middle_button_layout = QVBoxLayout()
-        add_button = QPushButton("+")
-        remove_button = QPushButton("-")
+        self.add_button = QPushButton("+")
+        self.remove_button = QPushButton("-")
         middle_button_layout.addStretch()
-        middle_button_layout.addWidget(add_button)
-        middle_button_layout.addWidget(remove_button)
+        middle_button_layout.addWidget(self.add_button)
+        middle_button_layout.addWidget(self.remove_button)
         middle_button_layout.addStretch()
         
         #Add wrapped QListWidget with custom functions
         export_layout = QVBoxLayout()
         export_header_layout = QHBoxLayout()
-        export_label = QLabel("Channels To Export")
-        setBold(export_label)
+        self.export_label = QLabel("Channels To Export")
+        setBold(self.export_label)
         self.export_list = ChannelsToExportList()
         self.export_list.setSelectionMode(self.export_list.ExtendedSelection)
         
         #Create filter box for export list
-        export_filter_box = QLineEdit()
-        mari.utils.connect(export_filter_box.textEdited, lambda: updateExportFilter(export_filter_box, self.export_list))
+        self.export_filter_box = QLineEdit()
+        mari.utils.connect(self.export_filter_box.textEdited, lambda: updateExportFilter(self.export_filter_box, self.export_list))
         
         #Create layout and icon/label for export filter
-        export_header_layout.addWidget(export_label)
+        export_header_layout.addWidget(self.export_label)
         export_header_layout.addStretch()
-        export_search_icon = QLabel()
-        export_search_icon.setPixmap(search_pixmap)
-        export_header_layout.addWidget(export_search_icon)
-        export_header_layout.addWidget(export_filter_box)
+        self.export_search_icon = QLabel()
+        self.export_search_icon.setPixmap(search_pixmap)
+        export_header_layout.addWidget(self.export_search_icon)
+        export_header_layout.addWidget(self.export_filter_box)
         
         #Add filter layout and export list to export layout
         export_layout.addLayout(export_header_layout)
         export_layout.addWidget(self.export_list)
         
         #Hook up add/remove buttons
-        remove_button.connect("clicked()", self.export_list.removeChannels)
-        add_button.connect("clicked()", lambda: self.export_list.addChannels(channel_list))
+        self.remove_button.connect("clicked()", self.export_list.removeChannels)
+        self.add_button.connect("clicked()", lambda: self.export_list.addChannels(self.channel_list))
 
         #Add widgets to top layout
         top_layout.addLayout(channel_layout)
         top_layout.addLayout(middle_button_layout)
         top_layout.addLayout(export_layout)
         
-        #Create button layout and hook them up
-        button_layout = QHBoxLayout()
-        ok_button = QPushButton("&OK")
-        cancel_button = QPushButton("&Cancel")
-        button_layout.addStretch()
-        button_layout.addWidget(ok_button)
-        button_layout.addWidget(cancel_button)
-        
-        #Hook up OK/Cancel button clicked signal to accept/reject slot
-        ok_button.connect("clicked()", self.accept)
-        cancel_button.connect("clicked()", self.reject)
-        
         #Add layouts to main layout and dialog
         main_layout.addLayout(top_layout)
-        main_layout.addLayout(button_layout)
-        
-    def getChannelsToExport(self):
-        return self.export_list.currentChannels()
     
 # -----------------------------------------------------------------------------------------------------    
     
         #Add middle layout.
         middle_layout = QHBoxLayout()
-        export_everything_box = QCheckBox('Export Everything')
-        export_everything_box.connect("clicked()", lambda: exportEverything())
-
-    #Hide parts of interface if export everything is ticked
-    def exportEverything():
-        _bool = export_everything_box.isChecked()
-        #geometry_label.setHidden(_bool)
-        #geometry_search_icon.setHidden(_bool)
-        #filter_geometry_box.setHidden(_bool)
-        #geometry_list.setHidden(_bool)
-        #channel_label.setHidden(_bool)
-        #channel_search_icon.setHidden(_bool)
-        #filter_channel_box.setHidden(_bool)
-        #channel_list.setHidden(_bool)
-        #add_channel_button.setHidden(_bool)
-        #remove_channel_button.setHidden(_bool)
-        #channels_to_export_label.setHidden(_bool)
-        #channels_to_export_widget.setHidden(_bool)
+        self.export_everything_box = QCheckBox('Export Everything')
+        self.export_everything_box.connect("clicked()", lambda: self.exportEverything())
             
         #Add to middle layout    
-        middle_layout.addWidget(export_everything_box)
+        middle_layout.addWidget(self.export_everything_box)
         #Add to main layout
         main_layout.addLayout(middle_layout)
     
@@ -173,23 +141,16 @@ class ExportSelectedChannelsGUI(QDialog):
         #Add path line input and button
         path_label = QLabel('Path:')
         path_line_edit = QLineEdit()
-        path_line_edit.connect("textChanged()", lambda: printPaht())
+        path_line_edit.connect("textChanged()", lambda: self.printPath())
         path_pixmap = QPixmap(mari.resources.path(mari.resources.ICONS) + '/ExportImages.png')
         icon = QIcon(path_pixmap)
         path_button = QPushButton(icon, "")
-        path_button.connect("clicked()", lambda: getPath())
-    
-    def printPath():
-        print path_line_edit.text
-    
-    #Get the path from existing directory
-    def getPath():
-        path = mari.utils.misc.getExistingDirectory(parent=None, caption='Export Path', dir='')
-        if path == "":
-            return False
+        path_button.connect("clicked()", lambda: self.getPath())
         
-        path = os.path.abspath(path)
-        path_line_edit.setText(path)
+        path = mari.resources.path(mari.resources.DEFAULT_EXPORT)
+        template = mari.resources.sequenceTemplate()
+        export_path_template = os.path.join(path, template)
+        path_line_edit.setText(export_path_template)
         
         #Add export option check boxes
         export_flattened_box = QCheckBox('Export Flattened')
@@ -198,8 +159,8 @@ class ExportSelectedChannelsGUI(QDialog):
         #Add OK Cancel buttons layout, buttons and add
         ok_button = QPushButton("OK")
         cancel_button = QPushButton("Cancel")
-        ok_button.connect("clicked()", lambda: compareInput(g_main_window, path_line_edit, export_everything_box, export_flattened_box, export_small_textures_box, channels_to_export_widget))
-        cancel_button.connect("clicked()", g_main_window.reject)
+        ok_button.connect("clicked()", self.accept)
+        cancel_button.connect("clicked()", self.reject)
     
         bottom_layout.addWidget(path_label)
         bottom_layout.addWidget(path_line_edit)
@@ -208,10 +169,36 @@ class ExportSelectedChannelsGUI(QDialog):
         bottom_layout.addWidget(export_small_textures_box)
         bottom_layout.addWidget(ok_button)
         bottom_layout.addWidget(cancel_button)
-    
+
         #Add browse lines to main layout and set layout for dialog
         main_layout.addLayout(bottom_layout)
         self.setLayout(main_layout)
+
+    def getChannelsToExport(self):
+        return self.export_list.currentChannels()
+
+    #Hide parts of interface if export everything is ticked
+    def exportEverything(self):
+        _bool = self.export_everything_box.isChecked()
+        self.channel_label.setHidden(_bool)
+        self.channel_search_icon.setHidden(_bool)
+        self.channel_filter_box.setHidden(_bool)
+        self.channel_list.setHidden(_bool)
+        self.export_label.setHidden(_bool)
+        self.export_search_icon.setHidden(_bool)
+        self.export_filter_box.setHidden(_bool)
+        self.export_list.setHidden(_bool)
+        self.add_button.setHidden(_bool)
+        self.remove_button.setHidden(_bool)
+
+    def printPath(self):
+        print path_line_edit.text
+    
+    #Get the path from existing directory
+    def getPath(self):
+        path = mari.utils.misc.getExistingDirectory(parent=None, caption='Export Path', dir='')
+        if path == "":
+            return False
 
 # ------------------------------------------------------------------------------   
 class ChannelsToExportList(QListWidget):
@@ -377,4 +364,4 @@ def isProjectSuitable():
     
 # ------------------------------------------------------------------------------
 if __name__ == "__main__":
-    showUI()
+    exportSelectedChannels()
