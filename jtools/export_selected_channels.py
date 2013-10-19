@@ -24,186 +24,160 @@
 # ------------------------------------------------------------------------------
 
 import mari, os
-import PythonQt
+from PythonQt.QtGui import *
 
-version = "0.01"
+version = "0.02"
 
-gui = PythonQt.QtGui
-
-USER_ROLE_01 = 34          # PythonQt.Qt.UserRole
-USER_ROLE_02 = 34          # PythonQt.Qt.UserRole
-
-current_geometry = ""
-
-g_esc_window = None
+USER_ROLE = 34          # PythonQt.Qt.UserRole
 
 # ------------------------------------------------------------------------------
-# Create main UI
-# ------------------------------------------------------------------------------
-
-def showUI():
+class ExportSelectedChannelsGUI(QDialog):
     "Export channels from one or more objects."
-    if not isProjectSuitable():
-        return False
-    #Create main dialog, add main layout and set title
-    global g_esc_window
-    g_esc_window = gui.QDialog()
-    ec_layout = gui.QVBoxLayout()
-    g_esc_window.setLayout(ec_layout)
-    g_esc_window.setWindowTitle("Export Channels")
-    
-    #Create layout for top section
-    top_layout = gui.QHBoxLayout()
-    
-    #Create geometrys layout, label, and widget. Finally populate.
-    geometry_layout = gui.QVBoxLayout()
-    geometry_header_layout = gui.QHBoxLayout()
-    geometry_label = gui.QLabel("Geometry")
-    setBold(geometry_label)
-    geometry_list = gui.QListWidget()
-    
-    filter_geometry_box = gui.QLineEdit()
-    mari.utils.connect(filter_geometry_box.textEdited, lambda: updateGeometryFilter(filter_geometry_box, geometry_list))
-    
-    geometry_header_layout.addWidget(geometry_label)
-    geometry_header_layout.addStretch()
-    geometry_search_icon = gui.QLabel()
-    search_pixmap = gui.QPixmap(mari.resources.path(mari.resources.ICONS) + '/Lookup.png')
-    geometry_search_icon.setPixmap(search_pixmap)
-    geometry_header_layout.addWidget(geometry_search_icon)
-    geometry_header_layout.addWidget(filter_geometry_box)
-    
-    geo_list = mari.geo.list()
-    for geometry in geo_list:
-        geometry_list.addItem(geometry.name())
-        geometry_list.item(geometry_list.count - 1).setData(USER_ROLE_01, geometry)
-    
-    #Set the first geometry in the list to selected
-    geometry_list.setCurrentRow(0)
-    
-    geometry_layout.addLayout(geometry_header_layout)
-    geometry_layout.addWidget(geometry_list)
+    def __init__(self, parent=None):
+        super(ExportSelectedChannelsGUI, self).__init__(parent)
 
-# -----------------------------------------------------------------------------------------------------
-    
-    #Create channels layout, label, and widget. Finally populate.
-    channel_layout = gui.QVBoxLayout()
-    channel_header_layout = gui.QHBoxLayout()
-    channel_label = gui.QLabel("Channels")
-    setBold(channel_label)
-    channel_list = gui.QListWidget()
-    channel_list.setSelectionMode(channel_list.ExtendedSelection)
-       
-    filter_channel_box = gui.QLineEdit()
-    mari.utils.connect(filter_channel_box.textEdited, lambda: updateChannelFilter(filter_channel_box, channel_list))
+        #Set window title and create a main layout
+        self.setWindowTitle("Export Selected Channels")
+        main_layout = QVBoxLayout()
         
-    channel_header_layout.addWidget(channel_label)
-    channel_header_layout.addStretch()
-    channel_search_icon = gui.QLabel()
-    search_pixmap = gui.QPixmap(mari.resources.path(mari.resources.ICONS) + '/Lookup.png')
-    channel_search_icon.setPixmap(search_pixmap)
-    channel_header_layout.addWidget(channel_search_icon)
-    channel_header_layout.addWidget(filter_channel_box)
-    
-    def channelList(channels):
-        channel_list.clear()
-        for channel in channels:
-            channel_list.addItem(channel.name())
-            channel_list.item(channel_list.count - 1).setData(USER_ROLE_02, channel)
+        #Create layout for middle section
+        top_layout = QHBoxLayout()
         
-    channel_layout.addLayout(channel_header_layout)
-    channel_layout.addWidget(channel_list)    
-
-# -----------------------------------------------------------------------------------------------------    
-    
-    #Create middle button section
-    middle_right_button_layout = gui.QVBoxLayout()
-    add_channel_button = gui.QPushButton("+")
-    remove_channel_button = gui.QPushButton("-")
-    middle_right_button_layout.addStretch()
-    middle_right_button_layout.addWidget(add_channel_button)
-    middle_right_button_layout.addWidget(remove_channel_button)
-    middle_right_button_layout.addStretch()
-    
-    #Add wrapped gui.QListWidget with custom functions
-    channels_to_export_layout = gui.QVBoxLayout()
-    channels_to_export_label = gui.QLabel("Channels To Export")
-    setBold(channels_to_export_label)
-    channels_to_export_widget = ChannelsToExportList()
-    channels_to_export_layout.addWidget(channels_to_export_label)
-    channels_to_export_layout.addWidget(channels_to_export_widget)
-    
-    #Hook up add/remove buttons
-    remove_channel_button.connect("clicked()", channels_to_export_widget.removeChannels)
-    add_channel_button.connect("clicked()", lambda: channels_to_export_widget.addChannels(channel_list))
-
-    #Add widgets to top layout
-    top_layout.addLayout(geometry_layout)
-    top_layout.addLayout(channel_layout)
-    top_layout.addLayout(middle_right_button_layout)
-    top_layout.addLayout(channels_to_export_layout)
-
-    #Add top layout to main layout
-    ec_layout.addLayout(top_layout)    
-    
-# -----------------------------------------------------------------------------------------------------    
-    
-    #Connect the geomtry_list item changed signal to currentGeometry function, this is to refresh the channel list
-    geo_object = geometry_list.item(geometry_list.count - 1)
-    geometry_list.connect("itemSelectionChanged()", lambda: getCurrentGeometry(geometry_list))
-    
-    #Get the current selected geometry from the list
-    def getCurrentGeometry(geometry_list):
-        global current_geometry
-        index = geometry_list.currentIndex().row()
-        object = geometry_list.item(index)
-        geometry = object.data(USER_ROLE_01)
-        current_geometry = geometry.name()
-        channels = geometry.channelList()
-        channelList(channels)
+        #Create channel layout, label, and widget. Finally populate.
+        channel_layout = QVBoxLayout()
+        channel_header_layout = QHBoxLayout()
+        channel_label = QLabel("Channels")
+        setBold(channel_label)
+        channel_list = QListWidget()
+        channel_list.setSelectionMode(channel_list.ExtendedSelection)
         
-    #Start the geometry selection channel return
-    getCurrentGeometry(geometry_list)
+        #Create filter box for channel list
+        channel_filter_box = QLineEdit()
+        mari.utils.connect(channel_filter_box.textEdited, lambda: updateChannelFilter(channel_filter_box, channel_list))
+        
+        #Create layout and icon/label for channel filter
+        channel_header_layout.addWidget(channel_label)
+        channel_header_layout.addStretch()
+        channel_search_icon = QLabel()
+        search_pixmap = QPixmap(mari.resources.path(mari.resources.ICONS) + '/Lookup.png')
+        channel_search_icon.setPixmap(search_pixmap)
+        channel_header_layout.addWidget(channel_search_icon)
+        channel_header_layout.addWidget(channel_filter_box)
+        
+        #Populate geo : channel list widget
+        geo_list = mari.geo.list()
+        chan_list = []
+        for geo in geo_list:
+            chan_list.append((geo.name(), geo.channelList()))
+        for item in chan_list:
+            for channel in item[1]:
+                channel_list.addItem(item[0] + ' : ' + channel.name())
+                channel_list.item(channel_list.count - 1).setData(USER_ROLE, channel)
+        
+        #Add filter layout and channel list to channel layout
+        channel_layout.addLayout(channel_header_layout)
+        channel_layout.addWidget(channel_list)
+        
+        #Create middle button section
+        middle_button_layout = QVBoxLayout()
+        add_button = QPushButton("+")
+        remove_button = QPushButton("-")
+        middle_button_layout.addStretch()
+        middle_button_layout.addWidget(add_button)
+        middle_button_layout.addWidget(remove_button)
+        middle_button_layout.addStretch()
+        
+        #Add wrapped QListWidget with custom functions
+        export_layout = QVBoxLayout()
+        export_header_layout = QHBoxLayout()
+        export_label = QLabel("Channels To Export")
+        setBold(export_label)
+        self.export_list = ChannelsToExportList()
+        self.export_list.setSelectionMode(self.export_list.ExtendedSelection)
+        
+        #Create filter box for export list
+        export_filter_box = QLineEdit()
+        mari.utils.connect(export_filter_box.textEdited, lambda: updateExportFilter(export_filter_box, self.export_list))
+        
+        #Create layout and icon/label for export filter
+        export_header_layout.addWidget(export_label)
+        export_header_layout.addStretch()
+        export_search_icon = QLabel()
+        export_search_icon.setPixmap(search_pixmap)
+        export_header_layout.addWidget(export_search_icon)
+        export_header_layout.addWidget(export_filter_box)
+        
+        #Add filter layout and export list to export layout
+        export_layout.addLayout(export_header_layout)
+        export_layout.addWidget(self.export_list)
+        
+        #Hook up add/remove buttons
+        remove_button.connect("clicked()", self.export_list.removeChannels)
+        add_button.connect("clicked()", lambda: self.export_list.addChannels(channel_list))
+
+        #Add widgets to top layout
+        top_layout.addLayout(channel_layout)
+        top_layout.addLayout(middle_button_layout)
+        top_layout.addLayout(export_layout)
+        
+        #Create button layout and hook them up
+        button_layout = QHBoxLayout()
+        ok_button = QPushButton("&OK")
+        cancel_button = QPushButton("&Cancel")
+        button_layout.addStretch()
+        button_layout.addWidget(ok_button)
+        button_layout.addWidget(cancel_button)
+        
+        #Hook up OK/Cancel button clicked signal to accept/reject slot
+        ok_button.connect("clicked()", self.accept)
+        cancel_button.connect("clicked()", self.reject)
+        
+        #Add layouts to main layout and dialog
+        main_layout.addLayout(top_layout)
+        main_layout.addLayout(button_layout)
+        
+    def getChannelsToExport(self):
+        return self.export_list.currentChannels()
     
 # -----------------------------------------------------------------------------------------------------    
     
-    #Add middle layout.
-    middle_layout = gui.QHBoxLayout()
-    export_everything_box = gui.QCheckBox('Export Everything')
-    export_everything_box.connect("clicked()", lambda: exportEverything())
+        #Add middle layout.
+        middle_layout = QHBoxLayout()
+        export_everything_box = QCheckBox('Export Everything')
+        export_everything_box.connect("clicked()", lambda: exportEverything())
 
     #Hide parts of interface if export everything is ticked
     def exportEverything():
         _bool = export_everything_box.isChecked()
-        geometry_label.setHidden(_bool)
-        geometry_search_icon.setHidden(_bool)
-        filter_geometry_box.setHidden(_bool)
-        geometry_list.setHidden(_bool)
-        channel_label.setHidden(_bool)
-        channel_search_icon.setHidden(_bool)
-        filter_channel_box.setHidden(_bool)
-        channel_list.setHidden(_bool)
-        add_channel_button.setHidden(_bool)
-        remove_channel_button.setHidden(_bool)
-        channels_to_export_label.setHidden(_bool)
-        channels_to_export_widget.setHidden(_bool)
+        #geometry_label.setHidden(_bool)
+        #geometry_search_icon.setHidden(_bool)
+        #filter_geometry_box.setHidden(_bool)
+        #geometry_list.setHidden(_bool)
+        #channel_label.setHidden(_bool)
+        #channel_search_icon.setHidden(_bool)
+        #filter_channel_box.setHidden(_bool)
+        #channel_list.setHidden(_bool)
+        #add_channel_button.setHidden(_bool)
+        #remove_channel_button.setHidden(_bool)
+        #channels_to_export_label.setHidden(_bool)
+        #channels_to_export_widget.setHidden(_bool)
             
-    #Add to middle layout    
-    middle_layout.addWidget(export_everything_box)
-    #Add to main layout
-    ec_layout.addLayout(middle_layout)
+        #Add to middle layout    
+        middle_layout.addWidget(export_everything_box)
+        #Add to main layout
+        main_layout.addLayout(middle_layout)
     
-    #Add bottom layout.
-    bottom_layout = gui.QHBoxLayout()
+        #Add bottom layout.
+        bottom_layout = QHBoxLayout()
     
-    #Add path line input and button
-    path_label = gui.QLabel('Path:')
-    path_line_edit = gui.QLineEdit()
-    path_line_edit.connect("textChanged()", lambda: printPaht())
-    path_pixmap = gui.QPixmap(mari.resources.path(mari.resources.ICONS) + '/ExportImages.png')
-    icon = gui.QIcon(path_pixmap)
-    path_button = gui.QPushButton(icon, "")
-    path_button.connect("clicked()", lambda: getPath())
+        #Add path line input and button
+        path_label = QLabel('Path:')
+        path_line_edit = QLineEdit()
+        path_line_edit.connect("textChanged()", lambda: printPaht())
+        path_pixmap = QPixmap(mari.resources.path(mari.resources.ICONS) + '/ExportImages.png')
+        icon = QIcon(path_pixmap)
+        path_button = QPushButton(icon, "")
+        path_button.connect("clicked()", lambda: getPath())
     
     def printPath():
         print path_line_edit.text
@@ -217,30 +191,89 @@ def showUI():
         path = os.path.abspath(path)
         path_line_edit.setText(path)
         
-    #Add export option check boxes
-    export_flattened_box = gui.QCheckBox('Export Flattened')
-    export_small_textures_box = gui.QCheckBox('Small Textures')
+        #Add export option check boxes
+        export_flattened_box = QCheckBox('Export Flattened')
+        export_small_textures_box = QCheckBox('Small Textures')
     
-    #Add OK Cancel buttons layout, buttons and add
-    main_ok_button = gui.QPushButton("OK")
-    main_cancel_button = gui.QPushButton("Cancel")
-    main_ok_button.connect("clicked()", lambda: compareInput(g_esc_window, path_line_edit, export_everything_box, export_flattened_box, export_small_textures_box, channels_to_export_widget))
-    main_cancel_button.connect("clicked()", g_esc_window.reject)
+        #Add OK Cancel buttons layout, buttons and add
+        ok_button = QPushButton("OK")
+        cancel_button = QPushButton("Cancel")
+        ok_button.connect("clicked()", lambda: compareInput(g_main_window, path_line_edit, export_everything_box, export_flattened_box, export_small_textures_box, channels_to_export_widget))
+        cancel_button.connect("clicked()", g_main_window.reject)
     
-    bottom_layout.addWidget(path_label)
-    bottom_layout.addWidget(path_line_edit)
-    bottom_layout.addWidget(path_button)
-    bottom_layout.addWidget(export_flattened_box)
-    bottom_layout.addWidget(export_small_textures_box)
-    bottom_layout.addWidget(main_ok_button)
-    bottom_layout.addWidget(main_cancel_button)
+        bottom_layout.addWidget(path_label)
+        bottom_layout.addWidget(path_line_edit)
+        bottom_layout.addWidget(path_button)
+        bottom_layout.addWidget(export_flattened_box)
+        bottom_layout.addWidget(export_small_textures_box)
+        bottom_layout.addWidget(ok_button)
+        bottom_layout.addWidget(cancel_button)
     
-    #Add browse lines to main layout
-    ec_layout.addLayout(bottom_layout)
+        #Add browse lines to main layout and set layout for dialog
+        main_layout.addLayout(bottom_layout)
+        self.setLayout(main_layout)
+
+# ------------------------------------------------------------------------------   
+class ChannelsToExportList(QListWidget):
+    "Stores a list of operations to perform."
     
-    # Display
-    g_esc_window.show()
+    def __init__(self, title="For Export"):
+        super(ChannelsToExportList, self).__init__()
+        self._title = title
+        self.setSelectionMode(self.ExtendedSelection)
+        
+    def currentChannels(self):
+        return [self.item(index).data(USER_ROLE) for index in range(self.count)]
+        
+    def addChannels(self, channel_list):
+        "Adds an operation from the current selections of channels and directories."
+        selected_items = channel_list.selectedItems()
+        if selected_items == []:
+            mari.utils.message("Please select at least one channel.")
+            return
+        
+        # Add channels that aren't already added
+        current_channels = set(self.currentChannels())
+        for item in selected_items:
+            channel = item.data(USER_ROLE)
+            if channel not in current_channels:
+                current_channels.add(channel)
+                self.addItem(item.text())
+                self.item(self.count - 1).setData(USER_ROLE, channel)
+        
+    def removeChannels(self):
+        "Removes any currently selected operations."
+        for item in reversed(self.selectedItems()):     # reverse so indices aren't modified
+            index = self.row(item)
+            self.takeItem(index)    
+
+# ------------------------------------------------------------------------------
+def updateChannelFilter(channel_filter_box, channel_list):
+    "For each item in the channel list display, set it to hidden if it doesn't match the filter text."
+    match_words = channel_filter_box.text.lower().split()
+    for item_index in range(channel_list.count):
+        item = channel_list.item(item_index)
+        item_text_lower = item.text().lower()
+        matches = all([word in item_text_lower for word in match_words])
+        item.setHidden(not matches)
+        
+# ------------------------------------------------------------------------------
+def updateExportFilter(export_filter_box, export_list):
+    "For each item in the export list display, set it to hidden if it doesn't match the filter text."
+    match_words = export_filter_box.text.lower().split()
+    for item_index in range(export_list.count):
+        item = export_list.item(item_index)
+        item_text_lower = item.text().lower()
+        matches = all([word in item_text_lower for word in match_words])
+        item.setHidden(not matches)
     
+# ------------------------------------------------------------------------------  
+def setBold(widget):
+    "Sets text to bold."
+    font = widget.font
+    font.setWeight(75)
+    widget.setFont(font)
+
 # ------------------------------------------------------------------------------ 
 def exportChannels(g_esc_window, path_line_edit, export_flattened_box, export_small_textures_box, channels_to_export_widget):
     channels = channels_to_export_widget.currentChannels()
@@ -315,66 +348,16 @@ def compareInput(g_esc_window, path_line_edit, export_everything_box, export_fla
             return False
         exportChannels(g_esc_window, path_line_edit, export_flattened_box, export_small_textures_box, channels_to_export_widget)
 
-# ------------------------------------------------------------------------------   
-class ChannelsToExportList(gui.QListWidget):
-    "Stores a list of operations to perform."
-    
-    def __init__(self, title="For Export"):
-        super(ChannelsToExportList, self).__init__()
-        self._title = title
-        self.setSelectionMode(self.ExtendedSelection)
-        
-    def currentChannels(self):
-        return [self.item(index).data(USER_ROLE_02) for index in range(self.count)]
-        
-    def addChannels(self, channel_list):
-        "Adds an operation from the current selections of channels and directories."
-        selected_items = channel_list.selectedItems()
-        if selected_items == []:
-            mari.utils.message("Please select at least one channel.")
-            return
-        
-        # Add channels that aren't already added
-        current_channels = set(self.currentChannels())
-        for item in selected_items:
-            channel = item.data(USER_ROLE_02)
-            if channel not in current_channels:
-                current_channels.add(channel)
-                self.addItem(current_geometry + ":" + channel.name())
-                self.item(self.count - 1).setData(USER_ROLE_02, channel)
-        
-    def removeChannels(self):
-        "Removes any currently selected operations."
-        for item in reversed(self.selectedItems()):     # reverse so indices aren't modified
-            index = self.row(item)
-            self.takeItem(index)    
-    
 # ------------------------------------------------------------------------------
-def updateGeometryFilter(filter_geometry_box, geometry_list):
-    "For each item in the channel list display, set it to hidden if it doesn't match the filter text."
-    match_words = filter_geometry_box.text.lower().split()
-    for item_index in range(geometry_list.count):
-        item = geometry_list.item(item_index)
-        item_text_lower = item.text().lower()
-        matches = all([word in item_text_lower for word in match_words])
-        item.setHidden(not matches)
-
-# ------------------------------------------------------------------------------
-def updateChannelFilter(filter_channel_box, channel_list):
-    "For each item in the channel list display, set it to hidden if it doesn't match the filter text."
-    match_words = filter_channel_box.text.lower().split()
-    for item_index in range(channel_list.count):
-        item = channel_list.item(item_index)
-        item_text_lower = item.text().lower()
-        matches = all([word in item_text_lower for word in match_words])
-        item.setHidden(not matches)
+def exportSelectedChannels():
+    "Export selected channels."
+    if not isProjectSuitable():
+        return
     
-# ------------------------------------------------------------------------------  
-def setBold(widget):
-    "Sets text to bold."
-    font = widget.font
-    font.setWeight(75)
-    widget.setFont(font)
+    #Create dialog and execute accordingly
+    dialog = ExportSelectedChannelsGUI()
+    if dialog.exec_():
+        pass
     
 # ------------------------------------------------------------------------------
 def isProjectSuitable():

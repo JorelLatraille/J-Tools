@@ -104,8 +104,8 @@ def getMatchingLayers(layer_list, criterionFn):
 # ------------------------------------------------------------------------------
 def isProjectSuitable():
     "Checks project state and Mari version."
-    MARI_2_0V1_VERSION_NUMBER = 20101201    # see below
-    if mari.app.version().number() >= MARI_2_0V1_VERSION_NUMBER:
+    MARI_2_5V1_VERSION_NUMBER = 20501300    # see below
+    if mari.app.version().number() >= MARI_2_5V1_VERSION_NUMBER:
         
         if mari.projects.current() is None:
             mari.utils.message("Please open a project before running.")
@@ -128,7 +128,7 @@ def isProjectSuitable():
         return True
         
     else:
-        mari.utils.message("Currently in development this is just a place holder.")
+        mari.utils.message("You can only run this script in Mari 2.5v1 or newer.")
         return False
 
 # ------------------------------------------------------------------------------    

@@ -35,8 +35,9 @@ channel_bit_depth_options = ['8', '16', '32']
 layer_import_options = ['Update', 'Create New', 'Skip']
 resize_options = ['Patch', 'Image']
 
+# ------------------------------------------------------------------------------
 class importImagesGUI(QDialog):
-    
+    "Create ImportImagesGUI"
     def __init__(self, parent=None):
         super(importImagesGUI, self).__init__(parent)
         
@@ -315,7 +316,7 @@ class importImagesGUI(QDialog):
 
 # ------------------------------------------------------------------------------       
 class SearchingGUI(QDialog):
-
+    "Create SearchingGUI"
     def __init__(self, parent=None):
         super(SearchingGUI, self).__init__(parent)
         

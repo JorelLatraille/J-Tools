@@ -39,7 +39,7 @@ from convert_to_paintable import convertToPaintable
 from copy_channels import copyChannels
 from copy_udim_to_udim import showUI as copyUdimToUdim
 from export_image_manager_images import exportImageManagerImages
-from export_selected_channels import showUI as exportSelectedChannels
+from export_selected_channels import exportSelectedChannels
 from export_uv_masks import exportUVMasks
 from flatten_selected_channels import flattenSelectedChannels
 from import_images import importImages
