@@ -29,9 +29,8 @@ import mari, os, shutil
 from inspect import getfile, currentframe
 
 # ------------------------------------------------------------------------------
-def updating():
+def updating(update_path):
     "Update J-Tools with supplied updater, also remove depricated files if they exist"
-    update_path = os.path.dirname(os.path.abspath(getfile(currentframe())))
     scripts_path = os.path.abspath(mari.resources.path(mari.resources.USER_SCRIPTS))
     if not locate("jtools", scripts_path):
         mari.utils.message("Could not find J-Tools script directory.")
@@ -40,17 +39,17 @@ def updating():
     
     source_files = os.listdir(update_path)
     for file_name in source_files:
-        if not filename == "updater.py":
+        if not file_name == "updater.py":
             full_file_name = os.path.join(update_path, file_name)
-        if (os.path.isfile(full_file_name)):
-            shutil.copy(full_file_name, jtools_path)
+            if (os.path.isfile(full_file_name)):
+                shutil.copy(full_file_name, jtools_path)
     
                  #Version 0.01 files to remove
     depricated = os.path.join(jtools_path, "copy_patch_to_patches.py"), os.path.join(jtools_path, "copy_patch_to_patches.pyc"),
-                 #Version 0.03 files to remove
-                 os.path.join(jtools_path, "export_images_flattened.py"), os.path.join(jtools_path, "export_images_flattened.pyc"),
-                 os.path.join(jtools_path, "wip_export_token_images_flattened.py"), os.path.join(jtools_path, "wip_export_token_images_flattened.pyc"),
-                 os.path.join(jtools_path, "updater.py"), os.path.join(jtools_path, "updater.pyc")
+    #Version 0.03 files to remove
+    os.path.join(jtools_path, "export_images_flattened.py"), os.path.join(jtools_path, "export_images_flattened.pyc"),
+    os.path.join(jtools_path, "wip_export_token_images_flattened.py"), os.path.join(jtools_path, "wip_export_token_images_flattened.pyc"),
+    os.path.join(jtools_path, "updater.py"), os.path.join(jtools_path, "updater.pyc")
 
     for file in depricated:
         if os.path.exists(file):
@@ -70,4 +69,4 @@ def locate(pattern, root):
     
 # ------------------------------------------------------------------------------    
 if __name__ == "__main__":
-    updating()
+    updating(update_path)

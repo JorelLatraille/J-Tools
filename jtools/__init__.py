@@ -78,3 +78,12 @@ createJToolsMenu()
 
 del tools_menu
 del createJToolsMenu
+
+import mari, os
+
+scripts_path = os.path.abspath(mari.resources.path(mari.resources.USER_SCRIPTS))
+jtools_path = os.path.join(scripts_path, "jtools")
+depricated = os.path.join(jtools_path, "updater.py"), os.path.join(jtools_path, "updater.pyc")
+for file in depricated:
+    if os.path.exists(file):
+        os.remove(file)

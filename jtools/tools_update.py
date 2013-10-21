@@ -27,24 +27,24 @@
 
 import mari, sys, os
 
-version = "0.01"
+version = "0.02"
 
 def update():
     "Update J-Tools"
     updater_path = mari.utils.misc.getOpenFileName(parent=None, caption='Update J-Tools', dir='', filter='*.py', selected_filter=None, options=0)
     if updater_path == '':
-        return False
-    if not "updater.py" in updater_path:
+        return
+    if not updater_path.endswith("updater.py"):
         mari.utils.message("Please select the updater.py file.")
-        return False
+        return
     else:
-        path = updater_path.replace("updater.py", "")
+        path = (os.path.split(updater_path))[0]
         path = os.path.abspath(path)
         sys.path.append(path)
         from updater import updating
         
-        if updating():
-            mari.utils.message("Update successful.")
+        if updating(path):
+            mari.utils.message("Update successful, please restart Mari.")
         else:
             mari.utils.message("Update was unsuccessful.")
 
