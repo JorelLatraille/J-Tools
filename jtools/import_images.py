@@ -28,6 +28,7 @@ from PythonQt.QtGui import *
 from PythonQt.QtCore import QRegExp
 
 version = "0.01"
+
 image_file_types = ['.bmp', '.jpg', '.jpeg', '.png', '.ppm', '.psd', '.tga', '.tif', '.tiff', '.xbm', '.xpm', '.exr']
 tokens = ['$ENTITY', '$CHANNEL', '$LAYER', '$UDIM']
 channel_resolution_options = ['256', '512', '1024', '2048', '4096', '8192', '16384', '32768']
@@ -490,5 +491,6 @@ def isProjectSuitable():
         mari.utils.message("You can only run this script in Mari 2.0v1 or newer.")
         return False
 
+# ------------------------------------------------------------------------------
 if __name__ == "__main__":
     importImages()

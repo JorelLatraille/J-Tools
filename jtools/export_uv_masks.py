@@ -25,7 +25,7 @@
 
 import mari, PythonQt, os
 
-version = "0.01"
+version = "0.02"
 
 gui = PythonQt.QtGui
 
@@ -34,7 +34,7 @@ USER_ROLE = 32          # PythonQt.Qt.UserRole
 g_eum_window = None
 g_eum_cancelled = False
 directory = ''
-g_file_types = ['bmp', 'jpg', 'jpeg', 'png', 'ppm', 'psd', 'tga', 'tif', 'tiff', 'xbm', 'xpm']
+g_file_types = ['bmp', 'jpg', 'jpeg', 'png', 'ppm', 'psd', 'tga', 'tif', 'tiff', 'xbm', 'xpm', 'exr']
 list.sort(g_file_types)
 
 # ------------------------------------------------------------------------------
@@ -81,6 +81,8 @@ def exportMasks(g_eum_window, q_geo_list, file_type_combo):
             geo.patch(index).setSelected(False)        
             image_list = mari.images.list()
             mari.images.saveImages(image_list[-1:], os.path.join(directory, "%s.mask.%d.%s" %(geo_name, patch, file_type)))
+            index = len(image_list) - 1
+            image_list[index].close()
     mari.utils.message("Export UV Masks Complete.")
 
 # ------------------------------------------------------------------------------

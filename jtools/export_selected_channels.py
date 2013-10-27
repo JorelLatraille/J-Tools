@@ -127,55 +127,53 @@ class ExportSelectedChannelsGUI(QDialog):
     
         #Add middle layout.
         middle_layout = QHBoxLayout()
-        self.export_everything_box = QCheckBox('Export Everything')
-        self.export_everything_box.connect("clicked()", lambda: self.exportEverything())
+
+        #Get mari default path and template
+        path = os.path.abspath(mari.resources.path(mari.resources.DEFAULT_EXPORT))
+        template = mari.resources.sequenceTemplate()
+        export_path_template = os.path.join(path, template)
+
+        #Add path line input and button, also set text to Mari default path and template
+        path_label = QLabel('Path:')
+        self.path_line_edit = QLineEdit()
+        path_pixmap = QPixmap(mari.resources.path(mari.resources.ICONS) + '/ExportImages.png')
+        icon = QIcon(path_pixmap)
+        path_button = QPushButton(icon, "")
+        path_button.connect("clicked()", lambda: self.getPath())
+        self.path_line_edit.setText(export_path_template)
             
-        #Add to middle layout    
-        middle_layout.addWidget(self.export_everything_box)
+        #Add path line input and button to middle layout    
+        middle_layout.addWidget(path_label)
+        middle_layout.addWidget(self.path_line_edit)
+        middle_layout.addWidget(path_button)
         #Add to main layout
         main_layout.addLayout(middle_layout)
     
         #Add bottom layout.
         bottom_layout = QHBoxLayout()
-    
-        #Add path line input and button
-        path_label = QLabel('Path:')
-        path_line_edit = QLineEdit()
-        path_line_edit.connect("textChanged()", lambda: self.printPath())
-        path_pixmap = QPixmap(mari.resources.path(mari.resources.ICONS) + '/ExportImages.png')
-        icon = QIcon(path_pixmap)
-        path_button = QPushButton(icon, "")
-        path_button.connect("clicked()", lambda: self.getPath())
-        
-        path = mari.resources.path(mari.resources.DEFAULT_EXPORT)
-        template = mari.resources.sequenceTemplate()
-        export_path_template = os.path.join(path, template)
-        path_line_edit.setText(export_path_template)
         
         #Add export option check boxes
-        export_flattened_box = QCheckBox('Export Flattened')
-        export_small_textures_box = QCheckBox('Small Textures')
+        self.export_everything_box = QCheckBox('Export Everything')
+        self.export_everything_box.connect("clicked()", lambda: self.exportEverything())
+        self.export_flattened_box = QCheckBox('Export Flattened')
+        self.export_small_textures_box = QCheckBox('Small Textures')
     
         #Add OK Cancel buttons layout, buttons and add
         ok_button = QPushButton("OK")
         cancel_button = QPushButton("Cancel")
-        ok_button.connect("clicked()", self.accept)
+        ok_button.connect("clicked()", self.checkInput)
         cancel_button.connect("clicked()", self.reject)
-    
-        bottom_layout.addWidget(path_label)
-        bottom_layout.addWidget(path_line_edit)
-        bottom_layout.addWidget(path_button)
-        bottom_layout.addWidget(export_flattened_box)
-        bottom_layout.addWidget(export_small_textures_box)
+        
+        #Add tick boxes and buttons to bottom layout
+        bottom_layout.addWidget(self.export_everything_box)
+        bottom_layout.addWidget(self.export_flattened_box)
+        bottom_layout.addWidget(self.export_small_textures_box)
         bottom_layout.addWidget(ok_button)
         bottom_layout.addWidget(cancel_button)
 
-        #Add browse lines to main layout and set layout for dialog
+        #Add bottom layout to main layout and set main layout to dialog's layout
         main_layout.addLayout(bottom_layout)
         self.setLayout(main_layout)
-
-    def getChannelsToExport(self):
-        return self.export_list.currentChannels()
 
     #Hide parts of interface if export everything is ticked
     def exportEverything(self):
@@ -190,15 +188,55 @@ class ExportSelectedChannelsGUI(QDialog):
         self.export_list.setHidden(_bool)
         self.add_button.setHidden(_bool)
         self.remove_button.setHidden(_bool)
-
-    def printPath(self):
-        print path_line_edit.text
     
     #Get the path from existing directory
     def getPath(self):
-        path = mari.utils.misc.getExistingDirectory(parent=None, caption='Export Path', dir='')
+        path = mari.utils.misc.getSaveFileName(parent=self, caption='Export Path', dir='', filter='', selected_filter=None, options=0, save_filename='')
         if path == "":
-            return False
+            return
+        else:
+            self.setPath(os.path.abspath(path))
+
+    #Set the path line edit box text to be the path provided
+    def setPath(self, path):
+        self.path_line_edit.setText(path)
+
+    #Check path and template will work, check if export everything box is ticked if not make sure there are some channels to export
+    def checkInput(self):
+        image_file_types = ('.bmp', '.jpg', '.jpeg', '.png', '.ppm', '.psd', '.tga', '.tif', '.tiff', '.xbm', '.xpm', '.exr')
+        path_template = self.path_line_edit.text
+        if not os.path.exists(os.path.split(path_template)[0]):
+            mari.utils.message("Path does not exist: '%s'" %(os.path.split(path_template)[0]))
+            return
+        if not path_template.endswith(image_file_types):
+            mari.utils.message("File type is not supported: '%s'" %(os.path.split(path_template)[1]))
+            return
+        if self.export_everything_box.isChecked():
+            pass
+        elif len(self.export_list.currentChannels()) == 0:
+            mari.utils.message("Please add a channel to export")
+            return
+        self.accept()
+
+    #Get list of channels to export from the export list
+    def getChannelsToExport(self):
+        return self.export_list.currentChannels()
+
+    #Get export path and template
+    def getExportPathTemplate(self):
+        return self.path_line_edit.text
+
+    #Get export everything box is ticked (bool)
+    def getExportEverything(self):
+        return self.export_everything_box.isChecked()
+
+    #Get export flattened box is ticked (bool)
+    def getExportFlattened(self):
+        return self.export_flattened_box.isChecked()
+
+    #Get export small textures box is ticked (bool)
+    def getExportSmallTextures(self):
+        return self.export_small_textures_box.isChecked()
 
 # ------------------------------------------------------------------------------   
 class ChannelsToExportList(QListWidget):
@@ -262,78 +300,55 @@ def setBold(widget):
     widget.setFont(font)
 
 # ------------------------------------------------------------------------------ 
-def exportChannels(g_esc_window, path_line_edit, export_flattened_box, export_small_textures_box, channels_to_export_widget):
-    channels = channels_to_export_widget.currentChannels()
+def exportChannels(channels, path, flattened, small_textures):
     save_options = 1
-    if export_small_textures_box.isChecked():
+    if small_textures:
         save_options = 0
-    success = False
     #Check if export flattened is ticked, if not export unflattened
-    if export_flattened_box.isChecked():
+    if flattened:
         for channel in channels:
             try:
-                channel.exportImagesFlattened(path_line_edit.text, save_options)
+                channel.exportImagesFlattened(path, save_options)
             except:
-                mari.utils.message("IOError: Export failed: Exporting to '%s' files is not supported" %(path_line_edit.text))
-                break
-            success = True
+                mari.utils.message("IOError: Failed to export to '%s'" %(path))
+                return
     else:
         for channel in channels:
             try:
-                channel.exportImages(path_line_edit.text, save_options)
+                channel.exportImages(path, save_options)
             except:
-                mari.utils.message("IOError: Export failed: Exporting to '%s' files is not supported" %(path_line_edit.text))
-                break
-            success = True
-    #If successful let the user know and close window
-    if success:
-        mari.utils.message("Export Successful")
-        g_esc_window.accept()
+                mari.utils.message("IOError: Failed to export to '%s'" %(path))
+                return
+    #If successful let the user know
+    mari.utils.message("Export Successful")
     
 # ------------------------------------------------------------------------------ 
-def exportEverything(g_esc_window, path_line_edit, export_flattened_box, export_small_textures_box):
+def exportEverything(path, flattened, small_textures):
     "Export everything, all geo and all channels"
     geo_list = mari.geo.list()
     channels = []
     for geo in geo_list:
         channels.extend(geo.channelList())
     save_options = 1
-    if export_small_textures_box.isChecked():
+    if small_textures:
         save_options = 0
-    success = False
     #Check if export flattened is ticked, if not export unflattened
-    if export_flattened_box.isChecked():
+    if flattened:
         for channel in channels:
             try:
-                channel.exportImagesFlattened(path_line_edit.text, save_options)
+                channel.exportImagesFlattened(path, save_options)
             except:
-                mari.utils.message("Export failed: Exporting to '%s' files is not supported" %(path_line_edit.text))
-                break
-            success = True
+                mari.utils.message("IOError: Failed to export to '%s'" %(path))
+                return
     else:
         for channel in channels:
             try:
-                channel.exportImages(path_line_edit.text, save_options)
+                channel.exportImages(path, save_options)
             except:
-                mari.utils.message("Export failed: Exporting to '%s' files is not supported" %(path_line_edit.text))
-                break
-            success = True
-    #If successful let the user know and close window
-    if success:
-        mari.utils.message("Export Successful")
-        g_esc_window.accept()
-                
-# ------------------------------------------------------------------------------ 
-def compareInput(g_esc_window, path_line_edit, export_everything_box, export_flattened_box, export_small_textures_box, channels_to_export_widget):
-    "Compare the input from the gui"
-    if export_everything_box.isChecked():
-        exportEverything(g_esc_window, path_line_edit, export_flattened_box, export_small_textures_box)
-    else:
-        #If no channels in export list tell user and stop
-        if len(channels_to_export_widget.currentChannels()) == 0:
-            mari.utils.message("Please add a channel to export")
-            return False
-        exportChannels(g_esc_window, path_line_edit, export_flattened_box, export_small_textures_box, channels_to_export_widget)
+                mari.utils.message("IOError: Failed to export to '%s'" %(path))
+                return
+    #If successful let the user know
+    mari.utils.message("Export Successful")
 
 # ------------------------------------------------------------------------------
 def exportSelectedChannels():
@@ -344,7 +359,14 @@ def exportSelectedChannels():
     #Create dialog and execute accordingly
     dialog = ExportSelectedChannelsGUI()
     if dialog.exec_():
-        pass
+        channels = dialog.getChannelsToExport()
+        path = dialog.getExportPathTemplate()
+        flattened = dialog.getExportFlattened()
+        small_textures = dialog.getExportSmallTextures()
+        if dialog.getExportEverything():
+            exportEverything(path, flattened, small_textures)
+        else:
+            exportChannels(channels, path, flattened, small_textures)
     
 # ------------------------------------------------------------------------------
 def isProjectSuitable():

@@ -6,7 +6,7 @@
 # coding: utf-8
 # Written by Jorel Latraille
 # ------------------------------------------------------------------------------
-#                                      	VERSION 0.04a2
+#                                      	VERSION 0.04a3
 # ------------------------------------------------------------------------------
 # DISCLAIMER & TERMS OF USE:
 #
@@ -82,8 +82,16 @@ del createJToolsMenu
 import mari, os
 
 scripts_path = os.path.abspath(mari.resources.path(mari.resources.USER_SCRIPTS))
-jtools_path = os.path.join(scripts_path, "jtools")
-depricated = os.path.join(jtools_path, "updater.py"), os.path.join(jtools_path, "updater.pyc")
-for file in depricated:
-    if os.path.exists(file):
-        os.remove(file)
+
+if mari.app.version().isWindows():
+    split_scripts_path = scripts_path.split(';')
+else:
+    split_scripts_path = scripts_path.split(':')
+
+for s_path in split_scripts_path:
+    jtools_path = os.path.join(s_path, "jtools")
+    depricated = [os.path.join(jtools_path, "updater.py"), os.path.join(jtools_path, "updater.pyc"),
+    os.path.join(jtools_path, "jtools_updater.py"), os.path.join(jtools_path, "jtools_updater.pyc")]
+    for file in depricated:
+        if os.path.exists(file):
+            os.remove(file)

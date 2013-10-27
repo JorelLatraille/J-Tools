@@ -29,7 +29,7 @@ from PythonQt.QtGui import *
 version = "0.01"
 
 USER_ROLE = 34
-image_file_types = ['.bmp', '.jpg', '.jpeg', '.png', '.ppm', '.psd', '.tga', '.tif', '.tiff', '.xbm', '.xpm']
+image_file_types = ['.bmp', '.jpg', '.jpeg', '.png', '.ppm', '.psd', '.tga', '.tif', '.tiff', '.xbm', '.xpm', '.exr']
 list.sort(image_file_types)
 
 # ------------------------------------------------------------------------------
