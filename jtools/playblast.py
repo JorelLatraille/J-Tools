@@ -25,6 +25,7 @@
 
 import mari, os
 from PythonQt.QtGui import *
+from PythonQt.QtCore import *
 
 version = "0.01"
 
@@ -35,82 +36,65 @@ class playblastGUI(QDialog):
     "Create ImportImagesGUI"
     def __init__(self, parent=None):
         super(playblastGUI, self).__init__(parent)
-        
+
+        self.setWindowTitle('Playblast')
         main_layout = QVBoxLayout()
-        path_layout = QHBoxLayout()
-        import_layout = QHBoxLayout()
-        options_layout = QHBoxLayout()
-        button_layout = QGridLayout()
-        
-        #Add path line input and button
-        path_label = QLabel('Path:')
-        self.path = QLineEdit()
-        path_pixmap = QPixmap(mari.resources.path(mari.resources.ICONS) + '/ExportImages.png')
-        icon = QIcon(path_pixmap)
-        path_button = QPushButton(icon, "")
-        path_button.connect("clicked()", lambda: self.getPath())
-        
-        #Add import template line input and validator
-        punctuation_re = QRegExp(r"[a-zA-Z0-9\$\._]*")
-        import_label = QLabel('Import Template:')
-        self.import_template = QLineEdit()
-        self.import_template.setValidator(QRegExpValidator(punctuation_re, self))
-        self.import_template.setPlaceholderText('e.g. $CHANNEL.$LAYER.$UDIM.tif')
-        
-        #Add import resize options, channel creation options and layer import options
-        channel_res_label = QLabel('Channel Resolution:')
-        self.channel_res_options = QComboBox()
-        for option in channel_resolution_options:
-            self.channel_res_options.addItem(option)
-        self.channel_res_options.setCurrentIndex(self.channel_res_options.findText('2048'))
-        channel_bit_label = QLabel('Channel Bit Depth:')
-        self.channel_bit_options = QComboBox()
-        for option in channel_bit_depth_options:
-            self.channel_bit_options.addItem(option)
-        self.channel_bit_options.setCurrentIndex(self.channel_bit_options.findText('16'))
-        layer_import_label = QLabel('Layer Import Option:')
-        self.layer_import_options = QComboBox()
-        for option in layer_import_options:
-            self.layer_import_options.addItem(option)
-        self.layer_import_options.setCurrentIndex(self.layer_import_options.findText('Update'))
-        resize_label = QLabel('Resize:')
-        self.resize_options = QComboBox()
-        for option in resize_options:
-            self.resize_options.addItem(option)
-        self.resize_options.setCurrentIndex(self.resize_options.findText('Patch'))
-        
-        #Add OK/Cancel buttons
-        ok_button = QPushButton("&OK")
-        cancel_button = QPushButton("Cancel")
-        
-        #Add widgets to respective layouts
-        path_layout.addWidget(path_label, 0, 0)
-        path_layout.addWidget(self.path, 0, 1)
-        path_layout.addWidget(path_button, 0, 2)
-        import_layout.addWidget(import_label)
-        import_layout.addWidget(self.import_template)
-        options_layout.addWidget(channel_res_label)
-        options_layout.addWidget(self.channel_res_options)
-        options_layout.addWidget(channel_bit_label)
-        options_layout.addWidget(self.channel_bit_options)
-        options_layout.addWidget(layer_import_label)
-        options_layout.addWidget(self.layer_import_options)
-        options_layout.addWidget(resize_label)
-        options_layout.addWidget(self.resize_options)
-        button_layout.addWidget(ok_button, 1, 0)
-        button_layout.addWidget(cancel_button, 1, 1)
-        
-        #Add layouts to main QDialog layout
-        main_layout.addLayout(path_layout)
-        main_layout.addLayout(import_layout)
-        main_layout.addLayout(options_layout)
-        main_layout.addLayout(button_layout)
+        top_layout = QVBoxLayout()
+        middle_layout = QVBoxLayout()
+        bottom_layout = QHBoxLayout()
+
+        time_label = QLabel('Time range:')
+        self.time_slider = QRadioButton('Time Slider')
+        self.time_slider.setChecked(True)
+        self.start_end = QRadioButton('Start/End')
+        start_label = QLabel('Start time:')
+        end_label = QLabel('End time:')
+        self.start_time = QLineEdit()
+        self.start_time.setReadOnly(True)
+        self.start_time.setText('0')
+        self.end_time = QLineEdit()
+        self.end_time.setReadOnly(True)
+        self.end_time.setText('10')
+        self.time_slider.connect('toggled(bool)', self._timeSliderToggle)
+
+        time_layout = QGridLayout()
+
+        time_layout.addWidget(time_label, 0, 0)
+        time_layout.addWidget(self.time_slider, 0, 1)
+        time_layout.addWidget(self.start_end, 0, 2)
+        time_layout.addWidget(start_label, 1, 0)
+        time_layout.addWidget(self.start_time, 1, 1)
+        time_layout.addWidget(end_label, 2, 0)
+        time_layout.addWidget(self.end_time, 2, 1)
+
+        top_layout.addLayout(time_layout)
+
+        padding_label = QLabel('Frame padding:')
+        frame_padding = QLineEdit()
+        padding_slider = QSlider(Qt.Orientation(Qt.Horizontal))
+        padding_slider.setTickInterval(20)
+        padding_slider.setTickPosition(1)
+
+        padding_layout = QGridLayout()
+
+        padding_layout.addWidget(padding_label, 0, 0)
+        padding_layout.addWidget(frame_padding, 0, 1)
+        padding_layout.addWidget(padding_slider, 0, 2)
+
+        middle_layout.addLayout(padding_layout)
+
+
+        main_layout.addLayout(top_layout)
+        main_layout.addLayout(middle_layout)
         self.setLayout(main_layout)
-        self.setWindowTitle("Import Images")
-        self.setMinimumSize(640, 140)
-        
-        ok_button.connect("clicked()", lambda: self.accepted())
-        cancel_button.connect("clicked()", self.reject)
+
+    def _timeSliderToggle(self, _bool):
+        if _bool:
+            self.start_time.setReadOnly(True)
+            self.end_time.setReadOnly(True)
+        else:
+            self.start_time.setReadOnly(False)
+            self.end_time.setReadOnly(False)
 
 # ------------------------------------------------------------------------------
 def playblast():
