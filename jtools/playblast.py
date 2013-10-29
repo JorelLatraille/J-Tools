@@ -25,7 +25,7 @@
 
 import mari, os
 from PythonQt.QtGui import *
-from PythonQt.QtCore import *
+from PythonQt.QtCore import QRegExp
 
 version = "0.01"
 
@@ -45,7 +45,6 @@ class playblastGUI(QDialog):
 
         time_label = QLabel('Time range:')
         self.time_slider = QRadioButton('Time Slider')
-        self.time_slider.setChecked(True)
         self.start_end = QRadioButton('Start/End')
         start_label = QLabel('Start time:')
         end_label = QLabel('End time:')
@@ -56,6 +55,20 @@ class playblastGUI(QDialog):
         self.end_time.setReadOnly(True)
         self.end_time.setText('10')
         self.time_slider.connect('toggled(bool)', self._timeSliderToggle)
+        self.time_slider.setChecked(True)
+
+        padding_label = QLabel('Frame padding:')
+        punctuation_re = QRegExp(r"[0-4]")
+        self.frame_padding = QLineEdit()
+        self.frame_padding.setValidator(QRegExpValidator(punctuation_re, self))
+        self.padding_slider = QSlider(Qt.Orientation(Qt.Horizontal))
+        self.padding_slider.setMinimum(0)
+        self.padding_slider.setMaximum(4)
+        self.padding_slider.setTickInterval(1)
+        self.padding_slider.setTickPosition(0)
+        self.padding_slider.connect('valueChanged(int)', self._updateFramePadding)      
+        self.padding_slider.setValue(4)
+        self.frame_padding.connect('editingFinished()', self._updateSliderPosition)
 
         time_layout = QGridLayout()
 
@@ -66,26 +79,39 @@ class playblastGUI(QDialog):
         time_layout.addWidget(self.start_time, 1, 1)
         time_layout.addWidget(end_label, 2, 0)
         time_layout.addWidget(self.end_time, 2, 1)
+        time_layout.addWidget(padding_label, 3, 0)
+        time_layout.addWidget(self.frame_padding, 3, 1)
+        time_layout.addWidget(self.padding_slider, 3, 2)
 
         top_layout.addLayout(time_layout)
 
-        padding_label = QLabel('Frame padding:')
-        frame_padding = QLineEdit()
-        padding_slider = QSlider(Qt.Orientation(Qt.Horizontal))
-        padding_slider.setTickInterval(20)
-        padding_slider.setTickPosition(1)
+        #Add path line input and button
+        path_label = QLabel('Path:')
+        self.path = QLineEdit()
+        path_pixmap = QPixmap(mari.resources.path(mari.resources.ICONS) + '/ExportImages.png')
+        icon = QIcon(path_pixmap)
+        path_button = QPushButton(icon, "")
+        path_button.connect("clicked()", lambda: self._getPath())
 
-        padding_layout = QGridLayout()
+        path_layout = QHBoxLayout()
 
-        padding_layout.addWidget(padding_label, 0, 0)
-        padding_layout.addWidget(frame_padding, 0, 1)
-        padding_layout.addWidget(padding_slider, 0, 2)
+        path_layout.addWidget(path_label)
+        path_layout.addWidget(self.path)
+        path_layout.addWidget(path_button)
 
-        middle_layout.addLayout(padding_layout)
+        #Add OK/Cancel buttons
+        ok_button = QPushButton("&Playblast")
+        cancel_button = QPushButton("Cancel")
 
+        ok_button.connect("clicked()", lambda: self.accepted())
+        cancel_button.connect("clicked()", self.reject)
+
+        bottom_layout.addWidget(ok_button)
+        bottom_layout.addWidget(cancel_button)
 
         main_layout.addLayout(top_layout)
-        main_layout.addLayout(middle_layout)
+        main_layout.addLayout(path_layout)
+        main_layout.addLayout(bottom_layout)
         self.setLayout(main_layout)
 
     def _timeSliderToggle(self, _bool):
@@ -95,6 +121,20 @@ class playblastGUI(QDialog):
         else:
             self.start_time.setReadOnly(False)
             self.end_time.setReadOnly(False)
+
+    def _updateFramePadding(self, _int):
+        self.frame_padding.setText(_int)
+
+    def _updateSliderPosition(self):
+        self.padding_slider.setValue(int(self.frame_padding.text))
+
+    def _getPath(self):
+        "Get file path and set the text in path LineEdit widget"
+        file_path = mari.utils.misc.getSaveFileName(parent=self, caption='Save As', dir='', filter='', selected_filter=None, options=0, save_filename='playblast.$FRAME.tif')
+        if file_path == "":
+            return
+        else:
+            self.path.setText(file_path)
 
 # ------------------------------------------------------------------------------
 def playblast():
