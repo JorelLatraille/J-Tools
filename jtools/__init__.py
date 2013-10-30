@@ -41,6 +41,7 @@ from copy_udim_to_udim import showUI as copyUdimToUdim
 from export_image_manager_images import exportImageManagerImages
 from export_selected_channels import exportSelectedChannels
 from export_uv_masks import exportUVMasks
+from flatten_mask_stacks import flattenMaskStacks
 from flatten_selected_channels import flattenSelectedChannels
 from import_images import importImages
 from layer_visibility import layerVisibility
@@ -63,6 +64,7 @@ del copy_udim_to_udim
 del export_image_manager_images
 del export_selected_channels
 del export_uv_masks
+del flatten_mask_stacks
 del flatten_selected_channels
 del import_images
 del layer_visibility
