@@ -25,7 +25,7 @@
 
 import mari, os
 from PythonQt.QtGui import *
-from PythonQt.QtCore import QRegExp
+from PythonQt.QtCore import QRegExp, Qt
 
 version = "0.01"
 
@@ -42,6 +42,7 @@ class playblastGUI(QDialog):
         top_layout = QVBoxLayout()
         middle_layout = QVBoxLayout()
         bottom_layout = QHBoxLayout()
+        final_layout = QVBoxLayout()
 
         time_label = QLabel('Time range:')
         self.time_slider = QRadioButton('Time Slider')
@@ -72,18 +73,39 @@ class playblastGUI(QDialog):
 
         time_layout = QGridLayout()
 
-        time_layout.addWidget(time_label, 0, 0)
-        time_layout.addWidget(self.time_slider, 0, 1)
-        time_layout.addWidget(self.start_end, 0, 2)
-        time_layout.addWidget(start_label, 1, 0)
-        time_layout.addWidget(self.start_time, 1, 1)
-        time_layout.addWidget(end_label, 2, 0)
-        time_layout.addWidget(self.end_time, 2, 1)
-        time_layout.addWidget(padding_label, 3, 0)
-        time_layout.addWidget(self.frame_padding, 3, 1)
-        time_layout.addWidget(self.padding_slider, 3, 2)
+        time_layout.addWidget(time_label, 0, 0, Qt.AlignCenter)
+        time_layout.addWidget(self.time_slider, 0, 1, Qt.AlignCenter)
+        time_layout.addWidget(self.start_end, 0, 2, Qt.AlignCenter)
+        time_layout.addWidget(start_label, 1, 0, Qt.AlignCenter)
+        time_layout.addWidget(self.start_time, 1, 1, Qt.AlignCenter)
+        time_layout.addWidget(end_label, 2, 0, Qt.AlignCenter)
+        time_layout.addWidget(self.end_time, 2, 1, Qt.AlignCenter)
+        time_layout.addWidget(padding_label, 3, 0, Qt.AlignCenter)
+        time_layout.addWidget(self.frame_padding, 3, 1, Qt.AlignCenter)
+        time_layout.addWidget(self.padding_slider, 3, 2, Qt.AlignCenter)
 
-        top_layout.addLayout(time_layout)
+        time_group = QGroupBox()
+        time_group.setLayout(time_layout)
+        top_layout.addWidget(time_group)
+
+        self.clamp = QCheckBox('Clamp')
+        shader_used_label = QLabel('Shader Used:')
+        self.shader_used = QComboBox()
+        projector = mari.projectors.current()
+        shader_list = projector.useShaderList()
+        current_shader = projector.useShader()
+        for shader in shader_list:
+            self.shader_used.addItem(shader)
+        self.shader_used.setCurrentIndex(self.shader_used.findText(current_shader))
+
+        unproject_layout = QGridLayout()
+
+        unproject_layout.addWidget(self.clamp, 0, 0, Qt.AlignLeft)
+        unproject_layout.addWidget(shader_used_label, 1, 0, Qt.AlignLeft)
+        unproject_layout.addWidget(self.shader_used, 1, 1, Qt.AlignLeft)
+        unproject_layout.setColumnStretch(1, 1)
+
+        middle_layout.addLayout(unproject_layout)
 
         #Add path line input and button
         path_label = QLabel('Path:')
@@ -91,13 +113,15 @@ class playblastGUI(QDialog):
         path_pixmap = QPixmap(mari.resources.path(mari.resources.ICONS) + '/ExportImages.png')
         icon = QIcon(path_pixmap)
         path_button = QPushButton(icon, "")
-        path_button.connect("clicked()", lambda: self._getPath())
+        path_button.connect('clicked()', lambda: self._getPath())
 
         path_layout = QHBoxLayout()
 
         path_layout.addWidget(path_label)
         path_layout.addWidget(self.path)
         path_layout.addWidget(path_button)
+
+        middle_layout.addLayout(path_layout)
 
         #Add OK/Cancel buttons
         ok_button = QPushButton("&Playblast")
@@ -109,10 +133,13 @@ class playblastGUI(QDialog):
         bottom_layout.addWidget(ok_button)
         bottom_layout.addWidget(cancel_button)
 
+        main_group = QGroupBox()
         main_layout.addLayout(top_layout)
-        main_layout.addLayout(path_layout)
-        main_layout.addLayout(bottom_layout)
-        self.setLayout(main_layout)
+        main_layout.addLayout(middle_layout)
+        main_group.setLayout(main_layout)
+        final_layout.addWidget(main_group)
+        final_layout.addLayout(bottom_layout)
+        self.setLayout(final_layout)
 
     def _timeSliderToggle(self, _bool):
         if _bool:
