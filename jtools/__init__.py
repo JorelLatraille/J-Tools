@@ -6,7 +6,7 @@
 # coding: utf-8
 # Written by Jorel Latraille
 # ------------------------------------------------------------------------------
-#                                      	VERSION 0.04a3
+#                                      	VERSION 0.04a4
 # ------------------------------------------------------------------------------
 # DISCLAIMER & TERMS OF USE:
 #
@@ -44,9 +44,11 @@ from export_uv_masks import exportUVMasks
 from flatten_selected_channels import flattenSelectedChannels
 from import_images import importImages
 from layer_visibility import layerVisibility
+from playblast import playblast
 from resize_channels import showUI as resizeChannels
 from set_all_current_shader import setAllCurrentShader
 from shortcuts import quick
+from toggle_navigation import toggleNavigation
 from tools_update import update
 
 # ------------------------------------------------------------------------------
@@ -64,14 +66,15 @@ del export_uv_masks
 del flatten_selected_channels
 del import_images
 del layer_visibility
+del playblast
 del resize_channels
 del set_all_current_shader
 del shortcuts
+del toggle_navigation
 del tools_update
 
 # ------------------------------------------------------------------------------
 # DO NOT REMOVE THE BELOW! This is used to generate the menu inside of Mari!
-
 from tools_menu import createJToolsMenu
 
 createJToolsMenu()
@@ -79,6 +82,8 @@ createJToolsMenu()
 del tools_menu
 del createJToolsMenu
 
+# ------------------------------------------------------------------------------
+# DO NOT REMOVE THE BELOW! This is used to cleanup any residual update files!
 import mari, os
 
 scripts_path = os.path.abspath(mari.resources.path(mari.resources.USER_SCRIPTS))
