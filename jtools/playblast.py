@@ -104,6 +104,8 @@ class playblastGUI(QDialog):
         #Widgets for unproject settings
         clamp_label = QLabel('Clamp:')
         self.clamp = QCheckBox()
+        self.current_clamp = mari.projectors.current().clampColors()
+        self.clamp.setChecked(self.current_clamp)
         shader_used_label = QLabel('Shader Used:')
         self.shader_used = QComboBox()
         shader_list = mari.projectors.current().useShaderList()
@@ -154,6 +156,10 @@ class playblastGUI(QDialog):
         #Add path line input and button
         path_label = QLabel('Path:')
         self.path = QLineEdit()
+        path = os.path.abspath(mari.resources.path(mari.resources.DEFAULT_EXPORT)) #Get the default export directory from Mari
+        template = mari.projectors.current().name() + '.$FRAME.tif'
+        self.export_path_template = os.path.join(path, template)
+        self.path.setText(self.export_path_template)
         path_pixmap = QPixmap(mari.resources.path(mari.resources.ICONS) + '/ExportImages.png')
         icon = QIcon(path_pixmap)
         path_button = QPushButton(icon, "")
@@ -175,7 +181,7 @@ class playblastGUI(QDialog):
         cancel_button = QPushButton("Cancel")
 
         #Hook up OK/Cancel buttons
-        ok_button.connect("clicked()", lambda: self.accepted())
+        ok_button.connect("clicked()", self.accepted)
         cancel_button.connect("clicked()", self.reject)
 
         #Add buttons to bottom_layout
@@ -217,11 +223,84 @@ class playblastGUI(QDialog):
         else:
             self.path.setText(file_path)
 
+    def _getOriginalClamp(self):
+        "Return original clamp setting"
+        return self.current_clamp
+
     def _getOriginalShader(self):
+        "Return original shader setting"
         return self.current_shader
 
-    def _getOriginlMode(self):
+    def _getOriginalMode(self):
+        "Return original lighting mode"
         return self.current_mode
+
+    def _getOriginalDepth(self):
+        "Return original bit depth setting"
+        return self.current_depth
+
+    def _getOriginalSize(self):
+        "Return original size setting"
+        return self.current_size
+
+    def accepted(self):
+        "Check user settings provided before accepting"
+        if self.path.text == '':
+            mari.utils.message("Please provide a path and image template, e.g. '%s'" %self.export_path_template)
+            return
+
+        image_file_types = ('.bmp', '.jpg', '.jpeg', '.png', '.ppm', '.psd', '.tga', '.tif', '.tiff', '.xbm', '.xpm', '.exr')
+        path_template = self.path.text
+        if not os.path.exists(os.path.split(path_template)[0]):
+            make_dir = makeDirGUI(os.path.split(path_template)[0])
+            if not make_dir.exec_():
+                return
+        if not '$FRAME' in os.path.split(path_template)[1]:
+            mari.utils.message("Please include the $FRAME token in template, e.g. '%s'" %self.export_path_template)
+            return
+        if not path_template.endswith(image_file_types):
+            mari.utils.message("File type is not supported: '%s'" %(os.path.split(path_template)[1]))
+            return
+
+        self.accept()
+
+# ------------------------------------------------------------------------------
+class makeDirGUI(QDialog):
+    "Create ImportImagesGUI"
+    def __init__(self, path, parent=None):
+        super(makeDirGUI, self).__init__(parent)
+
+        #Set title and create the major layouts
+        self.path = path
+        self.setModal(True)
+        self.setWindowTitle('Make Directory')
+        main_layout = QVBoxLayout()
+        button_layout = QHBoxLayout()
+
+        text = QLabel("Path does not exist '%s' make path?" %self.path)
+        create = QPushButton('Create')
+        cancel = QPushButton('Cancel')
+        create.connect('clicked()', self.accepted)
+        cancel.connect('clicked()', self.reject)
+
+        main_layout.addWidget(text)
+        button_layout.addWidget(create)
+        button_layout.addWidget(cancel)
+        main_layout.addLayout(button_layout)
+        self.setLayout(main_layout)
+
+    def accepted(self):
+        "Try to make the directory"
+        rejected = False
+        try:
+            os.mkdir(self.path)
+        except:
+            mari.utils.message("Unable to create path '%s'" %self.path)
+            rejected = True
+        if rejected:
+            self.reject()
+        else:
+            self.accept()
 
 # ------------------------------------------------------------------------------
 def playblast():
