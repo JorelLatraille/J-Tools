@@ -29,6 +29,9 @@ from PythonQt.QtCore import QRegExp, Qt
 
 version = "0.01"
 
+lighting_mode_list = ['Flat', 'Basic', 'Full']
+color_depth_list = ['8bit (Byte)', '16bit (Half)', '32bit (Float)']
+size_list = ['2048 x 2048', '4096 x 4096', '8192 x 8192', '16384 x 16384', '32768 x 32768']
 image_file_types = ['.bmp', '.jpg', '.jpeg', '.png', '.ppm', '.psd', '.tga', '.tif', '.tiff', '.xbm', '.xpm', '.exr']
 
 # ------------------------------------------------------------------------------
@@ -37,6 +40,7 @@ class playblastGUI(QDialog):
     def __init__(self, parent=None):
         super(playblastGUI, self).__init__(parent)
 
+        #Set title and create the major layouts
         self.setWindowTitle('Playblast')
         main_layout = QVBoxLayout()
         top_layout = QVBoxLayout()
@@ -44,6 +48,7 @@ class playblastGUI(QDialog):
         bottom_layout = QHBoxLayout()
         final_layout = QVBoxLayout()
 
+        #Create time widgets and hook them up
         time_label = QLabel('Time range:')
         self.time_slider = QRadioButton('Time Slider')
         self.start_end = QRadioButton('Start/End')
@@ -58,8 +63,9 @@ class playblastGUI(QDialog):
         self.time_slider.connect('toggled(bool)', self._timeSliderToggle)
         self.time_slider.setChecked(True)
 
+        #Create padding widgets and hook them up
         padding_label = QLabel('Frame padding:')
-        punctuation_re = QRegExp(r"[0-4]")
+        punctuation_re = QRegExp(r"[0-4]") #Force the line edit to only be able to enter numbers from 0-4
         self.frame_padding = QLineEdit()
         self.frame_padding.setValidator(QRegExpValidator(punctuation_re, self))
         self.padding_slider = QSlider(Qt.Orientation(Qt.Horizontal))
@@ -71,40 +77,78 @@ class playblastGUI(QDialog):
         self.padding_slider.setValue(4)
         self.frame_padding.connect('editingFinished()', self._updateSliderPosition)
 
+        #Create grid layout called time_layout
         time_layout = QGridLayout()
 
-        time_layout.addWidget(time_label, 0, 0, Qt.AlignCenter)
+        #Add time widgets to time_layout
+        time_layout.addWidget(time_label, 0, 0, Qt.AlignRight)
         time_layout.addWidget(self.time_slider, 0, 1, Qt.AlignCenter)
-        time_layout.addWidget(self.start_end, 0, 2, Qt.AlignCenter)
-        time_layout.addWidget(start_label, 1, 0, Qt.AlignCenter)
+        time_layout.addWidget(self.start_end, 0, 2, Qt.AlignLeft)
+        time_layout.addWidget(start_label, 1, 0, Qt.AlignRight)
         time_layout.addWidget(self.start_time, 1, 1, Qt.AlignCenter)
-        time_layout.addWidget(end_label, 2, 0, Qt.AlignCenter)
+        time_layout.addWidget(end_label, 2, 0, Qt.AlignRight)
         time_layout.addWidget(self.end_time, 2, 1, Qt.AlignCenter)
-        time_layout.addWidget(padding_label, 3, 0, Qt.AlignCenter)
+        time_layout.addWidget(padding_label, 3, 0, Qt.AlignRight)
         time_layout.addWidget(self.frame_padding, 3, 1, Qt.AlignCenter)
-        time_layout.addWidget(self.padding_slider, 3, 2, Qt.AlignCenter)
+        time_layout.addWidget(self.padding_slider, 3, 2, Qt.AlignLeft)
+        time_layout.setColumnStretch(0, 2)
+        time_layout.setColumnStretch(1, 2)
+        time_layout.setColumnStretch(2, 2)
+        time_layout.setColumnStretch(3, 2)
 
+        #Add time_layout to time_group (Group Box) widget and add the widget to top_layout
         time_group = QGroupBox()
         time_group.setLayout(time_layout)
         top_layout.addWidget(time_group)
 
-        self.clamp = QCheckBox('Clamp')
+        #Widgets for unproject settings
+        clamp_label = QLabel('Clamp:')
+        self.clamp = QCheckBox()
         shader_used_label = QLabel('Shader Used:')
         self.shader_used = QComboBox()
-        projector = mari.projectors.current()
-        shader_list = projector.useShaderList()
-        current_shader = projector.useShader()
+        shader_list = mari.projectors.current().useShaderList()
+        self.current_shader = mari.projectors.current().useShader()
         for shader in shader_list:
             self.shader_used.addItem(shader)
-        self.shader_used.setCurrentIndex(self.shader_used.findText(current_shader))
+        self.shader_used.setCurrentIndex(self.shader_used.findText(self.current_shader))
+        lighting_mode_label = QLabel('Lighting mode:')
+        self.lighting_mode = QComboBox()
+        self.current_mode = mari.projectors.current().lightingMode()
+        for mode in lighting_mode_list:
+            self.lighting_mode.addItem(mode)
+        self.lighting_mode.setCurrentIndex(self.current_mode)
+        color_depth_label = QLabel('Color depth:')
+        self.color_depth = QComboBox()
+        self.current_depth = mari.projectors.current().bitDepth()
+        for depth in color_depth_list:
+            self.color_depth.addItem(depth)
+        self.color_depth.setCurrentIndex(self.color_depth.findText(([bit for bit in color_depth_list if str(self.current_depth) in bit])[0]))
+        size_label = QLabel('Size:')
+        self._size = QComboBox()
+        self.current_size = mari.projectors.current().width()
+        for size in size_list:
+            self._size.addItem(size)
+        self._size.setCurrentIndex(self._size.findText(([bit for bit in size_list if str(self.current_size) in bit])[0]))
 
+        #Create unproject_layout
         unproject_layout = QGridLayout()
 
-        unproject_layout.addWidget(self.clamp, 0, 0, Qt.AlignLeft)
-        unproject_layout.addWidget(shader_used_label, 1, 0, Qt.AlignLeft)
+        unproject_layout.addWidget(clamp_label, 0, 0, Qt.AlignRight)
+        unproject_layout.addWidget(self.clamp, 0, 1, Qt.AlignLeft)
+        unproject_layout.addWidget(shader_used_label, 1, 0, Qt.AlignRight)
         unproject_layout.addWidget(self.shader_used, 1, 1, Qt.AlignLeft)
+        unproject_layout.addWidget(lighting_mode_label, 2, 0, Qt.AlignRight)
+        unproject_layout.addWidget(self.lighting_mode, 2, 1, Qt.AlignLeft)
+        unproject_layout.addWidget(color_depth_label, 3, 0, Qt.AlignRight)
+        unproject_layout.addWidget(self.color_depth, 3, 1, Qt.AlignLeft)
+        unproject_layout.addWidget(size_label, 4, 0, Qt.AlignRight)
+        unproject_layout.addWidget(self._size, 4, 1, Qt.AlignLeft)
         unproject_layout.setColumnStretch(1, 1)
+        unproject_layout.setColumnStretch(2, 1)
+        unproject_layout.setColumnStretch(3, 1)
+        unproject_layout.setColumnStretch(4, 1)
 
+        #Add unproject_layout to middle_layout
         middle_layout.addLayout(unproject_layout)
 
         #Add path line input and button
@@ -115,24 +159,31 @@ class playblastGUI(QDialog):
         path_button = QPushButton(icon, "")
         path_button.connect('clicked()', lambda: self._getPath())
 
+        #Create path_layout
         path_layout = QHBoxLayout()
 
+        #Add widgets to path_layout
         path_layout.addWidget(path_label)
         path_layout.addWidget(self.path)
         path_layout.addWidget(path_button)
 
+        #Add path_layout to middle_layout
         middle_layout.addLayout(path_layout)
 
         #Add OK/Cancel buttons
         ok_button = QPushButton("&Playblast")
         cancel_button = QPushButton("Cancel")
 
+        #Hook up OK/Cancel buttons
         ok_button.connect("clicked()", lambda: self.accepted())
         cancel_button.connect("clicked()", self.reject)
 
+        #Add buttons to bottom_layout
         bottom_layout.addWidget(ok_button)
         bottom_layout.addWidget(cancel_button)
 
+        #Add layouts to main_group (Group Box) widget and add it to final_layout
+        #Then set the GUI layout to final_layout
         main_group = QGroupBox()
         main_layout.addLayout(top_layout)
         main_layout.addLayout(middle_layout)
@@ -142,6 +193,7 @@ class playblastGUI(QDialog):
         self.setLayout(final_layout)
 
     def _timeSliderToggle(self, _bool):
+        "Make the time line edit boxes read only depending on which radio button is toggled"
         if _bool:
             self.start_time.setReadOnly(True)
             self.end_time.setReadOnly(True)
@@ -150,9 +202,11 @@ class playblastGUI(QDialog):
             self.end_time.setReadOnly(False)
 
     def _updateFramePadding(self, _int):
+        "Set the text in the frame padding line edit box using the padding slider value"
         self.frame_padding.setText(_int)
 
     def _updateSliderPosition(self):
+        "Set the padding slider value using the text in the frame padding line edit box"
         self.padding_slider.setValue(int(self.frame_padding.text))
 
     def _getPath(self):
@@ -162,6 +216,12 @@ class playblastGUI(QDialog):
             return
         else:
             self.path.setText(file_path)
+
+    def _getOriginalShader(self):
+        return self.current_shader
+
+    def _getOriginlMode(self):
+        return self.current_mode
 
 # ------------------------------------------------------------------------------
 def playblast():
