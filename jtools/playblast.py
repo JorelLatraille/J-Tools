@@ -52,14 +52,16 @@ class playblastGUI(QDialog):
         time_label = QLabel('Time range:')
         self.time_slider = QRadioButton('Time Slider')
         self.start_end = QRadioButton('Start/End')
-        start_label = QLabel('Start time:')
-        end_label = QLabel('End time:')
+        self.start_label = QLabel('Start time:')
+        self.end_label = QLabel('End time:')
         self.start_time = QLineEdit()
         self.start_time.setReadOnly(True)
-        self.start_time.setText('0')
+        self.original_start_time = mari.clock.startFrame()
+        self.start_time.setText(self.original_start_time)
         self.end_time = QLineEdit()
         self.end_time.setReadOnly(True)
-        self.end_time.setText('10')
+        self.original_end_time = mari.clock.stopFrame()
+        self.end_time.setText(self.original_end_time)
         self.time_slider.connect('toggled(bool)', self._timeSliderToggle)
         self.time_slider.setChecked(True)
 
@@ -84,9 +86,9 @@ class playblastGUI(QDialog):
         time_layout.addWidget(time_label, 0, 0, Qt.AlignRight)
         time_layout.addWidget(self.time_slider, 0, 1, Qt.AlignCenter)
         time_layout.addWidget(self.start_end, 0, 2, Qt.AlignLeft)
-        time_layout.addWidget(start_label, 1, 0, Qt.AlignRight)
+        time_layout.addWidget(self.start_label, 1, 0, Qt.AlignRight)
         time_layout.addWidget(self.start_time, 1, 1, Qt.AlignCenter)
-        time_layout.addWidget(end_label, 2, 0, Qt.AlignRight)
+        time_layout.addWidget(self.end_label, 2, 0, Qt.AlignRight)
         time_layout.addWidget(self.end_time, 2, 1, Qt.AlignCenter)
         time_layout.addWidget(padding_label, 3, 0, Qt.AlignRight)
         time_layout.addWidget(self.frame_padding, 3, 1, Qt.AlignCenter)
@@ -156,7 +158,10 @@ class playblastGUI(QDialog):
         #Add path line input and button
         path_label = QLabel('Path:')
         self.path = QLineEdit()
-        path = os.path.abspath(mari.resources.path(mari.resources.DEFAULT_EXPORT)) #Get the default export directory from Mari
+        if mari.projectors.current().exportPath() == '':
+            path = os.path.abspath(mari.resources.path(mari.resources.DEFAULT_EXPORT)) #Get the default export directory from Mari
+        else:
+            path = mari.projectors.current().exportPath()
         template = mari.projectors.current().name() + '.$FRAME.tif'
         self.export_path_template = os.path.join(path, template)
         self.path.setText(self.export_path_template)
@@ -199,13 +204,17 @@ class playblastGUI(QDialog):
         self.setLayout(final_layout)
 
     def _timeSliderToggle(self, _bool):
-        "Make the time line edit boxes read only depending on which radio button is toggled"
+        "Make the time line edit boxes hidden depending on which radio button is toggled"
         if _bool:
-            self.start_time.setReadOnly(True)
-            self.end_time.setReadOnly(True)
+            self.start_label.setHidden(True)
+            self.start_time.setHidden(True)
+            self.end_label.setHidden(True)
+            self.end_time.setHidden(True)
         else:
-            self.start_time.setReadOnly(False)
-            self.end_time.setReadOnly(False)
+            self.start_label.setHidden(False)
+            self.start_time.setHidden(False)
+            self.end_label.setHidden(False)
+            self.end_time.setHidden(False)
 
     def _updateFramePadding(self, _int):
         "Set the text in the frame padding line edit box using the padding slider value"
@@ -222,46 +231,6 @@ class playblastGUI(QDialog):
             return
         else:
             self.path.setText(file_path)
-
-    def _getOriginalClamp(self):
-        "Return original clamp setting"
-        return self.original_clamp
-
-    def _getCurrentClamp(self):
-        "Return original clamp setting"
-        return self.clamp
-
-    def _getOriginalShader(self):
-        "Return original shader setting"
-        return self.original_shader
-
-    def _getCurrentShader(self):
-        "Return original shader setting"
-        return self.shader_used
-
-    def _getOriginalMode(self):
-        "Return original lighting mode"
-        return self.original_mode
-
-    def _getCurrentMode(self):
-        "Return original lighting mode"
-        return self.lighting_mode
-
-    def _getOriginalDepth(self):
-        "Return original bit depth setting"
-        return self.original_depth
-
-    def _getCurrentDepth(self):
-        "Return original bit depth setting"
-        return self.color_depth
-
-    def _getOriginalSize(self):
-        "Return original size setting"
-        return self.original_size
-
-    def _getCurrentSize(self):
-        "Return original size setting"
-        return self._size
 
     def accepted(self):
         "Check user settings provided before accepting"
@@ -283,6 +252,69 @@ class playblastGUI(QDialog):
             return
 
         self.accept()
+
+    def _getTime(self):
+        "Return True if time_slider is checked, else False"
+        if self.time_slider.isChecked():
+            return True #True to use time slider
+        else:
+            return False #False to use start end time
+
+    def _getOriginalStartEndTime(self):
+        "Return original start and end times as a list"
+        return [self.original_start_time, self.original_end_time]
+
+    def _getStartEndTime(self):
+        "Return start and end times as a list"
+        return [self.start_time.text, self.end_time.text]
+
+    def _getFramePadding(self):
+        "Return frame padding number as int"
+        return int(self.frame_padding.text)
+
+    def _getOriginalClamp(self):
+        "Return original clamp setting"
+        return self.original_clamp
+
+    def _getClamp(self):
+        "Return clamp setting"
+        return self.clamp.isChecked()
+
+    def _getOriginalShader(self):
+        "Return original shader setting"
+        return self.original_shader
+
+    def _getShader(self):
+        "Return shader setting"
+        return self.shader_used.currentText()
+
+    def _getOriginalMode(self):
+        "Return original lighting mode"
+        return self.original_mode
+
+    def _getLightingMode(self):
+        "Return lighting mode"
+        return self.lighting_mode.currentIndex()
+
+    def _getOriginalDepth(self):
+        "Return original bit depth setting"
+        return self.original_depth
+
+    def _getColorDepth(self):
+        "Return color bit depth setting"
+        return self.color_depth.currentText()
+
+    def _getOriginalSize(self):
+        "Return original size setting"
+        return self.original_size
+
+    def _getSize(self):
+        "Return size setting"
+        return self._size.currentText()
+
+    def _getPath(self):
+        "Return path"
+        return self.path.text
 
 # ------------------------------------------------------------------------------
 class makeDirGUI(QDialog):
@@ -333,16 +365,21 @@ def playblast():
     if dialog.exec_():
         pass
 
-    original_clamp = dialog._getOriginalClamp
-    clamp = dialog._getCurrentClamp
-    original_shader = dialog._getOriginalShader
-    shader = dialog._getCurrentShader
-    original_mode = dialog._getOriginalMode
-    lighting_mode = dialog._getCurrentMode
-    original_depth = dialog._getOriginalDepth
-    color_depth = dialog._getCurrentDepth
-    original_size = dialog._getOriginalSize
-    _size = dialog._getCurrentSize
+        time = dialog._getTime
+        original_start_end_time = dialog._getOriginalStartEndTime
+        start_end_time = dialog._getStartEndTime
+        frame_padding = dialog._getFramePadding
+        original_clamp = dialog._getOriginalClamp
+        clamp = dialog._getClamp
+        original_shader = dialog._getOriginalShader
+        shader = dialog._getShader
+        original_mode = dialog._getOriginalMode
+        lighting_mode = dialog._getLightingMode
+        original_depth = dialog._getOriginalDepth
+        color_depth = dialog._getColorDepth
+        original_size = dialog._getOriginalSize
+        _size = dialog._getSize
+        path = dialog._getPath
 
         # projector = mari.projectors.list()[0]
         # path = mari.utils.misc.getSaveFileName(parent=None, caption='Playblast', dir='', filter='', selected_filter=None, options=0, save_filename='')
@@ -364,6 +401,10 @@ def isProjectSuitable():
     
         if mari.projects.current() is None:
             mari.utils.message("Please open a project before running.")
+            return False
+
+        if mari.projectors.current() is None:
+            mari.utils.message("Please create/load a projector before running.")
             return False
 
         return True
