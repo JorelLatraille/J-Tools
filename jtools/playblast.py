@@ -55,11 +55,9 @@ class playblastGUI(QDialog):
         self.start_label = QLabel('Start time:')
         self.end_label = QLabel('End time:')
         self.start_time = QLineEdit()
-        self.start_time.setReadOnly(True)
         self.original_start_time = mari.clock.startFrame()
         self.start_time.setText(self.original_start_time)
         self.end_time = QLineEdit()
-        self.end_time.setReadOnly(True)
         self.original_end_time = mari.clock.stopFrame()
         self.end_time.setText(self.original_end_time)
         self.time_slider.connect('toggled(bool)', self._timeSliderToggle)
@@ -365,21 +363,61 @@ def playblast():
     if dialog.exec_():
         pass
 
-        time = dialog._getTime
-        original_start_end_time = dialog._getOriginalStartEndTime
-        start_end_time = dialog._getStartEndTime
-        frame_padding = dialog._getFramePadding
-        original_clamp = dialog._getOriginalClamp
-        clamp = dialog._getClamp
-        original_shader = dialog._getOriginalShader
-        shader = dialog._getShader
-        original_mode = dialog._getOriginalMode
-        lighting_mode = dialog._getLightingMode
-        original_depth = dialog._getOriginalDepth
-        color_depth = dialog._getColorDepth
-        original_size = dialog._getOriginalSize
-        _size = dialog._getSize
-        path = dialog._getPath
+        time = dialog._getTime()
+        original_start_end_time = dialog._getOriginalStartEndTime()
+        start_end_time = dialog._getStartEndTime()
+        frame_padding = dialog._getFramePadding()
+        original_clamp = dialog._getOriginalClamp()
+        clamp = dialog._getClamp()
+        original_shader = dialog._getOriginalShader()
+        shader = dialog._getShader()
+        original_mode = dialog._getOriginalMode()
+        lighting_mode = dialog._getLightingMode()
+        original_depth = dialog._getOriginalDepth()
+        color_depth = dialog._getColorDepth()
+        original_size = dialog._getOriginalSize()
+        _size = dialog._getSize()
+        path_template = dialog._getPath()
+
+        projector = mari.projectors.current()
+
+        projector.setClampColors(clamp)
+        projector.setUseShader(shader)
+        projector.setLightingMode(lighting_mode)
+        if '8' in color_depth:
+            projector.setBitDepth(8)
+        elif '16' in color_depth:
+            projector.setBitDepth(16)
+        else:
+            projector.setBitDepth(32)
+        size = size.split('x')
+        projector.setSize(int(size[0]), int(size[1]))
+        
+        path = os.path.split(path_template)[0]
+        template = os.path.split(path_template)[1]
+
+        if time:
+            mari.clock.rewind()
+            frame_range = mari.clock.frameCount()
+            for frame in range(frame_range):
+                frame = str(frame).zfill(frame_padding)
+                projector.unprojectToFile(path + template.replace('$FRAME', frame))
+                mari.clock.stepForward()
+
+        else:
+            mari.clock.setFrameRange(int(start_end_time[0]), int(start_end_time[1]))
+            mari.clock.rewind()
+            frame_range = mari.clock.frameCount()
+            for frame in range(frame_range):
+                frame = str(frame).zfill(frame_padding)
+                projector.unprojectToFile(path + template.replace('$FRAME', frame))
+                mari.clock.stepForward()
+
+        projector.setClampColors(original_clamp)
+        projector.setUseShader(original_shader)
+        projector.setLightingMode(original_mode)
+        projector.setBitDepth(original_depth)
+        projector.setSize(original_size, original_size)
 
         # projector = mari.projectors.list()[0]
         # path = mari.utils.misc.getSaveFileName(parent=None, caption='Playblast', dir='', filter='', selected_filter=None, options=0, save_filename='')
