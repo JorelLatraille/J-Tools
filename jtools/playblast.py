@@ -104,33 +104,33 @@ class playblastGUI(QDialog):
         #Widgets for unproject settings
         clamp_label = QLabel('Clamp:')
         self.clamp = QCheckBox()
-        self.current_clamp = mari.projectors.current().clampColors()
-        self.clamp.setChecked(self.current_clamp)
+        self.original_clamp = mari.projectors.current().clampColors()
+        self.clamp.setChecked(self.original_clamp)
         shader_used_label = QLabel('Shader Used:')
         self.shader_used = QComboBox()
         shader_list = mari.projectors.current().useShaderList()
-        self.current_shader = mari.projectors.current().useShader()
+        self.original_shader = mari.projectors.current().useShader()
         for shader in shader_list:
             self.shader_used.addItem(shader)
-        self.shader_used.setCurrentIndex(self.shader_used.findText(self.current_shader))
+        self.shader_used.setCurrentIndex(self.shader_used.findText(self.original_shader))
         lighting_mode_label = QLabel('Lighting mode:')
         self.lighting_mode = QComboBox()
-        self.current_mode = mari.projectors.current().lightingMode()
+        self.original_mode = mari.projectors.current().lightingMode()
         for mode in lighting_mode_list:
             self.lighting_mode.addItem(mode)
-        self.lighting_mode.setCurrentIndex(self.current_mode)
+        self.lighting_mode.setCurrentIndex(self.original_mode)
         color_depth_label = QLabel('Color depth:')
         self.color_depth = QComboBox()
-        self.current_depth = mari.projectors.current().bitDepth()
+        self.original_depth = mari.projectors.current().bitDepth()
         for depth in color_depth_list:
             self.color_depth.addItem(depth)
-        self.color_depth.setCurrentIndex(self.color_depth.findText(([bit for bit in color_depth_list if str(self.current_depth) in bit])[0]))
+        self.color_depth.setCurrentIndex(self.color_depth.findText(([bit for bit in color_depth_list if str(self.original_depth) in bit])[0]))
         size_label = QLabel('Size:')
         self._size = QComboBox()
-        self.current_size = mari.projectors.current().width()
+        self.original_size = mari.projectors.current().width()
         for size in size_list:
             self._size.addItem(size)
-        self._size.setCurrentIndex(self._size.findText(([bit for bit in size_list if str(self.current_size) in bit])[0]))
+        self._size.setCurrentIndex(self._size.findText(([bit for bit in size_list if str(self.original_size) in bit])[0]))
 
         #Create unproject_layout
         unproject_layout = QGridLayout()
@@ -225,23 +225,43 @@ class playblastGUI(QDialog):
 
     def _getOriginalClamp(self):
         "Return original clamp setting"
-        return self.current_clamp
+        return self.original_clamp
+
+    def _getCurrentClamp(self):
+        "Return original clamp setting"
+        return self.clamp
 
     def _getOriginalShader(self):
         "Return original shader setting"
-        return self.current_shader
+        return self.original_shader
+
+    def _getCurrentShader(self):
+        "Return original shader setting"
+        return self.shader_used
 
     def _getOriginalMode(self):
         "Return original lighting mode"
-        return self.current_mode
+        return self.original_mode
+
+    def _getCurrentMode(self):
+        "Return original lighting mode"
+        return self.lighting_mode
 
     def _getOriginalDepth(self):
         "Return original bit depth setting"
-        return self.current_depth
+        return self.original_depth
+
+    def _getCurrentDepth(self):
+        "Return original bit depth setting"
+        return self.color_depth
 
     def _getOriginalSize(self):
         "Return original size setting"
-        return self.current_size
+        return self.original_size
+
+    def _getCurrentSize(self):
+        "Return original size setting"
+        return self._size
 
     def accepted(self):
         "Check user settings provided before accepting"
@@ -312,6 +332,17 @@ def playblast():
     dialog = playblastGUI()
     if dialog.exec_():
         pass
+
+    original_clamp = dialog._getOriginalClamp
+    clamp = dialog._getCurrentClamp
+    original_shader = dialog._getOriginalShader
+    shader = dialog._getCurrentShader
+    original_mode = dialog._getOriginalMode
+    lighting_mode = dialog._getCurrentMode
+    original_depth = dialog._getOriginalDepth
+    color_depth = dialog._getCurrentDepth
+    original_size = dialog._getOriginalSize
+    _size = dialog._getCurrentSize
 
         # projector = mari.projectors.list()[0]
         # path = mari.utils.misc.getSaveFileName(parent=None, caption='Playblast', dir='', filter='', selected_filter=None, options=0, save_filename='')
