@@ -38,6 +38,7 @@ from convert_mask_color_to_scalar import convertMaskColorToScalar
 from convert_to_paintable import convertToPaintable
 from copy_channels import copyChannels
 from copy_udim_to_udim import showUI as copyUdimToUdim
+from create_directories_move_files import createDirectoriesMoveFiles
 from export_image_manager_images import exportImageManagerImages
 from export_selected_channels import exportSelectedChannels
 from export_uv_masks import exportUVMasks
@@ -61,6 +62,7 @@ del convert_mask_color_to_scalar
 del convert_to_paintable
 del copy_channels
 del copy_udim_to_udim
+del create_directories_move_files
 del export_image_manager_images
 del export_selected_channels
 del export_uv_masks
