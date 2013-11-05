@@ -284,7 +284,7 @@ class playblastGUI(QDialog):
 
     def _getShader(self):
         "Return shader setting"
-        return self.shader_used.currentText()
+        return self.shader_used.currentText
 
     def _getOriginalMode(self):
         "Return original lighting mode"
@@ -292,7 +292,7 @@ class playblastGUI(QDialog):
 
     def _getLightingMode(self):
         "Return lighting mode"
-        return self.lighting_mode.currentIndex()
+        return self.lighting_mode.currentIndex
 
     def _getOriginalDepth(self):
         "Return original bit depth setting"
@@ -300,7 +300,7 @@ class playblastGUI(QDialog):
 
     def _getColorDepth(self):
         "Return color bit depth setting"
-        return self.color_depth.currentText()
+        return self.color_depth.currentText
 
     def _getOriginalSize(self):
         "Return original size setting"
@@ -308,7 +308,7 @@ class playblastGUI(QDialog):
 
     def _getSize(self):
         "Return size setting"
-        return self._size.currentText()
+        return self._size.currentText
 
     def _getPath(self):
         "Return path"
@@ -354,7 +354,7 @@ class makeDirGUI(QDialog):
 
 # ------------------------------------------------------------------------------
 def playblast():
-
+    "Playblast uses the timeline to unproject from the current projector"
     if not isProjectSuitable():
         return
 
@@ -362,7 +362,7 @@ def playblast():
     dialog = playblastGUI()
     if dialog.exec_():
         pass
-
+        #Get all inputs/settings from dialog
         time = dialog._getTime()
         original_start_end_time = dialog._getOriginalStartEndTime()
         start_end_time = dialog._getStartEndTime()
@@ -379,8 +379,11 @@ def playblast():
         _size = dialog._getSize()
         path_template = dialog._getPath()
 
+        #Get the current projector and its export path
         projector = mari.projectors.current()
+        original_path = projector.exportPath()
 
+        #Setup the projector using the input/settings from the dialog
         projector.setClampColors(clamp)
         projector.setUseShader(shader)
         projector.setLightingMode(lighting_mode)
@@ -390,46 +393,53 @@ def playblast():
             projector.setBitDepth(16)
         else:
             projector.setBitDepth(32)
-        size = size.split('x')
+        size = _size.split('x')
         projector.setSize(int(size[0]), int(size[1]))
         
+        #Get the path and template
         path = os.path.split(path_template)[0]
         template = os.path.split(path_template)[1]
 
-        if time:
+        #Throw the export process into a try, just in case writing to disk fails
+        #Use the input/settings from the dialog to decide whether to use the current time slider numbers or not
+        #Itterate through the frame range and export accordingly, also use zfill to pad the numbers
+        try:
+            if time:
+                mari.clock.rewind()
+                for frame in range(int(start_end_time[0]), int(start_end_time[1]) + 1):
+                    frame = str(frame).zfill(frame_padding)
+                    projector.unprojectToFile(os.path.join(path, template.replace('$FRAME', frame)))
+                    mari.clock.stepForward()
+
+            else:
+                mari.clock.setFrameRange(int(start_end_time[0]), int(start_end_time[1]))
+                mari.clock.rewind()
+                for frame in range(int(start_end_time[0]), int(start_end_time[1]) + 1):
+                    frame = str(frame).zfill(frame_padding)
+                    projector.unprojectToFile(os.path.join(path, template.replace('$FRAME', frame)))
+                    mari.clock.stepForward()
+        
+            #Reset the projector and time slider back to its original settings
+            projector.setClampColors(original_clamp)
+            projector.setUseShader(original_shader)
+            projector.setLightingMode(original_mode)
+            projector.setBitDepth(original_depth)
+            projector.setSize(original_size, original_size)
+            projector.setExportPath(original_path)
+            mari.clock.setFrameRange(original_start_end_time[0], original_start_end_time[1])
             mari.clock.rewind()
-            frame_range = mari.clock.frameCount()
-            for frame in range(frame_range):
-                frame = str(frame).zfill(frame_padding)
-                projector.unprojectToFile(path + template.replace('$FRAME', frame))
-                mari.clock.stepForward()
 
-        else:
-            mari.clock.setFrameRange(int(start_end_time[0]), int(start_end_time[1]))
+        except Exception, e:
+            #Reset the projector and time slider back to its original settings
+            mari.utils.message("Playblast failed: '%s'" %str(e))
+            projector.setClampColors(original_clamp)
+            projector.setUseShader(original_shader)
+            projector.setLightingMode(original_mode)
+            projector.setBitDepth(original_depth)
+            projector.setSize(original_size, original_size)
+            projector.setExportPath(original_path)
+            mari.clock.setFrameRange(original_start_end_time[0], original_start_end_time[1])
             mari.clock.rewind()
-            frame_range = mari.clock.frameCount()
-            for frame in range(frame_range):
-                frame = str(frame).zfill(frame_padding)
-                projector.unprojectToFile(path + template.replace('$FRAME', frame))
-                mari.clock.stepForward()
-
-        projector.setClampColors(original_clamp)
-        projector.setUseShader(original_shader)
-        projector.setLightingMode(original_mode)
-        projector.setBitDepth(original_depth)
-        projector.setSize(original_size, original_size)
-
-        # projector = mari.projectors.list()[0]
-        # path = mari.utils.misc.getSaveFileName(parent=None, caption='Playblast', dir='', filter='', selected_filter=None, options=0, save_filename='')
-        # if path == '':
-        #   return
-        # else:
-        #   path = os.path.abspath(path)
-
-        # frame_range = mari.clock.frameCount()
-        # for frame in range(frame_range):
-        #   projector.unprojectToFile(path + '.%s.tif' %(str(frame)))
-        #   mari.clock.stepForward()
 
 # ------------------------------------------------------------------------------
 def isProjectSuitable():
