@@ -361,7 +361,6 @@ def playblast():
     #Create dialog and return inputs
     dialog = playblastGUI()
     if dialog.exec_():
-        pass
         #Get all inputs/settings from dialog
         time = dialog._getTime()
         original_start_end_time = dialog._getOriginalStartEndTime()
@@ -451,7 +450,7 @@ def isProjectSuitable():
             mari.utils.message("Please open a project before running.")
             return False
 
-        if mari.projectors.current() is None:
+        if len(mari.projectors.list()) == 0:
             mari.utils.message("Please create/load a projector before running.")
             return False
 

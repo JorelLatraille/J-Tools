@@ -46,7 +46,7 @@ from flatten_mask_stacks import flattenMaskStacks
 from flatten_selected_channels import flattenSelectedChannels
 from import_images import importImages
 from layer_visibility import layerVisibility
-from playblast import playblast
+from playblaster import playblast
 from resize_channels import showUI as resizeChannels
 from set_all_current_shader import setAllCurrentShader
 from shortcuts import quick
@@ -70,7 +70,7 @@ del flatten_mask_stacks
 del flatten_selected_channels
 del import_images
 del layer_visibility
-del playblast
+del playblaster
 del resize_channels
 del set_all_current_shader
 del shortcuts

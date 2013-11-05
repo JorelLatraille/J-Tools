@@ -1,6 +1,6 @@
 # ------------------------------------------------------------------------------
 # ------------------------------------------------------------------------------
-# Flatten mask stacks for all entity channel layers.
+# Flatten mask stacks for current entity channel layers.
 # coding: utf-8
 # Written by Jorel Latraille
 # ------------------------------------------------------------------------------
@@ -24,18 +24,44 @@
 # ------------------------------------------------------------------------------
 
 import mari
+from PythonQt.QtGui import *
 
 version = "0.01"
 
 # ------------------------------------------------------------------------------
+class flattenMaskStacksGUI(QDialog):
+    "Create ImportImagesGUI"
+    def __init__(self, parent=None):
+        super(flattenMaskStacksGUI, self).__init__(parent)
+
+        #Set title and create the major layouts
+        self.setWindowTitle('Flatten Mask Stacks')
+        main_layout = QVBoxLayout()
+        button_layout = QHBoxLayout()
+
+        message = QLabel("Are you sure you wish to flatten all the current geo's channel layer mask stacks?")
+        yes = QPushButton('Yes')
+        no = QPushButton('no')
+        yes.connect('clicked()', self.accept)
+        no.connect('clicked()', self.reject)
+
+        button_layout.addWidget(yes)
+        button_layout.addWidget(no)
+        main_layout.addWidget(message)
+        main_layout.addLayout(button_layout)
+        self.setLayout(main_layout)
+
+# ------------------------------------------------------------------------------
 def flattenMaskStacks():
-    "Flatten mask stacks for all entity channel layers."
+    "Flatten mask stacks for current entity channel layers."
     if not isProjectSuitable():
         return
 
-    geo_list = mari.geo.list()
+    #Create dialog and return inputs
+    dialog = flattenMaskStacksGUI()
+    if dialog.exec_():
 
-    for geo in geo_list:
+        geo = mari.geo.current()
         channel_list = geo.channelList()
         for channel in channel_list:
             layer_list = channel.layerList()
@@ -46,6 +72,8 @@ def flattenMaskStacks():
                     mask_stack.mergeLayers(mask_stack.layerList())
                     mask_layer = mask_stack.layerList()[0]
                     mask_layer.setName(layer.name() + '.Mask') #Rename new flattened layer to layer name + .Mask
+
+        mari.utils.message('Flatten process complete.')
 
 # ------------------------------------------------------------------------------    
 def returnTrue(layer):
