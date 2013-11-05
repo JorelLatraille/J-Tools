@@ -37,7 +37,7 @@ def createJToolsMenu():
         return False
         
     imported = getImported()
-    imported = sorted([s.lower() for s in imported])
+    imported = sorted(imported)
         
     action_dict = {}
     for key_name in imported:
