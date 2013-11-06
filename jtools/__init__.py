@@ -33,6 +33,7 @@ version = "0.04"
 # Use from and import, to import the main function from the module
 from action_path_finder import actionPathFinder
 from batch_archive import batchArchive
+from change_geo_version_path import changeGeoVersionPath
 from class_method_finder import classMethodFinder
 from convert_mask_color_to_scalar import convertMaskColorToScalar
 from convert_to_paintable import convertToPaintable

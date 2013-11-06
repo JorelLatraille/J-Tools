@@ -37,34 +37,58 @@ class changeGeoVersionPathGUI(QDialog):
         #Set title and create the major layouts
         self.setWindowTitle('Playblast')
         main_layout = QVBoxLayout()
+        current_path_layout = QHBoxLayout()
         path_layout = QHBoxLayout()
         button_layout = QHBoxLayout()
 
-        #Add path line input and button
-        path_label = QLabel('Path:')
-        self.path = QLineEdit()
-        path = mari.geo.current().currentVersion().path()
-        self.path.setText(path)
+        #Create label to display current geo version path
+        current_path_label = QLabel("Current Geo Version Path:")
+        self.current_path = QLineEdit(mari.geo.current().currentVersion().path())
+        self.current_path.setReadOnly(True)
+        self.current_path.setMinimumWidth(600)
+
+        current_path_layout.addWidget(current_path_label)
+        current_path_layout.addWidget(self.current_path)
+
+        #Create path line input and button
+        path_label = QLabel('New Path:')
+        self.path = QLineEdit(mari.geo.current().currentVersion().path())
         path_pixmap = QPixmap(mari.resources.path(mari.resources.ICONS) + '/ExportImages.png')
         icon = QIcon(path_pixmap)
         path_button = QPushButton(icon, "")
         path_button.connect('clicked()', lambda: self._getPath())
 
+        #Add path widgets to path_layout
         path_layout.addWidget(path_label)
         path_layout.addWidget(self.path)
         path_layout.addWidget(path_button)
 
-        ok = QPushButton('&OK')
-        cancel = QPushButton('&Cancel')
-        ok.connect('clicked()', self.accepted)
-        cancel.connect('clicked()', self.reject)
+        #Create buttons and hook them up
+        _apply = QPushButton('&Apply')
+        close = QPushButton('&Close')
+        _apply.connect('clicked()', self._accepted)
+        close.connect('clicked()', self.reject)
 
-        button_layout.addWidget(ok)
-        button_layout.addWidget(cancel)
+        #Add buttons to button_layout
+        button_layout.addWidget(_apply)
+        button_layout.addWidget(close)
 
+        #Add layouts to dialog
+        main_layout.addLayout(current_path_layout)
         main_layout.addLayout(path_layout)
         main_layout.addLayout(button_layout)
         self.setLayout(main_layout)
+
+        #Keep dialog on top
+        self.setWindowFlags(Qt.WindowStaysOnTopHint)
+
+        #Connect mari geo entity current selection changed to self._updatePath
+        mari.utils.signal_helpers.connect(mari.geo.entityMadeCurrent, self._updatePath)
+
+    def _updatePath(self):
+        "Update current path to geo version path"
+        self.current_path.setText(mari.geo.current().currentVersion().path())
+        self.path.setText(mari.geo.current().currentVersion().path())
 
     def _getPath(self):
         "Get file path and set the text in path LineEdit widget"
@@ -74,15 +98,15 @@ class changeGeoVersionPathGUI(QDialog):
         else:
             self.path.setText(file_path)
 
-    def accepted(self):
+    def _accepted(self):
         "Check file path provided exists"
         if not os.path.isfile(self.path.text):
             mari.utils.message("Cannot find: '%s'" %self.path.text)
             return
 
+        #Change the geo version path
         mari.geo.current().currentVersion().setPath(r'%s' %self.path.text)
-
-        self.accept()
+        self._updatePath()
 
 # ------------------------------------------------------------------------------
 def changeGeoVersionPath():
