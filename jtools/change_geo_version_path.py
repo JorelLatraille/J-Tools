@@ -27,7 +27,7 @@ import mari, os
 from PythonQt.QtGui import *
 from PythonQt.QtCore import *
 
-version = "0.01"
+version = "0.02"
 
 # ------------------------------------------------------------------------------
 class changeGeoVersionPathGUI(QDialog):
@@ -36,7 +36,7 @@ class changeGeoVersionPathGUI(QDialog):
         super(changeGeoVersionPathGUI, self).__init__(parent)
 
         #Set title and create the major layouts
-        self.setWindowTitle('Playblast')
+        self.setWindowTitle('Change Current Geo Version Path')
         main_layout = QVBoxLayout()
         current_path_layout = QHBoxLayout()
         path_layout = QHBoxLayout()
@@ -102,7 +102,7 @@ class changeGeoVersionPathGUI(QDialog):
     def _accepted(self):
         "Check file path provided exists"
         if not os.path.isfile(self.path.text):
-            mari.utils.message("Cannot find: '%s'" %self.path.text)
+            self.path.selectAll()
             return
 
         #Change the geo version path

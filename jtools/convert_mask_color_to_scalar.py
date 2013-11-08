@@ -1,6 +1,6 @@
 # ------------------------------------------------------------------------------
 # ------------------------------------------------------------------------------
-# Converts all masks from color to scalar, ignores shared layers
+# Converts all masks from color to scalar on current geometry
 # coding: utf-8
 # Written by Jorel Latraille
 # ------------------------------------------------------------------------------
@@ -25,19 +25,44 @@
 
 import mari
 
-version = "0.02"
+version = "0.03"
+
+# ------------------------------------------------------------------------------
+class ConvertMaskColorToScalarGUI(QDialog):
+    "Create ImportImagesGUI"
+    def __init__(self, parent=None):
+        super(ConvertMaskColorToScalarGUI, self).__init__(parent)
+
+        #Set title and create the major layouts
+        self.setWindowTitle('Convert Mask Color To Scalar')
+        main_layout = QVBoxLayout()
+        button_layout = QHBoxLayout()
+
+        message = QLabel("Are you sure you wish to convert the current geo's masks from color to scalar?")
+        yes = QPushButton('Yes')
+        no = QPushButton('no')
+        yes.connect('clicked()', self.accept)
+        no.connect('clicked()', self.reject)
+
+        button_layout.addWidget(yes)
+        button_layout.addWidget(no)
+        main_layout.addWidget(message)
+        main_layout.addLayout(button_layout)
+        self.setLayout(main_layout)
 
 # ------------------------------------------------------------------------------ 
 def convertMaskColorToScalar():
     "Converts all masks on non shared layers from Color to Scalar"
-    
+
     if not isProjectSuitable(): #Check if project is suitable
         return False
     
-    geometry_list = mari.geo.list()
-    
-    for geo in geometry_list:
-        channel_list = geo.channelList()
+    #Create dialog and return inputs
+    dialog = ConvertMaskColorToScalarGUI()
+    if dialog.exec_():
+
+        channel_list = mari.geo.current().channelList()
+        mask_layer_list = []
         for channel in channel_list:
             all_layers = getMatchingLayers(channel.layerList(), returnTrue)
             mask_layers = []
@@ -47,44 +72,38 @@ def convertMaskColorToScalar():
                 if layer.hasMaskStack():
                     mask_layers.extend(layer.maskStack().layerList())
             
-            mask_shared_layers = getSharedLayers(mask_layers)
-            
             # Remove shared layers from the list
-            mask_layer_list = []
             for layer in mask_layers:
-                if layer in mask_shared_layers:
+                if layer in mask_layer_list:
                     pass
                 else:
                     mask_layer_list.append(layer)
-            
-            # Get list of images
-            mask_images = {}
-            for layer in mask_layer_list:
-                if layer.hasMask() and not layer.hasMaskStack():
-                    mask_images[layer.name()] = layer.maskImageSet().imageList()
-                elif layer.isPaintableLayer():
-                    mask_images[layer.name()] = layer.imageSet().imageList()
-            
-            for key in mask_images:
-                print "%s old color space: %d" %(key, mask_images[key][0].colorSpace())
-                for image in mask_images[key]:
-                    image.setColorSpace(1)
-            
-            print ""
-            
-            for key in mask_images:
-                print "%s new color space: %d" %(key, mask_images[key][0].colorSpace())
+
+        # Get list of images
+        mask_images = {}
+        for layer in mask_layer_list:
+            if layer.hasMask() and not layer.hasMaskStack():
+                mask_images[layer.name()] = layer.maskImageSet().imageList()
+            elif layer.isPaintableLayer():
+                mask_images[layer.name()] = layer.imageSet().imageList()
+        
+        for key in mask_images:
+            print "%s old color space: %d" %(key, mask_images[key][0].colorSpace())
+            for image in mask_images[key]:
+                image.setColorSpace(1)
+        
+        print ""
+        
+        for key in mask_images:
+            print "%s new color space: %d" %(key, mask_images[key][0].colorSpace())
+
+        mari.utils.message('Conversion complete.')
 
 # ------------------------------------------------------------------------------    
 def returnTrue(layer):
     "Returns True for any object passed to it."
     return True
     
-# ------------------------------------------------------------------------------
-def getSharedLayers(layer_list):
-    "Returns a list of all of the layers in the layer stack, including in substacks which are shared."
-    return getMatchingLayers(layer_list, mari.Layer.isShared)
-
 # ------------------------------------------------------------------------------
 def getMatchingLayers(layer_list, criterionFn):
     "Returns a list of all of the layers in the stack that match the given criterion function, including substacks."
@@ -110,19 +129,10 @@ def isProjectSuitable():
         if mari.projects.current() is None:
             mari.utils.message("Please open a project before running.")
             return False
-            
-        geo = mari.geo.current()
-        if geo is None:
-            mari.utils.message("Please select an object to run.")
-            return False
         
-        chan = geo.currentChannel()
+        chan = mari.geo.current().currentChannel()
         if chan is None:
-            mari.utils.message("Please select a channel to run.")
-            return False
-            
-        if len(chan.layerList()) == 0:
-            mari.utils.message("Please select a layer to run.")
+            mari.utils.message("Please create a channel to run.")
             return False
 
         return True
