@@ -93,15 +93,15 @@ class changeGeoVersionPathGUI(QDialog):
 
     def _getPath(self):
         "Get file path and set the text in path LineEdit widget"
-        file_path = mari.utils.misc.getSaveFileName(parent=self, caption='New Path', dir='', filter='', selected_filter=None, options=0, save_filename='model.obj')
+        file_path = mari.utils.misc.getOpenFileName(parent=self, caption='New Path', dir='', filter='*.obj', selected_filter=0, options=0) # If you wish to add more filters either '*.obj *.mb' or '*.obj *.mb;;*.txt' will work
         if file_path == "":
             return
         else:
             self.path.setText(file_path)
 
     def _accepted(self):
-        "Check file path provided exists"
-        if not os.path.isfile(self.path.text):
+        "Check file path provided exists and ends with .obj"
+        if not os.path.isfile(self.path.text) and not self.path.text.endswith('.obj'):
             self.path.selectAll()
             return
 
