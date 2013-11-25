@@ -157,6 +157,7 @@ class ExportSelectedChannelsGUI(QDialog):
         self.export_everything_box.connect("clicked()", lambda: self.exportEverything())
         self.export_flattened_box = QCheckBox('Export Flattened')
         self.export_small_textures_box = QCheckBox('Small Textures')
+        self.export_only_updated_textures_box = QCheckBox('Only Updated Textures')
     
         #Add OK Cancel buttons layout, buttons and add
         ok_button = QPushButton("OK")
@@ -168,6 +169,7 @@ class ExportSelectedChannelsGUI(QDialog):
         bottom_layout.addWidget(self.export_everything_box)
         bottom_layout.addWidget(self.export_flattened_box)
         bottom_layout.addWidget(self.export_small_textures_box)
+        bottom_layout.addWidget(self.export_only_updated_textures_box)
         bottom_layout.addWidget(ok_button)
         bottom_layout.addWidget(cancel_button)
 
@@ -238,6 +240,10 @@ class ExportSelectedChannelsGUI(QDialog):
     def getExportSmallTextures(self):
         return self.export_small_textures_box.isChecked()
 
+    #Get export only updated textures box is ticked (bool)
+    def getExportOnlyUpdatedTextures(self):
+        return self.export_only_updated_textures_box.isChecked()
+
 # ------------------------------------------------------------------------------   
 class ChannelsToExportList(QListWidget):
     "Stores a list of operations to perform."
@@ -300,30 +306,40 @@ def setBold(widget):
     widget.setFont(font)
 
 # ------------------------------------------------------------------------------ 
-def exportChannels(channels, path, flattened, small_textures):
+def exportChannels(channels, path, flattened, small_textures, only_updated_textures):
     save_options = 1
     if small_textures:
         save_options = 0
     #Check if export flattened is ticked, if not export unflattened
     if flattened:
         for channel in channels:
+            uv_index_list = []
+            if only_updated_textures:
+                uv_index_list = onlyUpdatedTextures(channel)
+                if len(uv_index_list) == 0:
+                    continue
             try:
-                channel.exportImagesFlattened(path, save_options)
-            except:
-                mari.utils.message("IOError: Failed to export to '%s'" %(path))
+                channel.exportImagesFlattened(path, save_options, uv_index_list)
+            except Exception, e:
+                mari.utils.message('Failed to export "%s"' %e)
                 return
     else:
         for channel in channels:
+            uv_index_list = []
+            if only_updated_textures:
+                uv_index_list = onlyUpdatedTextures(channel)
+                if len(uv_index_list) == 0:
+                    continue
             try:
-                channel.exportImages(path, save_options)
-            except:
-                mari.utils.message("IOError: Failed to export to '%s'" %(path))
+                channel.exportImages(path, save_options, uv_index_list)
+            except Exception, e:
+                mari.utils.message('Failed to export "%s"' %e)
                 return
     #If successful let the user know
     mari.utils.message("Export Successful")
     
 # ------------------------------------------------------------------------------ 
-def exportEverything(path, flattened, small_textures):
+def exportEverything(path, flattened, small_textures, only_updated_textures):
     "Export everything, all geo and all channels"
     geo_list = mari.geo.list()
     channels = []
@@ -335,17 +351,27 @@ def exportEverything(path, flattened, small_textures):
     #Check if export flattened is ticked, if not export unflattened
     if flattened:
         for channel in channels:
+            uv_index_list = []
+            if only_updated_textures:
+                uv_index_list = onlyUpdatedTextures(channel)
+                if len(uv_index_list) == 0:
+                    continue
             try:
-                channel.exportImagesFlattened(path, save_options)
-            except:
-                mari.utils.message("IOError: Failed to export to '%s'" %(path))
+                channel.exportImagesFlattened(path, save_options, uv_index_list)
+            except Exception, e:
+                mari.utils.message('Failed to export "%s"' %e)
                 return
     else:
         for channel in channels:
+            uv_index_list = []
+            if only_updated_textures:
+                uv_index_list = onlyUpdatedTextures(channel)
+                if len(uv_index_list) == 0:
+                    continue
             try:
-                channel.exportImages(path, save_options)
-            except:
-                mari.utils.message("IOError: Failed to export to '%s'" %(path))
+                channel.exportImages(path, save_options, uv_index_list)
+            except Exception, e:
+                mari.utils.message('Failed to export "%s"' %e)
                 return
     #If successful let the user know
     mari.utils.message("Export Successful")
@@ -363,11 +389,89 @@ def exportSelectedChannels():
         path = dialog.getExportPathTemplate()
         flattened = dialog.getExportFlattened()
         small_textures = dialog.getExportSmallTextures()
+        only_updated_textures = dialog.getExportOnlyUpdatedTextures()
         if dialog.getExportEverything():
-            exportEverything(path, flattened, small_textures)
+            exportEverything(path, flattened, small_textures, only_updated_textures)
         else:
-            exportChannels(channels, path, flattened, small_textures)
-    
+            exportChannels(channels, path, flattened, small_textures, only_updated_textures)
+
+# ------------------------------------------------------------------------------
+def onlyUpdatedTextures(channel):
+    "Manage channels so only modified patch images get exported"
+    if channel.hasMetadata('onlyUpdatedTextures'):
+        uv_index_list = _getChangedUvIndexes(channel)   
+    else:
+        uv_index_list = _setChannelUvIndexes(channel)
+    return uv_index_list
+
+# ------------------------------------------------------------------------------
+def _getChangedUvIndexes(channel):
+    "Get uv indexes with new hashes"
+    geo = channel.geoEntity()
+    paintable_layer_list = getPaintableLayers(channel.layerList())
+    image_set_list = []
+    for layer in paintable_layer_list:
+        image_set_list.append(layer.imageSet())
+        if layer.hasMask():
+            image_set_list.append(layer.maskImageSet())
+    patch_list = geo.patchList()
+    uv_index_list = []
+    for i in range(len(patch_list)):
+        hash_ = ''
+        for n in range(len(image_set_list)):
+            image = geo.patchImage(patch_list[i], image_set_list[n])
+            hash_ += image.hash()
+        if not hash_ == channel.metadata(str(patch_list[i].uvIndex())):
+            uv_index_list.append(patch_list[i].uvIndex())
+            channel.setMetadata(str(patch_list[i].uvIndex()), hash_)
+            channel.setMetadataEnabled(str(patch_list[i].uvIndex()), False)
+    return uv_index_list
+
+# ------------------------------------------------------------------------------
+def _setChannelUvIndexes(channel):
+    "Set the channel metadata uv index hash"
+    geo = channel.geoEntity()
+    paintable_layer_list = getPaintableLayers(channel.layerList())
+    image_set_list = []
+    for layer in paintable_layer_list:
+        image_set_list.append(layer.imageSet())
+        if layer.hasMask():
+            image_set_list.append(layer.maskImageSet())
+    patch_list = geo.patchList()
+    uv_index_list = []
+    for i in range(len(patch_list)):
+        hash_ = ''
+        for n in range(len(image_set_list)):
+            image = geo.patchImage(patch_list[i], image_set_list[n])
+            hash_ += image.hash()
+        uv_index_list.append(patch_list[i].uvIndex())
+        channel.setMetadata(str(patch_list[i].uvIndex()), hash_)
+        channel.setMetadataEnabled(str(patch_list[i].uvIndex()), False)
+    channel.setMetadata('onlyUpdatedTextures', True)
+    channel.setMetadataEnabled('onlyUpdatedTextures', False)
+    return uv_index_list
+
+# ------------------------------------------------------------------------------
+def getPaintableLayers(layer_list):
+    "Returns a list of all of the paintable layers in the layer stack, including in substacks."
+    return getMatchingLayers(layer_list, mari.Layer.isPaintableLayer)
+
+# ------------------------------------------------------------------------------
+def getMatchingLayers(layer_list, criterionFn):
+    "Returns a list of all of the layers in the stack that match the given criterion function, including substacks."
+    matching = []
+    for layer in layer_list:
+        if criterionFn(layer):
+            matching.append(layer)
+        if hasattr(layer, 'layerStack'):
+            matching.extend(getMatchingLayers(layer.layerStack().layerList(), criterionFn))
+        if layer.hasMaskStack():
+            matching.extend(getMatchingLayers(layer.maskStack().layerList(), criterionFn))
+        if hasattr(layer, 'hasAdjustmentStack') and layer.hasAdjustmentStack():
+            matching.extend(getMatchingLayers(layer.adjustmentStack().layerList(), criterionFn))
+        
+    return matching
+
 # ------------------------------------------------------------------------------
 def isProjectSuitable():
     "Checks project state."
