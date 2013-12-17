@@ -6,7 +6,7 @@
 # coding: utf-8
 # Written by Jorel Latraille
 # ------------------------------------------------------------------------------
-#                                      	VERSION 0.04
+#                                       VERSION 0.04
 # ------------------------------------------------------------------------------
 # DISCLAIMER & TERMS OF USE:
 #
@@ -55,28 +55,76 @@ from toggle_navigation import toggleNavigation
 from tools_update import update
 
 # ------------------------------------------------------------------------------
-# Only del the module name if you dont wish users to have access to its other functions
-del action_path_finder
-del batch_archive
-del class_method_finder
-del convert_mask_color_to_scalar
-del convert_to_paintable
-del copy_channels
-del copy_udim_to_udim
-del create_directories_move_files
-del export_image_manager_images
-del export_selected_channels
-del export_uv_masks
-del flatten_mask_stacks
-del flatten_selected_channels
-del import_images
-del layer_visibility
-del playblaster
-del resize_channels
-del set_all_current_shader
-del shortcuts
-del toggle_navigation
-del tools_update
+class JTools():
+
+    def actionPathFinder(self):
+        action_path_finder.actionPathFinder()
+
+    def batchArchive(self):
+        batch_archive.batchArchive()
+
+    def changeGeoVersionPath(self):
+        change_geo_version_path.changeGeoVersionPath()
+
+    def classMethodFinder(self):
+        class_method_finder.classMethodFinder()
+
+    def convertMaskColorToScalar(self):
+        convert_mask_color_to_scalar.convertMaskColorToScalar()
+
+    def convertToPaintable(self):
+        convert_to_paintable.convertToPaintable()
+
+    def copyChannels(self):
+        copy_channels.copyChannels()
+
+    def copyUdimToUdim(self):
+        copy_udim_to_udim.showUI()
+
+    def createDirectoriesMoveFiles(self):
+        create_directories_move_files.createDirectoriesMoveFiles()
+
+    def exportImageManagerImages(self):
+        export_image_manager_images.exportImageManagerImages()
+
+    def exportSelectedChannels(self):
+        export_selected_channels.exportSelectedChannels()
+
+    def exportUVMasks(self):
+        export_uv_masks.exportUVMasks()
+
+    def flattenMaskStacks(self):
+        flatten_mask_stacks.flattenMaskStacks()
+
+    def flattenSelectedChannels(self):
+        flatten_selected_channels.flattenSelectedChannels()
+
+    def importImages(self):
+        import_images.importImages()
+
+    def layerVisibility(self):
+        layer_visibility.layerVisibility()
+
+    def playblast(self):
+        playblaster.playblast()
+
+    def resizeChannels(self):
+        resize_channels.showUI()
+
+    def setAllCurrentShader(self):
+        set_all_current_shader.setAllCurrentShader()
+
+    def quick(self):
+        shortcuts.quick()
+
+    def toggleNavigation(self):
+        toggle_navigation.toggleNavigation()
+
+    def update(self):
+        tools_update.update()
+
+# ------------------------------------------------------------------------------
+mari.jtools = JTools()
 
 # ------------------------------------------------------------------------------
 # DO NOT REMOVE THE BELOW! This is used to generate the menu inside of Mari!
