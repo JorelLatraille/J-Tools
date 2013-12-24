@@ -6,7 +6,7 @@
 # coding: utf-8
 # Written by Jorel Latraille
 # ------------------------------------------------------------------------------
-#                                       VERSION 0.04
+#                                       VERSION 0.05
 # ------------------------------------------------------------------------------
 # DISCLAIMER & TERMS OF USE:
 #
@@ -27,32 +27,35 @@
 # ------------------------------------------------------------------------------
 # ------------------------------------------------------------------------------
 
-version = "0.04"
+import mari, inspect, os
+
+version = "0.05"
 
 # ------------------------------------------------------------------------------
 # Use from and import, to import the main function from the module
-from action_path_finder import actionPathFinder
-from batch_archive import batchArchive
-from change_geo_version_path import changeGeoVersionPath
-from class_method_finder import classMethodFinder
-from convert_mask_color_to_scalar import convertMaskColorToScalar
-from convert_to_paintable import convertToPaintable
-from copy_channels import copyChannels
-from copy_udim_to_udim import showUI as copyUdimToUdim
-from create_directories_move_files import createDirectoriesMoveFiles
-from export_image_manager_images import exportImageManagerImages
-from export_selected_channels import exportSelectedChannels
-from export_uv_masks import exportUVMasks
-from flatten_mask_stacks import flattenMaskStacks
-from flatten_selected_channels import flattenSelectedChannels
-from import_images import importImages
-from layer_visibility import layerVisibility
-from playblaster import playblast
-from resize_channels import showUI as resizeChannels
-from set_all_current_shader import setAllCurrentShader
-from shortcuts import quick
-from toggle_navigation import toggleNavigation
-from tools_update import update
+import action_path_finder
+import batch_archive
+import change_geo_version_path
+import channel_template
+import class_method_finder
+import convert_mask_color_to_scalar
+import convert_to_paintable
+import copy_channels
+import copy_udim_to_udim
+import create_directories_move_files
+import export_image_manager_images
+import export_selected_channels
+import export_uv_masks
+import flatten_mask_stacks
+import flatten_selected_channels
+import import_images
+import layer_visibility
+import playblaster
+import resize_channels
+import set_all_current_shader
+import shortcuts
+import toggle_navigation
+import tools_update
 
 # ------------------------------------------------------------------------------
 class JTools():
@@ -81,6 +84,9 @@ class JTools():
     def copyUdimToUdim(self):
         copy_udim_to_udim.showUI()
 
+    def createChannelTemplate(self):
+        channel_template.createChannelTemplate()
+        
     def createDirectoriesMoveFiles(self):
         create_directories_move_files.createDirectoriesMoveFiles()
 
@@ -99,6 +105,9 @@ class JTools():
     def flattenSelectedChannels(self):
         flatten_selected_channels.flattenSelectedChannels()
 
+    def getChannelTemplate(self):
+        channel_template.getChannelTemplate()
+
     def importImages(self):
         import_images.importImages()
 
@@ -114,6 +123,9 @@ class JTools():
     def setAllCurrentShader(self):
         set_all_current_shader.setAllCurrentShader()
 
+    def setChannelTemplate(self):
+        channel_template.setChannelTemplate()
+
     def quick(self):
         shortcuts.quick()
 
@@ -128,17 +140,12 @@ mari.jtools = JTools()
 
 # ------------------------------------------------------------------------------
 # DO NOT REMOVE THE BELOW! This is used to generate the menu inside of Mari!
-from tools_menu import createJToolsMenu
+import tools_menu
 
-createJToolsMenu()
-
-del tools_menu
-del createJToolsMenu
+tools_menu.createJToolsMenu([method for method, instance in inspect.getmembers(mari.jtools, predicate=inspect.ismethod)])
 
 # ------------------------------------------------------------------------------
 # DO NOT REMOVE THE BELOW! This is used to cleanup any residual update files!
-import mari, os
-
 scripts_path = os.path.abspath(mari.resources.path(mari.resources.USER_SCRIPTS))
 
 if mari.app.version().isWindows():

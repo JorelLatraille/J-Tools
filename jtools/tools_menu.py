@@ -29,54 +29,28 @@ import mari, re
 from os.path import abspath, dirname, join
 from inspect import getfile, currentframe
 
-version = "0.02"
+version = "0.03"
 
 # ------------------------------------------------------------------------------
-def createJToolsMenu():
-    if not getImported():
-        return False
-        
-    imported = getImported()
-    imported = sorted(imported)
-        
+def createJToolsMenu(menu_items):
+    menu_items = sorted(menu_items)
     action_dict = {}
-    for key_name in imported:
-        action_dict[key_name] = mari.actions.create(convert(key_name), "jtools." + key_name + "()")
-        mari.menus.addAction(action_dict[key_name], "MainWindow/Sc&ripts/&J-Tools")
+    for key_name in menu_items:
+        action_dict[key_name] = mari.actions.create(convert(key_name), "mari.jtools." + key_name + "()")
+        if "channel" in key_name.lower() and not "template" in key_name.lower():
+            mari.menus.addAction(action_dict[key_name], "MainWindow/Sc&ripts/&J-Tools/Channel")
+        elif "template" in key_name.lower():
+            mari.menus.addAction(action_dict[key_name], "MainWindow/Sc&ripts/&J-Tools/Channel/Template")
+        else:
+            mari.menus.addAction(action_dict[key_name], "MainWindow/Sc&ripts/&J-Tools")
         if key_name == "update":
             icon_filename = "SaveToImageManager.png"
             icon_path = mari.resources.path(mari.resources.ICONS) + '/' + icon_filename
             action_dict[key_name].setIconPath(icon_path)
 
-# ------------------------------------------------------------------------------        
-def getImported():
-    file_path = dirname(abspath(getfile(currentframe()))) # script directory
-    file_path = join(file_path, "__init__.py")
-    imported = []
-
-    try:
-        with open(file_path) as file:
-            for line in file:
-                if line[0] == "#":
-                    quote = True
-                elif line[0] == "v":
-                    version = True
-                elif line[0] == "d":
-                    break
-                elif len(line.strip()) > 0:
-                    list_words = line.split()
-                    imported.extend(list_words[-1:])
-                else:
-                    pass
-    except IOError:
-        print 'No __init__.py file'
-        return False
-
-    return imported
-
 # ------------------------------------------------------------------------------   
-first_cap_re = re.compile('(.)([A-Z][a-z]+)')
-all_cap_re = re.compile('([a-z0-9])([A-Z])')
 def convert(name):
+    first_cap_re = re.compile('(.)([A-Z][a-z]+)')
+    all_cap_re = re.compile('([a-z0-9])([A-Z])')
     s1 = first_cap_re.sub(r'\1 \2', name)
     return all_cap_re.sub(r'\1 \2', s1).title()
