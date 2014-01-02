@@ -24,14 +24,14 @@
 # ------------------------------------------------------------------------------
 
 import mari, inspect
-from PythonQt.QtGui import *
+import PythonQt.QtGui as QtGui
 
-version = "0.01"
+version = "0.02"
 
 USER_ROLE_01 = 34          # PythonQt.Qt.UserRole
 
 # ------------------------------------------------------------------------------        
-class classMethodFinderGUI(QDialog):
+class classMethodFinderGUI(QtGui.QDialog):
     
     def __init__(self, parent=None):
         super(classMethodFinderGUI, self).__init__(parent)
@@ -39,19 +39,19 @@ class classMethodFinderGUI(QDialog):
         self.setWindowTitle("Class Method Finder")
         
         #Create geometrys layout, label, and widget. Finally populate.
-        class_method_layout = QVBoxLayout()
-        class_method_header_layout = QHBoxLayout()
-        class_method_label = QLabel("Class Methods")
+        class_method_layout = QtGui.QVBoxLayout()
+        class_method_header_layout = QtGui.QHBoxLayout()
+        class_method_label = QtGui.QLabel("Class Methods")
         setBold(class_method_label)
-        class_method_list = QListWidget()
+        class_method_list = QtGui.QListWidget()
         
-        filter_class_method_box = QLineEdit()
+        filter_class_method_box = QtGui.QLineEdit()
         mari.utils.connect(filter_class_method_box.textEdited, lambda: updateClassMethodFilter(filter_class_method_box, class_method_list))
         
         class_method_header_layout.addWidget(class_method_label)
         class_method_header_layout.addStretch()
-        class_method_search_icon = QLabel()
-        search_pixmap = QPixmap(mari.resources.path(mari.resources.ICONS) + '/Lookup.png')
+        class_method_search_icon = QtGui.QLabel()
+        search_pixmap = QtGui.QPixmap(mari.resources.path(mari.resources.ICONS) + '/Lookup.png')
         class_method_search_icon.setPixmap(search_pixmap)
         class_method_header_layout.addWidget(class_method_search_icon)
         class_method_header_layout.addWidget(filter_class_method_box)
@@ -72,7 +72,7 @@ class classMethodFinderGUI(QDialog):
             class_method_list.addItem(method)
             class_method_list.item(class_method_list.count - 1).setData(USER_ROLE_01, method)
        
-        selected_class_method_box = QLineEdit()
+        selected_class_method_box = QtGui.QLineEdit()
         class_method_list.connect('currentTextChanged(QString)', selected_class_method_box, 'setText(QString)')
         
         class_method_layout.addLayout(class_method_header_layout)

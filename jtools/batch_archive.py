@@ -23,7 +23,7 @@
 # ------------------------------------------------------------------------------
 # ------------------------------------------------------------------------------
 
-import mari, PythonQt
+import mari
 
 version = "0.01"
 
@@ -36,7 +36,7 @@ def batchArchive():
         
     archive_path = mari.utils.misc.getExistingDirectory(parent=None, caption='Batch Archive', dir='')
     if archive_path == '':
-        return False
+        return
     
     projects_list = mari.projects.list()
     for project in projects_list:

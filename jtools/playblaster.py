@@ -24,51 +24,50 @@
 # ------------------------------------------------------------------------------
 
 import mari, os
-from PythonQt.QtGui import *
+import PythonQt.QtGui as QtGui
 from PythonQt.QtCore import QRegExp, Qt
 
-version = "0.01"
+version = "0.02"
 
 lighting_mode_list = ['Flat', 'Basic', 'Full']
 color_depth_list = ['8bit (Byte)', '16bit (Half)', '32bit (Float)']
 size_list = ['2048 x 2048', '4096 x 4096', '8192 x 8192', '16384 x 16384', '32768 x 32768']
-image_file_types = ['.bmp', '.jpg', '.jpeg', '.png', '.ppm', '.psd', '.tga', '.tif', '.tiff', '.xbm', '.xpm', '.exr']
 
 # ------------------------------------------------------------------------------
-class playblastGUI(QDialog):
-    "Create ImportImagesGUI"
+class playblastUI(QtGui.QDialog):
+    "Create ImportImagesUI"
     def __init__(self, parent=None):
-        super(playblastGUI, self).__init__(parent)
+        super(playblastUI, self).__init__(parent)
 
         #Set title and create the major layouts
         self.setWindowTitle('Playblast')
-        main_layout = QVBoxLayout()
-        top_layout = QVBoxLayout()
-        middle_layout = QVBoxLayout()
-        bottom_layout = QHBoxLayout()
-        final_layout = QVBoxLayout()
+        main_layout = QtGui.QVBoxLayout()
+        top_layout = QtGui.QVBoxLayout()
+        middle_layout = QtGui.QVBoxLayout()
+        bottom_layout = QtGui.QHBoxLayout()
+        final_layout = QtGui.QVBoxLayout()
 
         #Create time widgets and hook them up
-        time_label = QLabel('Time range:')
-        self.time_slider = QRadioButton('Time Slider')
-        self.start_end = QRadioButton('Start/End')
-        self.start_label = QLabel('Start time:')
-        self.end_label = QLabel('End time:')
-        self.start_time = QLineEdit()
+        time_label = QtGui.QLabel('Time range:')
+        self.time_slider = QtGui.QRadioButton('Time Slider')
+        self.start_end = QtGui.QRadioButton('Start/End')
+        self.start_label = QtGui.QLabel('Start time:')
+        self.end_label = QtGui.QLabel('End time:')
+        self.start_time = QtGui.QLineEdit()
         self.original_start_time = mari.clock.startFrame()
         self.start_time.setText(self.original_start_time)
-        self.end_time = QLineEdit()
+        self.end_time = QtGui.QLineEdit()
         self.original_end_time = mari.clock.stopFrame()
         self.end_time.setText(self.original_end_time)
         self.time_slider.connect('toggled(bool)', self._timeSliderToggle)
         self.time_slider.setChecked(True)
 
         #Create padding widgets and hook them up
-        padding_label = QLabel('Frame padding:')
+        padding_label = QtGui.QLabel('Frame padding:')
         punctuation_re = QRegExp(r"[0-4]") #Force the line edit to only be able to enter numbers from 0-4
-        self.frame_padding = QLineEdit()
-        self.frame_padding.setValidator(QRegExpValidator(punctuation_re, self))
-        self.padding_slider = QSlider(Qt.Orientation(Qt.Horizontal))
+        self.frame_padding = QtGui.QLineEdit()
+        self.frame_padding.setValidator(QtGui.QRegExpValidator(punctuation_re, self))
+        self.padding_slider = QtGui.QSlider(Qt.Orientation(Qt.Horizontal))
         self.padding_slider.setMinimum(0)
         self.padding_slider.setMaximum(4)
         self.padding_slider.setTickInterval(1)
@@ -78,7 +77,7 @@ class playblastGUI(QDialog):
         self.frame_padding.connect('editingFinished()', self._updateSliderPosition)
 
         #Create grid layout called time_layout
-        time_layout = QGridLayout()
+        time_layout = QtGui.QGridLayout()
 
         #Add time widgets to time_layout
         time_layout.addWidget(time_label, 0, 0, Qt.AlignRight)
@@ -97,43 +96,43 @@ class playblastGUI(QDialog):
         time_layout.setColumnStretch(3, 2)
 
         #Add time_layout to time_group (Group Box) widget and add the widget to top_layout
-        time_group = QGroupBox()
+        time_group = QtGui.QGroupBox()
         time_group.setLayout(time_layout)
         top_layout.addWidget(time_group)
 
         #Widgets for unproject settings
-        clamp_label = QLabel('Clamp:')
-        self.clamp = QCheckBox()
+        clamp_label = QtGui.QLabel('Clamp:')
+        self.clamp = QtGui.QCheckBox()
         self.original_clamp = mari.projectors.current().clampColors()
         self.clamp.setChecked(self.original_clamp)
-        shader_used_label = QLabel('Shader Used:')
-        self.shader_used = QComboBox()
+        shader_used_label = QtGui.QLabel('Shader Used:')
+        self.shader_used = QtGui.QComboBox()
         shader_list = mari.projectors.current().useShaderList()
         self.original_shader = mari.projectors.current().useShader()
         for shader in shader_list:
             self.shader_used.addItem(shader)
         self.shader_used.setCurrentIndex(self.shader_used.findText(self.original_shader))
-        lighting_mode_label = QLabel('Lighting mode:')
-        self.lighting_mode = QComboBox()
+        lighting_mode_label = QtGui.QLabel('Lighting mode:')
+        self.lighting_mode = QtGui.QComboBox()
         self.original_mode = mari.projectors.current().lightingMode()
         for mode in lighting_mode_list:
             self.lighting_mode.addItem(mode)
         self.lighting_mode.setCurrentIndex(self.original_mode)
-        color_depth_label = QLabel('Color depth:')
-        self.color_depth = QComboBox()
+        color_depth_label = QtGui.QLabel('Color depth:')
+        self.color_depth = QtGui.QComboBox()
         self.original_depth = mari.projectors.current().bitDepth()
         for depth in color_depth_list:
             self.color_depth.addItem(depth)
         self.color_depth.setCurrentIndex(self.color_depth.findText(([bit for bit in color_depth_list if str(self.original_depth) in bit])[0]))
-        size_label = QLabel('Size:')
-        self._size = QComboBox()
+        size_label = QtGui.QLabel('Size:')
+        self._size = QtGui.QComboBox()
         self.original_size = mari.projectors.current().width()
         for size in size_list:
             self._size.addItem(size)
         self._size.setCurrentIndex(self._size.findText(([bit for bit in size_list if str(self.original_size) in bit])[0]))
 
         #Create unproject_layout
-        unproject_layout = QGridLayout()
+        unproject_layout = QtGui.QGridLayout()
 
         unproject_layout.addWidget(clamp_label, 0, 0, Qt.AlignRight)
         unproject_layout.addWidget(self.clamp, 0, 1, Qt.AlignLeft)
@@ -154,8 +153,8 @@ class playblastGUI(QDialog):
         middle_layout.addLayout(unproject_layout)
 
         #Add path line input and button
-        path_label = QLabel('Path:')
-        self.path = QLineEdit()
+        path_label = QtGui.QLabel('Path:')
+        self.path = QtGui.QLineEdit()
         if mari.projectors.current().exportPath() == '':
             path = os.path.abspath(mari.resources.path(mari.resources.DEFAULT_EXPORT)) #Get the default export directory from Mari
         else:
@@ -163,13 +162,13 @@ class playblastGUI(QDialog):
         template = mari.projectors.current().name() + '.$FRAME.tif'
         self.export_path_template = os.path.join(path, template)
         self.path.setText(self.export_path_template)
-        path_pixmap = QPixmap(mari.resources.path(mari.resources.ICONS) + '/ExportImages.png')
-        icon = QIcon(path_pixmap)
-        path_button = QPushButton(icon, "")
+        path_pixmap = QtGui.QPixmap(mari.resources.path(mari.resources.ICONS) + '/ExportImages.png')
+        icon = QtGui.QIcon(path_pixmap)
+        path_button = QtGui.QPushButton(icon, "")
         path_button.connect('clicked()', lambda: self._getPath())
 
         #Create path_layout
-        path_layout = QHBoxLayout()
+        path_layout = QtGui.QHBoxLayout()
 
         #Add widgets to path_layout
         path_layout.addWidget(path_label)
@@ -180,8 +179,8 @@ class playblastGUI(QDialog):
         middle_layout.addLayout(path_layout)
 
         #Add OK/Cancel buttons
-        ok_button = QPushButton("&Playblast")
-        cancel_button = QPushButton("Cancel")
+        ok_button = QtGui.QPushButton("&Playblast")
+        cancel_button = QtGui.QPushButton("Cancel")
 
         #Hook up OK/Cancel buttons
         ok_button.connect("clicked()", self.accepted)
@@ -192,8 +191,8 @@ class playblastGUI(QDialog):
         bottom_layout.addWidget(cancel_button)
 
         #Add layouts to main_group (Group Box) widget and add it to final_layout
-        #Then set the GUI layout to final_layout
-        main_group = QGroupBox()
+        #Then set the UI layout to final_layout
+        main_group = QtGui.QGroupBox()
         main_layout.addLayout(top_layout)
         main_layout.addLayout(middle_layout)
         main_group.setLayout(main_layout)
@@ -236,16 +235,16 @@ class playblastGUI(QDialog):
             mari.utils.message("Please provide a path and image template, e.g. '%s'" %self.export_path_template)
             return
 
-        image_file_types = ('.bmp', '.jpg', '.jpeg', '.png', '.ppm', '.psd', '.tga', '.tif', '.tiff', '.xbm', '.xpm', '.exr')
+        file_types = ['.' + format for format in mari.images.supportedWriteFormats()]
         path_template = self.path.text
         if not os.path.exists(os.path.split(path_template)[0]):
-            make_dir = makeDirGUI(os.path.split(path_template)[0])
+            make_dir = makeDirUI(os.path.split(path_template)[0])
             if not make_dir.exec_():
                 return
         if not '$FRAME' in os.path.split(path_template)[1]:
             mari.utils.message("Please include the $FRAME token in template, e.g. '%s'" %self.export_path_template)
             return
-        if not path_template.endswith(image_file_types):
+        if not path_template.endswith(tuple(file_types)):
             mari.utils.message("File type is not supported: '%s'" %(os.path.split(path_template)[1]))
             return
 
@@ -315,21 +314,21 @@ class playblastGUI(QDialog):
         return self.path.text
 
 # ------------------------------------------------------------------------------
-class makeDirGUI(QDialog):
-    "Create ImportImagesGUI"
+class makeDirUI(QtGui.QDialog):
+    "Create ImportImagesUI"
     def __init__(self, path, parent=None):
-        super(makeDirGUI, self).__init__(parent)
+        super(makeDirUI, self).__init__(parent)
 
         #Set title and create the major layouts
         self.path = path
         self.setModal(True)
         self.setWindowTitle('Make Directory')
-        main_layout = QVBoxLayout()
-        button_layout = QHBoxLayout()
+        main_layout = QtGui.QVBoxLayout()
+        button_layout = QtGui.QHBoxLayout()
 
-        text = QLabel("Path does not exist '%s' make path?" %self.path)
-        create = QPushButton('Create')
-        cancel = QPushButton('Cancel')
+        text = QtGui.QLabel("Path does not exist '%s' make path?" %self.path)
+        create = QtGui.QPushButton('Create')
+        cancel = QtGui.QPushButton('Cancel')
         create.connect('clicked()', self.accepted)
         cancel.connect('clicked()', self.reject)
 
@@ -343,7 +342,7 @@ class makeDirGUI(QDialog):
         "Try to make the directory"
         rejected = False
         try:
-            os.mkdir(self.path)
+            os.makedirs(self.path)
         except:
             mari.utils.message("Unable to create path '%s'" %self.path)
             rejected = True
@@ -359,7 +358,7 @@ def playblast():
         return
 
     #Create dialog and return inputs
-    dialog = playblastGUI()
+    dialog = playblastUI()
     if dialog.exec_():
         #Get all inputs/settings from dialog
         time = dialog._getTime()

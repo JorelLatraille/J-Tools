@@ -24,24 +24,24 @@
 # ------------------------------------------------------------------------------
 
 import mari
-from PythonQt.QtGui import *
+import PythonQt.QtGui as QtGui
 
-version = "0.03"
+version = "0.04"
 
 # ------------------------------------------------------------------------------
-class ConvertMaskColorToScalarGUI(QDialog):
-    "Create ImportImagesGUI"
+class ConvertMaskColorToScalarGUI(QtGui.QDialog):
+    "Create ConvertMaskColorToScalarGUI"
     def __init__(self, parent=None):
         super(ConvertMaskColorToScalarGUI, self).__init__(parent)
 
         #Set title and create the major layouts
         self.setWindowTitle('Convert Mask Color To Scalar')
-        main_layout = QVBoxLayout()
-        button_layout = QHBoxLayout()
+        main_layout = QtGui.QVBoxLayout()
+        button_layout = QtGui.QHBoxLayout()
 
-        message = QLabel("Are you sure you wish to convert the current geo's masks from color to scalar?")
-        yes = QPushButton('Yes')
-        no = QPushButton('no')
+        message = QtGui.QLabel("Are you sure you wish to convert the current geo's masks from color to scalar?")
+        yes = QtGui.QPushButton('Yes')
+        no = QtGui.QPushButton('no')
         yes.connect('clicked()', self.accept)
         no.connect('clicked()', self.reject)
 

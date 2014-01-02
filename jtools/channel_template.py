@@ -25,14 +25,13 @@
 # ------------------------------------------------------------------------------
 
 import mari
-from PythonQt.QtGui import *
 
 version = "0.01"
 geo_dict = {}
 
 # ------------------------------------------------------------------------------
 def getChannelTemplate():
-    "Get channel template"
+    "Get current channel's patch resolutions and create a template"
     if not _isProjectSuitable():
         return
     global geo_dict
@@ -44,8 +43,8 @@ def getChannelTemplate():
         geo_dict[geo].append([channel.width(patch.uvIndex()), patch.uvIndex()])
 
 # ------------------------------------------------------------------------------
-def setChannelTemplate():
-    "Set channel template"
+def setChannelFromTemplate():
+    "Set current channel's patch resolutions from a template"
     if not _isProjectSuitable():
         return
     geo = mari.geo.current()
@@ -62,7 +61,7 @@ def setChannelTemplate():
             print(e)
 
 # ------------------------------------------------------------------------------
-def createChannelTemplate():
+def createChannelFromTemplate():
     "Create a channel from a template"
     if not _isProjectSuitable():
         return

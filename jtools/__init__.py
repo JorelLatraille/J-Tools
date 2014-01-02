@@ -84,8 +84,8 @@ class JTools():
     def copyUdimToUdim(self):
         copy_udim_to_udim.showUI()
 
-    def createChannelTemplate(self):
-        channel_template.createChannelTemplate()
+    def createChannelFromTemplate(self):
+        channel_template.createChannelFromTemplate()
         
     def createDirectoriesMoveFiles(self):
         create_directories_move_files.createDirectoriesMoveFiles()
@@ -123,8 +123,8 @@ class JTools():
     def setAllCurrentShader(self):
         set_all_current_shader.setAllCurrentShader()
 
-    def setChannelTemplate(self):
-        channel_template.setChannelTemplate()
+    def setChannelFromTemplate(self):
+        channel_template.setChannelFromTemplate()
 
     def quick(self):
         shortcuts.quick()

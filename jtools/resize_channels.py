@@ -23,14 +23,14 @@
 # ------------------------------------------------------------------------------
 # ------------------------------------------------------------------------------
 
-import mari, PythonQt
+import mari
+import PythonQt.QtGui as QtGui
 from PythonQt.QtCore import QSize
 
-version = "0.01"
+version = "0.02"
 
-g_resolutions = ['256', '512', '1024', '2048', '4096', '8192', '16384', '32768']
+g_resolutions = [str(QSize.width()) for QSize in mari.images.supportedTextureSizes()]
 g_rc_window = None
-gui = PythonQt.QtGui
 
 # ------------------------------------------------------------------------------
 def resizeChannels(g_rc_window, resolutions, all_geo_box):
@@ -81,22 +81,22 @@ def showUI():
     
     #Create main dialog, add main layout and set title
     global g_rc_window
-    g_rc_window = gui.QDialog()
-    rc_layout = gui.QVBoxLayout()
+    g_rc_window = QtGui.QDialog()
+    rc_layout = QtGui.QVBoxLayout()
     g_rc_window.setLayout(rc_layout)
     g_rc_window.setWindowTitle("Resize Channels")
     
     #Add main layout.
-    main_layout = gui.QHBoxLayout()
+    main_layout = QtGui.QHBoxLayout()
     
     #Add res options
-    resolutions_text = gui.QLabel('Resolutions:')
-    resolutions = gui.QComboBox()
+    resolutions_text = QtGui.QLabel('Resolutions:')
+    resolutions = QtGui.QComboBox()
     for resolution in g_resolutions :
         resolutions.addItem(resolution)
     resolutions.setCurrentIndex(resolutions.findText('1024'))
     
-    all_geo_box = gui.QCheckBox('All Geo')
+    all_geo_box = QtGui.QCheckBox('All Geo')
     
     main_layout.addWidget(resolutions_text)
     main_layout.addWidget(resolutions)
@@ -105,8 +105,8 @@ def showUI():
     main_layout.addStretch()
     
     #Add main buttons layout, buttons and add
-    main_ok_button = gui.QPushButton("OK")
-    main_cancel_button = gui.QPushButton("Cancel")
+    main_ok_button = QtGui.QPushButton("OK")
+    main_cancel_button = QtGui.QPushButton("Cancel")
     main_ok_button.connect("clicked()", lambda: resizeChannels(g_rc_window, resolutions, all_geo_box))
     main_cancel_button.connect("clicked()", g_rc_window.reject)
     

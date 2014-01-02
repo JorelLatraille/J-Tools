@@ -23,43 +23,48 @@
 # ------------------------------------------------------------------------------
 # ------------------------------------------------------------------------------
 
-import mari, os
-from PythonQt.QtGui import *
+import mari, os, hashlib
+import PythonQt.QtGui as QtGui
+import PythonQt.QtCore as QtCore
 
-version = "0.02"
+version = "0.04"
 
-USER_ROLE = 34          # PythonQt.Qt.UserRole
+USER_ROLE = 34          # PythonQtGui.Qt.UserRole
 
 # ------------------------------------------------------------------------------
-class ExportSelectedChannelsGUI(QDialog):
-    "Export channels from one or more objects."
-    def __init__(self, parent=None):
-        super(ExportSelectedChannelsGUI, self).__init__(parent)
+class ExportSelectedChannelsUI(QtGui.QDialog):
+    """Export channels from one or more objects."""
+    def __init__(self, bool_, parent=None):
+        super(ExportSelectedChannelsUI, self).__init__(parent)
 
         #Set window title and create a main layout
+        self.bool_ = bool_
         self.setWindowTitle("Export Selected Channels")
-        main_layout = QVBoxLayout()
+        main_layout = QtGui.QVBoxLayout()
+        top_group = QtGui.QGroupBox()
+        middle_group = QtGui.QGroupBox()
+        bottom_group = QtGui.QGroupBox()
         
         #Create layout for middle section
-        top_layout = QHBoxLayout()
+        top_layout = QtGui.QHBoxLayout()
         
         #Create channel layout, label, and widget. Finally populate.
-        channel_layout = QVBoxLayout()
-        channel_header_layout = QHBoxLayout()
-        self.channel_label = QLabel("Channels")
-        setBold(self.channel_label)
-        self.channel_list = QListWidget()
+        channel_layout = QtGui.QVBoxLayout()
+        channel_header_layout = QtGui.QHBoxLayout()
+        self.channel_label = QtGui.QLabel("Channels")
+        _setBold(self.channel_label)
+        self.channel_list = QtGui.QListWidget()
         self.channel_list.setSelectionMode(self.channel_list.ExtendedSelection)
         
         #Create filter box for channel list
-        self.channel_filter_box = QLineEdit()
-        mari.utils.connect(self.channel_filter_box.textEdited, lambda: updateChannelFilter(self.channel_filter_box, self.channel_list))
+        self.channel_filter_box = QtGui.QLineEdit()
+        mari.utils.connect(self.channel_filter_box.textEdited, lambda: _updateChannelFilter(self.channel_filter_box, self.channel_list))
         
         #Create layout and icon/label for channel filter
         channel_header_layout.addWidget(self.channel_label)
         channel_header_layout.addStretch()
-        self.channel_search_icon = QLabel()
-        search_pixmap = QPixmap(mari.resources.path(mari.resources.ICONS) + '/Lookup.png')
+        self.channel_search_icon = QtGui.QLabel()
+        search_pixmap = QtGui.QPixmap(mari.resources.path(mari.resources.ICONS) + '/Lookup.png')
         self.channel_search_icon.setPixmap(search_pixmap)
         channel_header_layout.addWidget(self.channel_search_icon)
         channel_header_layout.addWidget(self.channel_filter_box)
@@ -79,30 +84,30 @@ class ExportSelectedChannelsGUI(QDialog):
         channel_layout.addWidget(self.channel_list)
         
         #Create middle button section
-        middle_button_layout = QVBoxLayout()
-        self.add_button = QPushButton("+")
-        self.remove_button = QPushButton("-")
+        middle_button_layout = QtGui.QVBoxLayout()
+        self.add_button = QtGui.QPushButton("+")
+        self.remove_button = QtGui.QPushButton("-")
         middle_button_layout.addStretch()
         middle_button_layout.addWidget(self.add_button)
         middle_button_layout.addWidget(self.remove_button)
         middle_button_layout.addStretch()
         
-        #Add wrapped QListWidget with custom functions
-        export_layout = QVBoxLayout()
-        export_header_layout = QHBoxLayout()
-        self.export_label = QLabel("Channels To Export")
-        setBold(self.export_label)
+        #Add wrapped QtGui.QListWidget with custom functions
+        export_layout = QtGui.QVBoxLayout()
+        export_header_layout = QtGui.QHBoxLayout()
+        self.export_label = QtGui.QLabel("Channels To Export")
+        _setBold(self.export_label)
         self.export_list = ChannelsToExportList()
         self.export_list.setSelectionMode(self.export_list.ExtendedSelection)
         
         #Create filter box for export list
-        self.export_filter_box = QLineEdit()
-        mari.utils.connect(self.export_filter_box.textEdited, lambda: updateExportFilter(self.export_filter_box, self.export_list))
+        self.export_filter_box = QtGui.QLineEdit()
+        mari.utils.connect(self.export_filter_box.textEdited, lambda: _updateExportFilter(self.export_filter_box, self.export_list))
         
         #Create layout and icon/label for export filter
         export_header_layout.addWidget(self.export_label)
         export_header_layout.addStretch()
-        self.export_search_icon = QLabel()
+        self.export_search_icon = QtGui.QLabel()
         self.export_search_icon.setPixmap(search_pixmap)
         export_header_layout.addWidget(self.export_search_icon)
         export_header_layout.addWidget(self.export_filter_box)
@@ -112,21 +117,18 @@ class ExportSelectedChannelsGUI(QDialog):
         export_layout.addWidget(self.export_list)
         
         #Hook up add/remove buttons
-        self.remove_button.connect("clicked()", self.export_list.removeChannels)
-        self.add_button.connect("clicked()", lambda: self.export_list.addChannels(self.channel_list))
+        self.remove_button.connect("clicked()", self.export_list._removeChannels)
+        self.add_button.connect("clicked()", lambda: self.export_list._addChannels(self.channel_list))
 
         #Add widgets to top layout
         top_layout.addLayout(channel_layout)
         top_layout.addLayout(middle_button_layout)
         top_layout.addLayout(export_layout)
-        
-        #Add layouts to main layout and dialog
-        main_layout.addLayout(top_layout)
     
 # -----------------------------------------------------------------------------------------------------    
     
-        #Add middle layout.
-        middle_layout = QHBoxLayout()
+        #Add path layout.
+        path_layout = QtGui.QHBoxLayout()
 
         #Get mari default path and template
         path = os.path.abspath(mari.resources.path(mari.resources.DEFAULT_EXPORT))
@@ -134,51 +136,75 @@ class ExportSelectedChannelsGUI(QDialog):
         export_path_template = os.path.join(path, template)
 
         #Add path line input and button, also set text to Mari default path and template
-        path_label = QLabel('Path:')
-        self.path_line_edit = QLineEdit()
-        path_pixmap = QPixmap(mari.resources.path(mari.resources.ICONS) + '/ExportImages.png')
-        icon = QIcon(path_pixmap)
-        path_button = QPushButton(icon, "")
-        path_button.connect("clicked()", lambda: self.getPath())
+        path_label = QtGui.QLabel('Path:')
+        self.path_line_edit = QtGui.QLineEdit()
+        path_pixmap = QtGui.QPixmap(mari.resources.path(mari.resources.ICONS) + '/ExportImages.png')
+        icon = QtGui.QIcon(path_pixmap)
+        path_button = QtGui.QPushButton(icon, "")
+        path_button.connect("clicked()", self._getPath)
         self.path_line_edit.setText(export_path_template)
             
         #Add path line input and button to middle layout    
-        middle_layout.addWidget(path_label)
-        middle_layout.addWidget(self.path_line_edit)
-        middle_layout.addWidget(path_button)
-        #Add to main layout
-        main_layout.addLayout(middle_layout)
+        path_layout.addWidget(path_label)
+        path_layout.addWidget(self.path_line_edit)
+        path_layout.addWidget(path_button)
+
+        #Add to top group
+        top_group_layout = QtGui.QVBoxLayout()
+
+        #Add export everything check box
+        self.export_everything_box = QtGui.QCheckBox('Export Everything')
+        self.export_everything_box.connect("clicked()", self._exportEverything)
+
+        top_group_layout.addLayout(top_layout)
+        top_group_layout.addLayout(path_layout)
+        top_group_layout.addWidget(self.export_everything_box)
+        top_group.setLayout(top_group_layout)
     
-        #Add bottom layout.
-        bottom_layout = QHBoxLayout()
+        #Add middle group layout and check boxes
+        middle_group_layout = QtGui.QHBoxLayout()
+        self.export_only_updated_textures_box = QtGui.QCheckBox('Only Updated Textures')
+        self.export_only_updated_textures_box.setChecked(True)
+        middle_group_layout.addWidget(self.export_only_updated_textures_box)
+        middle_group.setLayout(middle_group_layout)
+
+        #Add check box layout.
+        check_box_layout = QtGui.QGridLayout()
         
         #Add export option check boxes
-        self.export_everything_box = QCheckBox('Export Everything')
-        self.export_everything_box.connect("clicked()", lambda: self.exportEverything())
-        self.export_flattened_box = QCheckBox('Export Flattened')
-        self.export_small_textures_box = QCheckBox('Small Textures')
-        self.export_only_updated_textures_box = QCheckBox('Only Updated Textures')
+        self.export_flattened_box = QtGui.QCheckBox('Export Flattened')
+        self.export_full_patch_bleed_box = QtGui.QCheckBox('Full Patch Bleed')
+        self.export_small_textures_box = QtGui.QCheckBox('Disable Small Textures')
+        if self.bool_:
+            self.export_remove_alpha_box = QtGui.QCheckBox('Remove Alpha')
     
-        #Add OK Cancel buttons layout, buttons and add
-        ok_button = QPushButton("OK")
-        cancel_button = QPushButton("Cancel")
-        ok_button.connect("clicked()", self.checkInput)
-        cancel_button.connect("clicked()", self.reject)
-        
         #Add tick boxes and buttons to bottom layout
-        bottom_layout.addWidget(self.export_everything_box)
-        bottom_layout.addWidget(self.export_flattened_box)
-        bottom_layout.addWidget(self.export_small_textures_box)
-        bottom_layout.addWidget(self.export_only_updated_textures_box)
-        bottom_layout.addWidget(ok_button)
-        bottom_layout.addWidget(cancel_button)
+        check_box_layout.addWidget(self.export_flattened_box, 0, 0)
+        check_box_layout.addWidget(self.export_full_patch_bleed_box, 1, 0)
+        check_box_layout.addWidget(self.export_small_textures_box, 1, 1)
+        if self.bool_:
+            check_box_layout.addWidget(self.export_remove_alpha_box, 1, 2)
+
+        bottom_group.setLayout(check_box_layout)
+
+        #Add widget groups to main layout
+        main_layout.addWidget(top_group)
+        main_layout.addWidget(middle_group)
+        main_layout.addWidget(bottom_group)
+
+        # Add OK Cancel buttons
+        self.button_box = QtGui.QDialogButtonBox()
+        self.button_box.setOrientation(QtCore.Qt.Horizontal)
+        self.button_box.setStandardButtons(QtGui.QDialogButtonBox.Ok | QtGui.QDialogButtonBox.Cancel)
+        self.button_box.button(QtGui.QDialogButtonBox.Ok).connect("clicked()", self._checkInput)
+        self.button_box.button(QtGui.QDialogButtonBox.Cancel).connect("clicked()", self.reject)
 
         #Add bottom layout to main layout and set main layout to dialog's layout
-        main_layout.addLayout(bottom_layout)
+        main_layout.addWidget(self.button_box)
         self.setLayout(main_layout)
 
     #Hide parts of interface if export everything is ticked
-    def exportEverything(self):
+    def _exportEverything(self):
         _bool = self.export_everything_box.isChecked()
         self.channel_label.setHidden(_bool)
         self.channel_search_icon.setHidden(_bool)
@@ -192,71 +218,87 @@ class ExportSelectedChannelsGUI(QDialog):
         self.remove_button.setHidden(_bool)
     
     #Get the path from existing directory
-    def getPath(self):
+    def _getPath(self):
         path = mari.utils.misc.getSaveFileName(parent=self, caption='Export Path', dir='', filter='', selected_filter=None, options=0, save_filename='')
         if path == "":
             return
         else:
-            self.setPath(os.path.abspath(path))
+            self._setPath(os.path.abspath(path))
 
     #Set the path line edit box text to be the path provided
-    def setPath(self, path):
+    def _setPath(self, path):
         self.path_line_edit.setText(path)
 
     #Check path and template will work, check if export everything box is ticked if not make sure there are some channels to export
-    def checkInput(self):
-        image_file_types = ('.bmp', '.jpg', '.jpeg', '.png', '.ppm', '.psd', '.tga', '.tif', '.tiff', '.xbm', '.xpm', '.exr')
+    def _checkInput(self):
+        file_types = ['.' + format for format in mari.images.supportedWriteFormats()]
         path_template = self.path_line_edit.text
         if not os.path.exists(os.path.split(path_template)[0]):
-            mari.utils.message("Path does not exist: '%s'" %(os.path.split(path_template)[0]))
-            return
-        if not path_template.endswith(image_file_types):
+            title = 'Create Directories'
+            text = 'Path does not exist "%s".' %os.path.split(path_template)[0]
+            info = 'Create the path?'
+            dialog = InfoUI(title, text, info)
+            if not dialog.exec_():
+                return
+            os.makedirs(os.path.split(path_template)[0])
+        if not path_template.endswith(tuple(file_types)):
             mari.utils.message("File type is not supported: '%s'" %(os.path.split(path_template)[1]))
             return
         if self.export_everything_box.isChecked():
             pass
-        elif len(self.export_list.currentChannels()) == 0:
-            mari.utils.message("Please add a channel to export")
+        elif len(self.export_list._currentChannels()) == 0:
+            mari.utils.message("Please add a channel to export.")
             return
         self.accept()
 
     #Get list of channels to export from the export list
-    def getChannelsToExport(self):
-        return self.export_list.currentChannels()
+    def _getChannelsToExport(self):
+        return self.export_list._currentChannels()
 
     #Get export path and template
-    def getExportPathTemplate(self):
+    def _getExportPathTemplate(self):
         return self.path_line_edit.text
 
     #Get export everything box is ticked (bool)
-    def getExportEverything(self):
+    def _getExportEverything(self):
         return self.export_everything_box.isChecked()
 
+    #Get export only updated textures box is ticked (bool)
+    def _getExportOnlyUpdatedTextures(self):
+        return self.export_only_updated_textures_box.isChecked()
+
     #Get export flattened box is ticked (bool)
-    def getExportFlattened(self):
+    def _getExportFlattened(self):
         return self.export_flattened_box.isChecked()
 
     #Get export small textures box is ticked (bool)
-    def getExportSmallTextures(self):
+    def _getExportFullPatchBleed(self):
+        return self.export_full_patch_bleed_box.isChecked()
+
+    #Get export small textures box is ticked (bool)
+    def _getExportSmallTextures(self):
         return self.export_small_textures_box.isChecked()
 
-    #Get export only updated textures box is ticked (bool)
-    def getExportOnlyUpdatedTextures(self):
-        return self.export_only_updated_textures_box.isChecked()
+    #Get export remove alpha box is ticked (bool)
+    def _getExportRemoveAlpha(self):
+        if self.bool_:
+            return self.export_remove_alpha_box.isChecked()
+        else:
+            return False
 
 # ------------------------------------------------------------------------------   
-class ChannelsToExportList(QListWidget):
-    "Stores a list of operations to perform."
+class ChannelsToExportList(QtGui.QListWidget):
+    """Stores a list of operations to perform."""
     
     def __init__(self, title="For Export"):
         super(ChannelsToExportList, self).__init__()
         self._title = title
         self.setSelectionMode(self.ExtendedSelection)
         
-    def currentChannels(self):
+    def _currentChannels(self):
         return [self.item(index).data(USER_ROLE) for index in range(self.count)]
         
-    def addChannels(self, channel_list):
+    def _addChannels(self, channel_list):
         "Adds an operation from the current selections of channels and directories."
         selected_items = channel_list.selectedItems()
         if selected_items == []:
@@ -264,7 +306,7 @@ class ChannelsToExportList(QListWidget):
             return
         
         # Add channels that aren't already added
-        current_channels = set(self.currentChannels())
+        current_channels = set(self._currentChannels())
         for item in selected_items:
             channel = item.data(USER_ROLE)
             if channel not in current_channels:
@@ -272,15 +314,15 @@ class ChannelsToExportList(QListWidget):
                 self.addItem(item.text())
                 self.item(self.count - 1).setData(USER_ROLE, channel)
         
-    def removeChannels(self):
+    def _removeChannels(self):
         "Removes any currently selected operations."
         for item in reversed(self.selectedItems()):     # reverse so indices aren't modified
             index = self.row(item)
             self.takeItem(index)    
 
 # ------------------------------------------------------------------------------
-def updateChannelFilter(channel_filter_box, channel_list):
-    "For each item in the channel list display, set it to hidden if it doesn't match the filter text."
+def _updateChannelFilter(channel_filter_box, channel_list):
+    """For each item in the channel list display, set it to hidden if it doesn't match the filter text."""
     match_words = channel_filter_box.text.lower().split()
     for item_index in range(channel_list.count):
         item = channel_list.item(item_index)
@@ -289,8 +331,8 @@ def updateChannelFilter(channel_filter_box, channel_list):
         item.setHidden(not matches)
         
 # ------------------------------------------------------------------------------
-def updateExportFilter(export_filter_box, export_list):
-    "For each item in the export list display, set it to hidden if it doesn't match the filter text."
+def _updateExportFilter(export_filter_box, export_list):
+    """For each item in the export list display, set it to hidden if it doesn't match the filter text."""
     match_words = export_filter_box.text.lower().split()
     for item_index in range(export_list.count):
         item = export_list.item(item_index)
@@ -299,23 +341,47 @@ def updateExportFilter(export_filter_box, export_list):
         item.setHidden(not matches)
     
 # ------------------------------------------------------------------------------  
-def setBold(widget):
-    "Sets text to bold."
+def _setBold(widget):
+    """Sets text to bold."""
     font = widget.font
     font.setWeight(75)
     widget.setFont(font)
 
+# ------------------------------------------------------------------------------
+class InfoUI(QtGui.QMessageBox):
+    """Show the user information for them to make a decision on whether to procede."""
+    def __init__(self, title, text, info=None, details=None, bool_=False, parent=None):
+        super(InfoUI, self).__init__(parent)
+
+        # Create info gui
+        self.setIcon(4)
+        self.setWindowTitle(title)
+        self.setText(text)
+        if not info == None:
+            self.setInformativeText(info)
+        if not details == None:
+            self.setDetailedText(details)
+        if not bool_:
+            self.setStandardButtons(QtGui.QMessageBox.Ok | QtGui.QMessageBox.Cancel)
+            self.setDefaultButton(QtGui.QMessageBox.Ok)
+
 # ------------------------------------------------------------------------------ 
-def exportChannels(channels, path, flattened, small_textures, only_updated_textures):
-    save_options = 1
-    if small_textures:
-        save_options = 0
+def _exportChannels(args_dict):
+    save_options = 0
+    if args_dict['full_patch_bleed']:
+        save_options = save_options|2
+    elif args_dict['small_textures']:
+        save_options = save_options|1
+    elif args_dict['remove_alpha']:
+        save_options = save_options|4
     #Check if export flattened is ticked, if not export unflattened
-    if flattened:
-        for channel in channels:
+    path = args_dict['path']
+    if args_dict['flattened']:
+        for channel in args_dict['channels']:
             uv_index_list = []
-            if only_updated_textures:
-                uv_index_list = onlyUpdatedTextures(channel)
+            metadata = []
+            if args_dict['only_updated_textures']:
+                uv_index_list, metadata = _onlyUpdatedTextures(channel)
                 if len(uv_index_list) == 0:
                     continue
             try:
@@ -323,11 +389,17 @@ def exportChannels(channels, path, flattened, small_textures, only_updated_textu
             except Exception, e:
                 mari.utils.message('Failed to export "%s"' %e)
                 return
+            for data in metadata:            
+                channel.setMetadata(*data)
+                channel.setMetadataEnabled(data[0], False)
+            channel.setMetadata('jtoolsOnlyUpdatedTextures', True)
+            channel.setMetadataEnabled('jtoolsOnlyUpdatedTextures', False)  
     else:
-        for channel in channels:
+        for channel in args_dict['channels']:
             uv_index_list = []
-            if only_updated_textures:
-                uv_index_list = onlyUpdatedTextures(channel)
+            metadata = []
+            if args_dict['only_updated_textures']:
+                uv_index_list, metadata = _onlyUpdatedTextures(channel)
                 if len(uv_index_list) == 0:
                     continue
             try:
@@ -335,25 +407,36 @@ def exportChannels(channels, path, flattened, small_textures, only_updated_textu
             except Exception, e:
                 mari.utils.message('Failed to export "%s"' %e)
                 return
+            for data in metadata:            
+                channel.setMetadata(*data)
+                channel.setMetadataEnabled(data[0], False)
+            channel.setMetadata('jtoolsOnlyUpdatedTextures', True)
+            channel.setMetadataEnabled('jtoolsOnlyUpdatedTextures', False)        
     #If successful let the user know
     mari.utils.message("Export Successful")
     
 # ------------------------------------------------------------------------------ 
-def exportEverything(path, flattened, small_textures, only_updated_textures):
-    "Export everything, all geo and all channels"
+def _exportEverything(args_dict):
+    """Export everything, all geo and all channels"""
     geo_list = mari.geo.list()
     channels = []
     for geo in geo_list:
         channels.extend(geo.channelList())
-    save_options = 1
-    if small_textures:
-        save_options = 0
+    save_options = 0
+    if args_dict['full_patch_bleed']:
+        save_options = save_options|2
+    elif args_dict['small_textures']:
+        save_options = save_options|1
+    elif args_dict['remove_alpha']:
+        save_options = save_options|4
     #Check if export flattened is ticked, if not export unflattened
-    if flattened:
+    path = args_dict['path']
+    if args_dict['flattened']:
         for channel in channels:
             uv_index_list = []
-            if only_updated_textures:
-                uv_index_list = onlyUpdatedTextures(channel)
+            metadata = []
+            if args_dict['only_updated_textures']:
+                uv_index_list, metadata = _onlyUpdatedTextures(channel)
                 if len(uv_index_list) == 0:
                     continue
             try:
@@ -361,11 +444,17 @@ def exportEverything(path, flattened, small_textures, only_updated_textures):
             except Exception, e:
                 mari.utils.message('Failed to export "%s"' %e)
                 return
+            for data in metadata:            
+                channel.setMetadata(*data)
+                channel.setMetadataEnabled(data[0], False)
+            channel.setMetadata('jtoolsOnlyUpdatedTextures', True)
+            channel.setMetadataEnabled('jtoolsOnlyUpdatedTextures', False)
     else:
         for channel in channels:
             uv_index_list = []
-            if only_updated_textures:
-                uv_index_list = onlyUpdatedTextures(channel)
+            metadata = []
+            if agrs_dict['only_updated_textures']:
+                uv_index_list, metadata = _onlyUpdatedTextures(channel)
                 if len(uv_index_list) == 0:
                     continue
             try:
@@ -373,120 +462,171 @@ def exportEverything(path, flattened, small_textures, only_updated_textures):
             except Exception, e:
                 mari.utils.message('Failed to export "%s"' %e)
                 return
+            for data in metadata:            
+                channel.setMetadata(*data)
+                channel.setMetadataEnabled(data[0], False)
+            channel.setMetadata('jtoolsOnlyUpdatedTextures', True)
+            channel.setMetadataEnabled('jtoolsOnlyUpdatedTextures', False)
     #If successful let the user know
     mari.utils.message("Export Successful")
 
 # ------------------------------------------------------------------------------
 def exportSelectedChannels():
-    "Export selected channels."
-    if not isProjectSuitable():
+    """Export selected channels."""
+    suitable = _isProjectSuitable()
+    if not suitable[0]:
         return
     
     #Create dialog and execute accordingly
-    dialog = ExportSelectedChannelsGUI()
+    dialog = ExportSelectedChannelsUI(suitable[1])
     if dialog.exec_():
-        channels = dialog.getChannelsToExport()
-        path = dialog.getExportPathTemplate()
-        flattened = dialog.getExportFlattened()
-        small_textures = dialog.getExportSmallTextures()
-        only_updated_textures = dialog.getExportOnlyUpdatedTextures()
-        if dialog.getExportEverything():
-            exportEverything(path, flattened, small_textures, only_updated_textures)
+        args_dict = {
+        'channels' : dialog._getChannelsToExport(),
+        'path' : dialog._getExportPathTemplate(),
+        'flattened' : dialog._getExportFlattened(),
+        'full_patch_bleed' : dialog._getExportFullPatchBleed(),
+        'small_textures' : dialog._getExportSmallTextures(),
+        'remove_alpha' : dialog._getExportRemoveAlpha(),
+        'only_updated_textures' : dialog._getExportOnlyUpdatedTextures()
+        }
+        if dialog._getExportEverything():
+            _exportEverything(args_dict)
         else:
-            exportChannels(channels, path, flattened, small_textures, only_updated_textures)
+            _exportChannels(args_dict)
 
 # ------------------------------------------------------------------------------
-def onlyUpdatedTextures(channel):
-    "Manage channels so only modified patch images get exported"
-    if channel.hasMetadata('onlyUpdatedTextures'):
-        uv_index_list = _getChangedUvIndexes(channel)   
+def _onlyUpdatedTextures(channel):
+    """Manage channels so only modified patch images get exported"""
+    if channel.hasMetadata('jtoolsOnlyUpdatedTextures'):
+        uv_index_list, metadata = _getChangedUvIndexes(channel)   
     else:
-        uv_index_list = _setChannelUvIndexes(channel)
-    return uv_index_list
+        uv_index_list, metadata = _setChannelUvIndexes(channel)
+    return uv_index_list, metadata
 
 # ------------------------------------------------------------------------------
 def _getChangedUvIndexes(channel):
-    "Get uv indexes with new hashes"
+    """Get uv indexes with new hashes"""
     geo = channel.geoEntity()
-    paintable_layer_list = getPaintableLayers(channel.layerList())
-    image_set_list = []
-    for layer in paintable_layer_list:
-        image_set_list.append(layer.imageSet())
-        if layer.hasMask():
-            image_set_list.append(layer.maskImageSet())
+    all_layers = _getAllLayers(channel.layerList())
     patch_list = geo.patchList()
     uv_index_list = []
-    for i in range(len(patch_list)):
-        hash_ = ''
-        for n in range(len(image_set_list)):
-            image = geo.patchImage(patch_list[i], image_set_list[n])
-            hash_ += image.hash()
-        if not hash_ == channel.metadata(str(patch_list[i].uvIndex())):
-            uv_index_list.append(patch_list[i].uvIndex())
-            channel.setMetadata(str(patch_list[i].uvIndex()), hash_)
-            channel.setMetadataEnabled(str(patch_list[i].uvIndex()), False)
-    return uv_index_list
+    metadata = []
+    for patch in patch_list:
+        hash_ = _createHash(patch, all_layers)
+        if not hash_ == channel.metadata(str(patch.uvIndex())):
+            uv_index_list.append(patch.uvIndex())
+            metadata.append((str(patch.uvIndex()), hash_))
+    return uv_index_list, metadata
 
 # ------------------------------------------------------------------------------
 def _setChannelUvIndexes(channel):
-    "Set the channel metadata uv index hash"
+    """Set the channel metadata uv index hash"""
     geo = channel.geoEntity()
-    paintable_layer_list = getPaintableLayers(channel.layerList())
-    image_set_list = []
-    for layer in paintable_layer_list:
-        image_set_list.append(layer.imageSet())
-        if layer.hasMask():
-            image_set_list.append(layer.maskImageSet())
+    all_layers = _getAllLayers(channel.layerList())
     patch_list = geo.patchList()
     uv_index_list = []
-    for i in range(len(patch_list)):
-        hash_ = ''
-        for n in range(len(image_set_list)):
-            image = geo.patchImage(patch_list[i], image_set_list[n])
-            hash_ += image.hash()
-        uv_index_list.append(patch_list[i].uvIndex())
-        channel.setMetadata(str(patch_list[i].uvIndex()), hash_)
-        channel.setMetadataEnabled(str(patch_list[i].uvIndex()), False)
-    channel.setMetadata('onlyUpdatedTextures', True)
-    channel.setMetadataEnabled('onlyUpdatedTextures', False)
-    return uv_index_list
+    metadata = []
+    for patch in patch_list:
+        hash_ = _createHash(patch, all_layers)
+        uv_index_list.append(patch.uvIndex())
+        metadata.append((str(patch.uvIndex()), hash_))
+    return uv_index_list, metadata
 
 # ------------------------------------------------------------------------------
-def getPaintableLayers(layer_list):
-    "Returns a list of all of the paintable layers in the layer stack, including in substacks."
-    return getMatchingLayers(layer_list, mari.Layer.isPaintableLayer)
+def _createHash(patch, all_layers):
+    """Create hashes on channel for all layers"""
+    hash_ = ''
+    index = patch.uvIndex()
+
+    for layer in all_layers:
+        hash_ += _basicLayerData(layer)
+
+        if layer.isAdjustmentLayer():
+            for adjustmentParameter in layer.primaryAdjustmentParameters():
+                hash_ += str(layer.getPrimaryAdjustmentParameter(adjustmentParameter))
+            # If this layer has a secondary adjustment then capture that data as well.
+            if layer.hasSecondaryAdjustment():
+                for adjustmentParameter in layer.secondaryAdjustmentParameters():
+                    hash_ += str(layer.getPrimaryAdjustmentParameter(adjustmentParameter))
+
+        elif layer.isProceduralLayer():
+                for proceduralParameter in layer.proceduralParameters():
+                    if 'Cache' in proceduralParameter:
+                        continue
+                    parameterValue = layer.getProceduralParameter(proceduralParameter)
+                    if isinstance(parameterValue, mari.Color):
+                        hash_ += str(parameterValue.rgba())
+                    elif isinstance(parameterValue, mari.LookUpTable):
+                        hash_ += parameterValue.controlPointsAsString()
+                    else:
+                        hash_ += str(parameterValue)
+
+        elif layer.isPaintableLayer():
+            hash_ += layer.imageSet().image(index).hash()
+            if layer.hasMask():
+                hash_ += layer.maskImageSet().image(index).hash()
+
+    return _sha256(hash_)
 
 # ------------------------------------------------------------------------------
-def getMatchingLayers(layer_list, criterionFn):
-    "Returns a list of all of the layers in the stack that match the given criterion function, including substacks."
+def _getAllLayers(layer_list):
+    """Returns a list of all of the layers in the layer stack, including substacks."""
+    return _getMatchingLayers(layer_list, _returnTrue)
+
+# ------------------------------------------------------------------------------
+def _returnTrue(*object):
+    """Return True for anything passed to this function."""
+    return True
+
+# ------------------------------------------------------------------------------
+def _getMatchingLayers(layer_list, criterionFn):
+    """Returns a list of all of the layers in the stack that match the given criterion function, including substacks."""
     matching = []
     for layer in layer_list:
         if criterionFn(layer):
             matching.append(layer)
         if hasattr(layer, 'layerStack'):
-            matching.extend(getMatchingLayers(layer.layerStack().layerList(), criterionFn))
+            matching.extend(_getMatchingLayers(layer.layerStack().layerList(), criterionFn))
         if layer.hasMaskStack():
-            matching.extend(getMatchingLayers(layer.maskStack().layerList(), criterionFn))
+            matching.extend(_getMatchingLayers(layer.maskStack().layerList(), criterionFn))
         if hasattr(layer, 'hasAdjustmentStack') and layer.hasAdjustmentStack():
-            matching.extend(getMatchingLayers(layer.adjustmentStack().layerList(), criterionFn))
+            matching.extend(_getMatchingLayers(layer.adjustmentStack().layerList(), criterionFn))
         
     return matching
 
 # ------------------------------------------------------------------------------
-def isProjectSuitable():
-    "Checks project state."
+def _basicLayerData(layer):
+    """Collect basic layer data common to all types of layers."""
+    return str(layer.blendAmount()) + \
+    str(layer.blendMode()) + \
+    str(layer.blendModeStr()) + \
+    str(layer.isVisible())
+
+# ------------------------------------------------------------------------------
+def _sha256(string):
+    """Returns a hash for the given string."""
+    sha256 = hashlib.sha256()
+    sha256.update(string)
+    return sha256.hexdigest()
+
+# ------------------------------------------------------------------------------
+def _isProjectSuitable():
+    """Checks project state."""
     MARI_2_0V1_VERSION_NUMBER = 20001300    # see below
     if mari.app.version().number() >= MARI_2_0V1_VERSION_NUMBER:
     
         if mari.projects.current() is None:
             mari.utils.message("Please open a project before running.")
-            return False
+            return False, False
 
-        return True
+        if mari.app.version().number() >= 20502300:
+            return True, True
+
+        return True, False
     
     else:
         mari.utils.message("You can only run this script in Mari 2.0v1 or newer.")
-        return False
+        return False, False
     
 # ------------------------------------------------------------------------------
 if __name__ == "__main__":
