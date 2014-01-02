@@ -163,9 +163,9 @@ class ExportSelectedChannelsUI(QtGui.QDialog):
     
         #Add middle group layout and check boxes
         middle_group_layout = QtGui.QHBoxLayout()
-        self.export_only_updated_textures_box = QtGui.QCheckBox('Only Updated Textures')
-        self.export_only_updated_textures_box.setChecked(True)
-        middle_group_layout.addWidget(self.export_only_updated_textures_box)
+        self.export_only_modified_textures_box = QtGui.QCheckBox('Only Modified Textures')
+        self.export_only_modified_textures_box.setChecked(True)
+        middle_group_layout.addWidget(self.export_only_modified_textures_box)
         middle_group.setLayout(middle_group_layout)
 
         #Add check box layout.
@@ -263,9 +263,9 @@ class ExportSelectedChannelsUI(QtGui.QDialog):
     def _getExportEverything(self):
         return self.export_everything_box.isChecked()
 
-    #Get export only updated textures box is ticked (bool)
-    def _getExportOnlyUpdatedTextures(self):
-        return self.export_only_updated_textures_box.isChecked()
+    #Get export only modified textures box is ticked (bool)
+    def _getExportOnlyModifiedTextures(self):
+        return self.export_only_modified_textures_box.isChecked()
 
     #Get export flattened box is ticked (bool)
     def _getExportFlattened(self):
@@ -380,8 +380,8 @@ def _exportChannels(args_dict):
         for channel in args_dict['channels']:
             uv_index_list = []
             metadata = []
-            if args_dict['only_updated_textures']:
-                uv_index_list, metadata = _onlyUpdatedTextures(channel)
+            if args_dict['only_modified_textures']:
+                uv_index_list, metadata = _onlyModifiedTextures(channel)
                 if len(uv_index_list) == 0:
                     continue
             try:
@@ -392,14 +392,14 @@ def _exportChannels(args_dict):
             for data in metadata:            
                 channel.setMetadata(*data)
                 channel.setMetadataEnabled(data[0], False)
-            channel.setMetadata('jtoolsOnlyUpdatedTextures', True)
-            channel.setMetadataEnabled('jtoolsOnlyUpdatedTextures', False)  
+            channel.setMetadata('jtoolsOnlyModifiedTextures', True)
+            channel.setMetadataEnabled('jtoolsOnlyModifiedTextures', False)  
     else:
         for channel in args_dict['channels']:
             uv_index_list = []
             metadata = []
-            if args_dict['only_updated_textures']:
-                uv_index_list, metadata = _onlyUpdatedTextures(channel)
+            if args_dict['only_modified_textures']:
+                uv_index_list, metadata = _onlyModifiedTextures(channel)
                 if len(uv_index_list) == 0:
                     continue
             try:
@@ -410,8 +410,8 @@ def _exportChannels(args_dict):
             for data in metadata:            
                 channel.setMetadata(*data)
                 channel.setMetadataEnabled(data[0], False)
-            channel.setMetadata('jtoolsOnlyUpdatedTextures', True)
-            channel.setMetadataEnabled('jtoolsOnlyUpdatedTextures', False)        
+            channel.setMetadata('jtoolsOnlyModifiedTextures', True)
+            channel.setMetadataEnabled('jtoolsOnlyModifiedTextures', False)        
     #If successful let the user know
     mari.utils.message("Export Successful")
     
@@ -435,8 +435,8 @@ def _exportEverything(args_dict):
         for channel in channels:
             uv_index_list = []
             metadata = []
-            if args_dict['only_updated_textures']:
-                uv_index_list, metadata = _onlyUpdatedTextures(channel)
+            if args_dict['only_modified_textures']:
+                uv_index_list, metadata = _onlyModifiedTextures(channel)
                 if len(uv_index_list) == 0:
                     continue
             try:
@@ -447,14 +447,14 @@ def _exportEverything(args_dict):
             for data in metadata:            
                 channel.setMetadata(*data)
                 channel.setMetadataEnabled(data[0], False)
-            channel.setMetadata('jtoolsOnlyUpdatedTextures', True)
-            channel.setMetadataEnabled('jtoolsOnlyUpdatedTextures', False)
+            channel.setMetadata('jtoolsOnlyModifiedTextures', True)
+            channel.setMetadataEnabled('jtoolsOnlyModifiedTextures', False)
     else:
         for channel in channels:
             uv_index_list = []
             metadata = []
-            if agrs_dict['only_updated_textures']:
-                uv_index_list, metadata = _onlyUpdatedTextures(channel)
+            if agrs_dict['only_modified_textures']:
+                uv_index_list, metadata = _onlyModifiedTextures(channel)
                 if len(uv_index_list) == 0:
                     continue
             try:
@@ -465,8 +465,8 @@ def _exportEverything(args_dict):
             for data in metadata:            
                 channel.setMetadata(*data)
                 channel.setMetadataEnabled(data[0], False)
-            channel.setMetadata('jtoolsOnlyUpdatedTextures', True)
-            channel.setMetadataEnabled('jtoolsOnlyUpdatedTextures', False)
+            channel.setMetadata('jtoolsOnlyModifiedTextures', True)
+            channel.setMetadataEnabled('jtoolsOnlyModifiedTextures', False)
     #If successful let the user know
     mari.utils.message("Export Successful")
 
@@ -487,7 +487,7 @@ def exportSelectedChannels():
         'full_patch_bleed' : dialog._getExportFullPatchBleed(),
         'small_textures' : dialog._getExportSmallTextures(),
         'remove_alpha' : dialog._getExportRemoveAlpha(),
-        'only_updated_textures' : dialog._getExportOnlyUpdatedTextures()
+        'only_modified_textures' : dialog._getExportOnlyModifiedTextures()
         }
         if dialog._getExportEverything():
             _exportEverything(args_dict)
@@ -495,9 +495,9 @@ def exportSelectedChannels():
             _exportChannels(args_dict)
 
 # ------------------------------------------------------------------------------
-def _onlyUpdatedTextures(channel):
+def _onlyModifiedTextures(channel):
     """Manage channels so only modified patch images get exported"""
-    if channel.hasMetadata('jtoolsOnlyUpdatedTextures'):
+    if channel.hasMetadata('jtoolsOnlyModifiedTextures'):
         uv_index_list, metadata = _getChangedUvIndexes(channel)   
     else:
         uv_index_list, metadata = _setChannelUvIndexes(channel)

@@ -145,6 +145,16 @@ import tools_menu
 tools_menu.createJToolsMenu([method for method, instance in inspect.getmembers(mari.jtools, predicate=inspect.ismethod)])
 
 # ------------------------------------------------------------------------------
+def locate(pattern, path):
+    "Locate all files matching supplied filename pattern in and below supplied directory"
+    for root, dirs, files in os.walk(path):
+        for dir in dirs:
+            if dir == pattern:
+                return os.path.join(root, dir)
+            
+    return False
+
+# ------------------------------------------------------------------------------
 # DO NOT REMOVE THE BELOW! This is used to cleanup any residual update files!
 scripts_path = os.path.abspath(mari.resources.path(mari.resources.USER_SCRIPTS))
 
@@ -153,10 +163,22 @@ if mari.app.version().isWindows():
 else:
     split_scripts_path = scripts_path.split(':')
 
+found = False
+path = ''
 for s_path in split_scripts_path:
-    jtools_path = os.path.join(s_path, "jtools")
+    if locate("jtools", s_path):
+        found = True
+        path = s_path
+        break
+
+if found:
+    jtools_path = locate("jtools", path)
     depricated = [os.path.join(jtools_path, "updater.py"), os.path.join(jtools_path, "updater.pyc"),
     os.path.join(jtools_path, "jtools_updater.py"), os.path.join(jtools_path, "jtools_updater.pyc")]
     for file in depricated:
         if os.path.exists(file):
-            os.remove(file)
+            try:
+                os.remove(file)
+            except Exception, e:
+                mari.app.log(e)
+                print(e)

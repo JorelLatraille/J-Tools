@@ -1,6 +1,6 @@
 # ------------------------------------------------------------------------------
 # ------------------------------------------------------------------------------
-# grade tool
+# Grade tool
 # coding: utf-8
 # Written by Jorel Latraille
 # ------------------------------------------------------------------------------
@@ -27,7 +27,7 @@ import mari
 import PythonQt.QtGui as QtGui
 from PythonQt.QtCore import QRegExp, Qt
 
-version = "0.02"
+version = "0.01"
 
 # ------------------------------------------------------------------------------
 class GradeToolGUI(QtGui.QDialog):
@@ -73,7 +73,7 @@ class GradeToolGUI(QtGui.QDialog):
         self.blackpoint_line_0.setText('0.00')
         self.blackpoint_s = QtGui.QPushButton('S')
         self.blackpoint_s.setFixedSize(20,20)
-        self.blackpoint_s.connect('clicked()', self._updateBlackpointInput)
+        self.blackpoint_s.connect('clicked()', lambda: _updateInput(self.blackpoint_s, self.blackpoint_line_0, self.blackpoint_slider, self.blackpoint_line_1, self.blackpoint_line_2, self.blackpoint_line_3, self.blackpoint_line_4))
         self.blackpoint_r = QtGui.QPushButton('R')
         self.blackpoint_r.setFixedSize(20,20)
 
@@ -97,6 +97,7 @@ class GradeToolGUI(QtGui.QDialog):
         self.whitepoint_line_0.setText('1.00')
         self.whitepoint_s = QtGui.QPushButton('S')
         self.whitepoint_s.setFixedSize(20,20)
+        self.whitepoint_s.connect('clicked()', lambda: _updateInput(self.blackpoint_s, self.blackpoint_line_0, self.blackpoint_slider, self.blackpoint_line_1, self.blackpoint_line_2, self.blackpoint_line_3, self.blackpoint_line_4))
         self.whitepoint_r = QtGui.QPushButton('R')
         self.whitepoint_r.setFixedSize(20,20)
         
@@ -129,16 +130,6 @@ class GradeToolGUI(QtGui.QDialog):
         "Set the padding slider value using the text in the frame padding line edit box"
         self.blackpoint_slider.setValue(int(float(self.blackpoint_line_0.text)*100))
 
-    def _updateBlackpointInput(self):
-    	_bool = not self.blackpoint_s.isFlat()
-		self.blackpoint_s.setFlat(_bool)
-		self.blackpoint_line_0.setHidden(_bool)
-		self.blackpoint_slider.setHidden(_bool)
-		self.blackpoint_line_1.setHidden(not _bool)
-		self.blackpoint_line_2.setHidden(not _bool)
-		self.blackpoint_line_3.setHidden(not _bool)
-		self.blackpoint_line_4.setHidden(not _bool)
-
     def _updateWhitepointLine(self, _int):
         "Set the text in the frame padding line edit box using the padding slider value"
         self.whitepoint_line_0.setText("%.2f" %float((_int + 0.00) / (100 + 0.00)))
@@ -146,6 +137,18 @@ class GradeToolGUI(QtGui.QDialog):
     def _updateWhitepointSlider(self):
         "Set the padding slider value using the text in the frame padding line edit box"
         self.whitepoint_slider.setValue(int(float(self.whitepoint_line_0.text)*100))
+
+# ------------------------------------------------------------------------------
+def _updateInput(button_s, line_0, slider, line_1, line_2, line_3, line_4):
+    print button_s, line_0, slider, line_1, line_2, line_3, line_4
+    _bool = not button_s.isFlat()
+    button_s.setFlat(_bool)
+    line_0.setHidden(_bool)
+    slider.setHidden(_bool)
+    line_1.setHidden(not _bool)
+    line_2.setHidden(not _bool)
+    line_3.setHidden(not _bool)
+    line_4.setHidden(not _bool)
 
 # ------------------------------------------------------------------------------
 def gradeTool():

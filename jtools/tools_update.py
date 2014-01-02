@@ -38,7 +38,7 @@ def update():
         mari.utils.message("Please select the jtools_updater.py file.")
         return
     else:
-        path = (os.path.split(updater_path))[0]
+        path = os.path.split(updater_path)[0]
         path = os.path.abspath(path)
         sys.path.append(path)
         from jtools_updater import updating

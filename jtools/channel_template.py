@@ -31,7 +31,7 @@ geo_dict = {}
 
 # ------------------------------------------------------------------------------
 def getChannelTemplate():
-    "Get current channel's patch resolutions and create a template"
+    "Get current channel's patch resolutions and create a template."
     if not _isProjectSuitable():
         return
     global geo_dict
@@ -44,7 +44,7 @@ def getChannelTemplate():
 
 # ------------------------------------------------------------------------------
 def setChannelFromTemplate():
-    "Set current channel's patch resolutions from a template"
+    "Set current channel's patch resolutions from a template."
     if not _isProjectSuitable():
         return
     geo = mari.geo.current()
@@ -62,7 +62,7 @@ def setChannelFromTemplate():
 
 # ------------------------------------------------------------------------------
 def createChannelFromTemplate():
-    "Create a channel from a template"
+    "Create a channel from a template."
     if not _isProjectSuitable():
         return
     geo = mari.geo.current()
