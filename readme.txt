@@ -4,7 +4,7 @@
 # ------------------------------------------------------------------------------                                        
                             Mari Python Scripts
                                    
-                                Version 0.04
+                                Version 0.05
 # ------------------------------------------------------------------------------
                         ----jorel-latraille.com----        
 # ------------------------------------------------------------------------------
@@ -12,7 +12,7 @@
 
 DISCLAIMER & TERMS OF USE:
 
-Copyright (c) The Foundry 2013.
+Copyright (c) The Foundry 2014.
 All rights reserved.
 
 This software is provided as-is with use in commercial projects permitted.
