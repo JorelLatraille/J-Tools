@@ -563,8 +563,9 @@ def _createHash(patch, all_layers):
 
         elif layer.isPaintableLayer():
             hash_ += layer.imageSet().image(index).hash()
-            if layer.hasMask():
-                hash_ += layer.maskImageSet().image(index).hash()
+            
+        elif layer.hasMask():
+            hash_ += layer.maskImageSet().image(index).hash()
 
     return _sha256(hash_)
 
