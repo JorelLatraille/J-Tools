@@ -29,10 +29,10 @@ import PythonQt.QtGui as QtGui
 version = "0.02"
 
 # ------------------------------------------------------------------------------
-class flattenMaskStacksGUI(QtGui.QDialog):
+class flattenMaskStacksUI(QtGui.QDialog):
     "Create ImportImagesGUI"
     def __init__(self, parent=None):
-        super(flattenMaskStacksGUI, self).__init__(parent)
+        super(flattenMaskStacksUI, self).__init__(parent)
 
         #Set title and create the major layouts
         self.setWindowTitle('Flatten Mask Stacks')
@@ -54,11 +54,17 @@ class flattenMaskStacksGUI(QtGui.QDialog):
 # ------------------------------------------------------------------------------
 def flattenMaskStacks():
     "Flatten mask stacks for current entity channel layers."
+    action = mari.actions.get('/Mari/Scripts/Flatten Mask Stacks')
+    mari.menus.addAction(action, 'MainWindow/&Layers/Layer Mask', 'Flatten Mask Stack')
+    icon_filename = "BakeAttribute.png"
+    icon_path = mari.resources.path(mari.resources.ICONS) + '/' + icon_filename
+    action.setIconPath(icon_path)    
+
     if not isProjectSuitable():
         return
 
     #Create dialog and return inputs
-    dialog = flattenMaskStacksGUI()
+    dialog = flattenMaskStacksUI()
     if dialog.exec_():
 
         geo = mari.geo.current()

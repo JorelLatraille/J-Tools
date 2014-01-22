@@ -227,6 +227,12 @@ def isProjectSuitable():
 # ------------------------------------------------------------------------------                  
 def flattenSelectedChannels():
     "Duplicate and flatten selected channels."
+    action = mari.actions.get('/Mari/Scripts/Flatten Selected Channels')
+    mari.menus.addAction(action, 'MainWindow/&Channels', 'Flatten')
+    icon_filename = "BakeAttribute.png"
+    icon_path = mari.resources.path(mari.resources.ICONS) + '/' + icon_filename
+    action.setIconPath(icon_path)
+
     if not isProjectSuitable():
         return
     

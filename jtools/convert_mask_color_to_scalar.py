@@ -29,10 +29,10 @@ import PythonQt.QtGui as QtGui
 version = "0.04"
 
 # ------------------------------------------------------------------------------
-class ConvertMaskColorToScalarGUI(QtGui.QDialog):
-    "Create ConvertMaskColorToScalarGUI"
+class ConvertMaskColorToScalarUI(QtGui.QDialog):
+    "Create ConvertMaskColorToScalarUI"
     def __init__(self, parent=None):
-        super(ConvertMaskColorToScalarGUI, self).__init__(parent)
+        super(ConvertMaskColorToScalarUI, self).__init__(parent)
 
         #Set title and create the major layouts
         self.setWindowTitle('Convert Mask Color To Scalar')
@@ -54,12 +54,17 @@ class ConvertMaskColorToScalarGUI(QtGui.QDialog):
 # ------------------------------------------------------------------------------ 
 def convertMaskColorToScalar():
     "Converts all masks on non shared layers from Color to Scalar"
+    action = mari.actions.get('/Mari/Scripts/Convert Mask Color To Scalar')
+    mari.menus.addAction(action, 'MainWindow/&Layers', 'Convert To Paintable')
+    icon_filename = "Colors.png"
+    icon_path = mari.resources.path(mari.resources.ICONS) + '/' + icon_filename
+    action.setIconPath(icon_path)
 
     if not isProjectSuitable(): #Check if project is suitable
         return False
     
     #Create dialog and return inputs
-    dialog = ConvertMaskColorToScalarGUI()
+    dialog = ConvertMaskColorToScalarUI()
     if dialog.exec_():
 
         channel_list = mari.geo.current().channelList()

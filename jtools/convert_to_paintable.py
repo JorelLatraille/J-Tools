@@ -28,11 +28,39 @@ import mari
 version = "0.01"
 
 # ------------------------------------------------------------------------------
+class ConvertToPaintableUI(QtGui.QDialog):
+    "Create ConvertToPaintableUI"
+    def __init__(self, parent=None):
+        super(ConvertToPaintableUI, self).__init__(parent)
+
+        #Set title and create the major layouts
+        self.setWindowTitle('Convert To Paintable')
+        main_layout = QtGui.QVBoxLayout()
+        button_layout = QtGui.QHBoxLayout()
+
+        message = QtGui.QLabel("Are you sure you wish to convert the selected layers to paintable?")
+        yes = QtGui.QPushButton('Yes')
+        no = QtGui.QPushButton('no')
+        yes.connect('clicked()', self.accept)
+        no.connect('clicked()', self.reject)
+
+        button_layout.addWidget(yes)
+        button_layout.addWidget(no)
+        main_layout.addWidget(message)
+        main_layout.addLayout(button_layout)
+        self.setLayout(main_layout)
+
+# ------------------------------------------------------------------------------
 def convertToPaintable():
     "Convert selected layers to paintable layers."
     if not isProjectSuitable(): #Check if project is suitable
         return False
     
+    #Create dialog and return inputs
+    dialog = ConvertToPaintableUI()
+    if not dialog.exec_():
+        return
+
     geo = mari.geo.current()
     channel = geo.currentChannel()
     layer_list = getLayerList(channel.layerList(), returnTrue)

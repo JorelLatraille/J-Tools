@@ -113,6 +113,15 @@ class ChangeGeoVersionPathUI(QtGui.QDialog):
 # ------------------------------------------------------------------------------
 def changeGeoVersionPath():
     "Change the current geo version's path"
+    action = mari.actions.get('/Mari/Scripts/Change Geo Version Path')
+    mari.menus.addAction(action, 'MainWindow/&Objects')
+    mari.menus.addSeparator('MainWindow/&Objects', 'Change Geo Version Path')
+    mari.menus.addAction(action, 'MriGeoEntity/ItemContext')
+    mari.menus.addSeparator('MriGeoEntity/ItemContext', 'Change Geo Version Path')
+    icon_filename = "ImportFile.png"
+    icon_path = mari.resources.path(mari.resources.ICONS) + '/' + icon_filename
+    action.setIconPath(icon_path)
+
     if not isProjectSuitable():
         return
 

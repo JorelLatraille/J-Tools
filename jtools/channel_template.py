@@ -32,6 +32,12 @@ geo_dict = {}
 # ------------------------------------------------------------------------------
 def getChannelTemplate():
     "Get current channel's patch resolutions and create a template."
+    action = mari.actions.get('/Mari/Scripts/Get Channel Template')
+    mari.menus.addAction(action, 'MainWindow/&Channels/Template')
+    icon_filename = "Channel.png"
+    icon_path = mari.resources.path(mari.resources.ICONS) + '/' + icon_filename
+    action.setIconPath(icon_path)
+
     if not _isProjectSuitable():
         return
     global geo_dict
@@ -45,6 +51,12 @@ def getChannelTemplate():
 # ------------------------------------------------------------------------------
 def setChannelFromTemplate():
     "Set current channel's patch resolutions from a template."
+    action = mari.actions.get('/Mari/Scripts/Set Channel From Template')
+    mari.menus.addAction(action, 'MainWindow/&Channels/Template')
+    icon_filename = "ChannelPresets.png"
+    icon_path = mari.resources.path(mari.resources.ICONS) + '/' + icon_filename
+    action.setIconPath(icon_path)
+
     if not _isProjectSuitable():
         return
     geo = mari.geo.current()
@@ -63,6 +75,12 @@ def setChannelFromTemplate():
 # ------------------------------------------------------------------------------
 def createChannelFromTemplate():
     "Create a channel from a template."
+    action = mari.actions.get('/Mari/Scripts/Create Channel From Template')
+    mari.menus.addAction(action, 'MainWindow/&Channels/Template')
+    icon_filename = "AddChannel.png"
+    icon_path = mari.resources.path(mari.resources.ICONS) + '/' + icon_filename
+    action.setIconPath(icon_path)
+
     if not _isProjectSuitable():
         return
     geo = mari.geo.current()
