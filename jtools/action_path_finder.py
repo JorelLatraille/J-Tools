@@ -108,5 +108,14 @@ def isProjectSuitable():
         mari.utils.message("You can only run this script in Mari 2.0v1 or newer.")
         return False
 
+# ------------------------------------------------------------------------------
 if __name__ == "__main__":
     actionPathFinder()
+
+# ------------------------------------------------------------------------------
+# Add action to Mari menu.
+action = mari.actions.create("Action Path Finder", "actionPathFinder()")
+mari.menus.addAction(action, 'MainWindow/P&ython', "&Examples")
+icon_filename = "Zoom.png"
+icon_path = mari.resources.path(mari.resources.ICONS) + '/' + icon_filename
+action.setIconPath(icon_path)

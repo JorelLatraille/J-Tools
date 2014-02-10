@@ -36,7 +36,7 @@ def createJToolsMenu(menu_items):
     menu_items = sorted(menu_items)
     action_dict = {}
     for key_name in menu_items:
-        action_dict[key_name] = mari.actions.create(convert(key_name), "mari.jtools." + key_name + "()")
+        action_dict[key_name] = mari.actions.get("/Mari/Scripts/%s" %convert(key_name))
         if "channel" in key_name.lower() and not "template" in key_name.lower():
             mari.menus.addAction(action_dict[key_name], "MainWindow/Sc&ripts/&J-Tools/Channel")
         elif "template" in key_name.lower():

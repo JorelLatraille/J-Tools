@@ -473,12 +473,6 @@ def _exportEverything(args_dict):
 # ------------------------------------------------------------------------------
 def exportSelectedChannels():
     """Export selected channels."""
-    action = mari.actions.get('/Mari/Scripts/Export Selected Channels')
-    mari.menus.addAction(action, 'MainWindow/&Channels', 'Export')
-    icon_filename = "ExportImages.png"
-    icon_path = mari.resources.path(mari.resources.ICONS) + '/' + icon_filename
-    action.setIconPath(icon_path)
-
     suitable = _isProjectSuitable()
     if not suitable[0]:
         return
@@ -638,3 +632,11 @@ def _isProjectSuitable():
 # ------------------------------------------------------------------------------
 if __name__ == "__main__":
     exportSelectedChannels()
+
+# ------------------------------------------------------------------------------
+# Add action to Mari menu.
+action = mari.actions.create("Export Selected Channels", "exportSelectedChannels()")
+mari.menus.addAction(action, "MainWindow/&Channels", "Export")
+icon_filename = "ExportImages.png"
+icon_path = mari.resources.path(mari.resources.ICONS) + "/" + icon_filename
+action.setIconPath(icon_path)

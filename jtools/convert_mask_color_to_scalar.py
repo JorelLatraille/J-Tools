@@ -54,12 +54,6 @@ class ConvertMaskColorToScalarUI(QtGui.QDialog):
 # ------------------------------------------------------------------------------ 
 def convertMaskColorToScalar():
     "Converts all masks on non shared layers from Color to Scalar"
-    action = mari.actions.get('/Mari/Scripts/Convert Mask Color To Scalar')
-    mari.menus.addAction(action, 'MainWindow/&Layers', 'Convert To Paintable')
-    icon_filename = "Colors.png"
-    icon_path = mari.resources.path(mari.resources.ICONS) + '/' + icon_filename
-    action.setIconPath(icon_path)
-
     if not isProjectSuitable(): #Check if project is suitable
         return False
     
@@ -150,3 +144,11 @@ def isProjectSuitable():
 # ------------------------------------------------------------------------------    
 if __name__ == "__main__":
     convertMaskColorToScalar()
+
+# ------------------------------------------------------------------------------
+# Add action to Mari menu.
+action = mari.actions.create("Convert Mask Color To Scalar", "convertMaskColorToScalar()")
+mari.menus.addAction(action, "MainWindow/&Layers", "Convert To Paintable")
+icon_filename = "Colors.png"
+icon_path = mari.resources.path(mari.resources.ICONS) + "/" + icon_filename
+action.setIconPath(icon_path)

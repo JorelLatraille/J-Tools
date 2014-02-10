@@ -34,12 +34,14 @@ def linkChannelDepthToBuffer():
     mari.utils.connect(mari.geo.entityMadeCurrent, _currentGeo)
     _currentGeo(mari.geo.current())
 
+# ------------------------------------------------------------------------------
 def _currentGeo(geo):
     global _GEOS
     _GEOS.add(geo)
     mari.utils.connect(geo.channelMadeCurrent, _setBuffer)
     _setBuffer(geo.currentChannel())
 
+# ------------------------------------------------------------------------------
 def unlinkChannelDepthToBuffer():
     global _GEOS
     mari.utils.disconnect(mari.geo.entityMadeCurrent, _currentGeo)
@@ -47,14 +49,21 @@ def unlinkChannelDepthToBuffer():
         mari.utils.disconnect(geo.channelMadeCurrent, _setBuffer)
     _GEOS = set([])
 
+# ------------------------------------------------------------------------------
 def _setBuffer(channel):
     if channel:
         mari.canvases.paintBuffer().setDepth(channel.depth())
 
-def _createActions():
-    link = mari.actions.create('Link Channel Depth To Buffer', 'linkChannelDepthToBuffer()')
-    unlink = mari.actions.create('Unlink Channel Depth To Buffer', 'unlinkChannelDepthToBuffer()')
-
 # ------------------------------------------------------------------------------
-if __name__ == "__main__":
-    _createActions()
+# Add action to Mari menu.
+action = mari.actions.create('Link Channel Depth To Buffer', 'linkChannelDepthToBuffer()')
+mari.menus.addAction(action, "MainWindow/&Channels/&Buffer")
+icon_filename = "Linked.png"
+icon_path = mari.resources.path(mari.resources.ICONS) + "/" + icon_filename
+action.setIconPath(icon_path)
+
+action = mari.actions.create('Unlink Channel Depth To Buffer', 'unlinkChannelDepthToBuffer()')
+mari.menus.addAction(action, "MainWindow/&Channels/&Buffer")
+icon_filename = "Unlinked.png"
+icon_path = mari.resources.path(mari.resources.ICONS) + "/" + icon_filename
+action.setIconPath(icon_path)

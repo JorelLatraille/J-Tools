@@ -52,13 +52,6 @@ class UserCancelledException(Exception):
 
 def showUI():
     "Copy paint from one or more patches to other patches, for all layers and channels."
-    #Create UI
-    action = mari.actions.get('/Mari/Scripts/Copy Udim To Udim')
-    mari.menus.addAction(action, 'MainWindow/P&atches', 'Copy Textures')
-    icon_filename = "DuplicateChannel.png"
-    icon_path = mari.resources.path(mari.resources.ICONS) + '/' + icon_filename
-    action.setIconPath(icon_path)    
-
     #Check project state
     if not isProjectSuitable():
         return False
@@ -575,3 +568,11 @@ def getChannelList(geo):
 # ------------------------------------------------------------------------------            
 if __name__ == "__main__":
     showUI()
+
+# ------------------------------------------------------------------------------
+# Add action to Mari menu.
+action = mari.actions.create("Copy Udim To Udim", "showUI()")
+mari.menus.addAction(action, "MainWindow/P&atches", "Copy Textures")
+icon_filename = "DuplicateChannel.png"
+icon_path = mari.resources.path(mari.resources.ICONS) + "/" + icon_filename
+action.setIconPath(icon_path) 

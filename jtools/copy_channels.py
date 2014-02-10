@@ -31,12 +31,6 @@ version = "0.03"
 # ------------------------------------------------------------------------------
 def copyChannels():
     "Copy channels from one object to another."
-    action = mari.actions.get('/Mari/Scripts/Copy Channels')
-    mari.menus.addAction(action, 'MainWindow/&Channels', 'Copy')
-    icon_filename = "CopyChannel.png"
-    icon_path = mari.resources.path(mari.resources.ICONS) + '/' + icon_filename
-    action.setIconPath(icon_path)
-
     if not isProjectSuitable(): #Check if project is suitable
         return False    
     
@@ -122,3 +116,11 @@ def isProjectSuitable():
 # ------------------------------------------------------------------------------
 if __name__ == "__main__":
     copyChannels()
+
+# ------------------------------------------------------------------------------
+# Add action to Mari menu.
+action = mari.actions.create("Copy Channels", "copyChannels()")
+mari.menus.addAction(action, "MainWindow/&Channels", "Copy")
+icon_filename = "CopyChannel.png"
+icon_path = mari.resources.path(mari.resources.ICONS) + "/" + icon_filename
+action.setIconPath(icon_path)

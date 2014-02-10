@@ -54,12 +54,6 @@ class flattenMaskStacksUI(QtGui.QDialog):
 # ------------------------------------------------------------------------------
 def flattenMaskStacks():
     "Flatten mask stacks for current entity channel layers."
-    action = mari.actions.get('/Mari/Scripts/Flatten Mask Stacks')
-    mari.menus.addAction(action, 'MainWindow/&Layers/Layer Mask', 'Flatten Mask Stack')
-    icon_filename = "BakeAttribute.png"
-    icon_path = mari.resources.path(mari.resources.ICONS) + '/' + icon_filename
-    action.setIconPath(icon_path)    
-
     if not isProjectSuitable():
         return
 
@@ -117,3 +111,11 @@ def isProjectSuitable():
 # ------------------------------------------------------------------------------ 
 if __name__ == "__main__":
    flattenMaskStacks()
+
+# ------------------------------------------------------------------------------
+# Add action to Mari menu.
+action = mari.actions.create("Flatten Mask Stacks", "flattenMaskStacks()")
+mari.menus.addAction(action, "MainWindow/&Layers/Layer Mask", "Flatten Mask Stack")
+icon_filename = "BakeAttribute.png"
+icon_path = mari.resources.path(mari.resources.ICONS) + "/" + icon_filename
+action.setIconPath(icon_path)

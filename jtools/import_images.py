@@ -37,11 +37,18 @@ layer_import_options = ['Update', 'Create New', 'Skip']
 resize_options = ['Patch', 'Image']
 
 # ------------------------------------------------------------------------------
-class importImagesGUI(QtGui.QDialog):
+class importImagesUI(QtGui.QDialog):
     "Create ImportImagesGUI"
     def __init__(self, parent=None):
-        super(importImagesGUI, self).__init__(parent)
-        
+        super(importImagesUI, self).__init__(parent)
+
+        # Get user config from settings
+        settings = mari.Settings()
+        resolution = int(settings.value('jtoolsImportImagesUI/resolution')) if settings.value('jtoolsImportImagesUI/resolution') != None else 2
+        bit_depth = int(settings.value('jtoolsImportImagesUI/bitDepth')) if settings.value('jtoolsImportImagesUI/bitDepth') != None else 1
+        layer_option = int(settings.value('jtoolsImportImagesUI/layerOption')) if settings.value('jtoolsImportImagesUI/layerOption') != None else 0
+        resize = int(settings.value('jtoolsImportImagesUI/resize')) if settings.value('jtoolsImportImagesUI/resize') != None else 0
+
         main_layout = QtGui.QVBoxLayout()
         path_layout = QtGui.QGridLayout()
         import_layout = QtGui.QHBoxLayout()
@@ -68,22 +75,22 @@ class importImagesGUI(QtGui.QDialog):
         self.channel_res_options = QtGui.QComboBox()
         for option in channel_resolution_options:
             self.channel_res_options.addItem(option)
-        self.channel_res_options.setCurrentIndex(self.channel_res_options.findText('2048'))
+        self.channel_res_options.setCurrentIndex(resolution)
         channel_bit_label = QtGui.QLabel('Channel Bit Depth:')
         self.channel_bit_options = QtGui.QComboBox()
         for option in channel_bit_depth_options:
             self.channel_bit_options.addItem(option)
-        self.channel_bit_options.setCurrentIndex(self.channel_bit_options.findText('16'))
+        self.channel_bit_options.setCurrentIndex(bit_depth)
         layer_import_label = QtGui.QLabel('Layer Import Option:')
         self.layer_import_options = QtGui.QComboBox()
         for option in layer_import_options:
             self.layer_import_options.addItem(option)
-        self.layer_import_options.setCurrentIndex(self.layer_import_options.findText('Update'))
+        self.layer_import_options.setCurrentIndex(layer_option)
         resize_label = QtGui.QLabel('Resize:')
         self.resize_options = QtGui.QComboBox()
         for option in resize_options:
             self.resize_options.addItem(option)
-        self.resize_options.setCurrentIndex(self.resize_options.findText('Patch'))
+        self.resize_options.setCurrentIndex(resize)
         
         #Add OK/Cancel buttons
         ok_button = QtGui.QPushButton("&OK")
@@ -119,7 +126,7 @@ class importImagesGUI(QtGui.QDialog):
         cancel_button.connect("clicked()", self.reject)
         
     def getPath(self):
-        "Get file path and set the text in path LineEdit widget"
+        "Get file_ path and set the text in path LineEdit widget"
         file_path = mari.utils.misc.getExistingDirectory(parent=self, caption='Import Images', dir='')
         if file_path == "":
             return
@@ -137,7 +144,7 @@ class importImagesGUI(QtGui.QDialog):
             mari.utils.message('Please provide a valid directory.')
             return
             
-        #Check import template has supported image file type extension
+        #Check import template has supported image file_ type extension
         import_template = self.import_template.text
         if import_template == '':
             mari.utils.message('Please provide import template.')
@@ -176,22 +183,22 @@ class importImagesGUI(QtGui.QDialog):
         self.file_path_dict = {}
         try:
             for root, subdirs, files in os.walk(file_path):
-                for file in files:
+                for file_ in files:
                     if not searching.getRejected():
                         searching.updateProgressBar()
-                        if file.lower().endswith(type):
+                        if file_.lower().endswith(type):
                             found = False
                             if len(self.template_no_token) > 0:
                                 for item in self.template_no_token:
-                                    if item in file:
+                                    if item in file_:
                                         found = True
                                     else:
                                         pass
                             else:
                                 found = True
                             if found:
-                                self.file_dict[file] = os.path.abspath(os.path.join(root, file))
-                                self.file_path_dict[file] = os.path.abspath(root)
+                                self.file_dict[file_] = os.path.abspath(os.path.join(root, file_))
+                                self.file_path_dict[file_] = os.path.abspath(root)
                     else:
                         searching.reject()
                         mari.utils.message('Searching for files cancelled.')
@@ -203,18 +210,17 @@ class importImagesGUI(QtGui.QDialog):
             mari.utils.message('No files match import template %s' %self.import_template.text)
             return
         
-        
         #Check import_template and image name match
         #Get a list of split image names to compare
         image_names = {}
-        for file in self.file_dict:
-            image_names[file] = file[:-len(self.type)]
+        for file_ in self.file_dict:
+            image_names[file_] = file_[:-len(self.type)]
         self.split_names = {}
-        for file in image_names:
+        for file_ in image_names:
             if not spliter == '':
-                self.split_names[file] = image_names[file].split(spliter)
-            elif file == self.import_template.text:
-                self.split_names[file] = image_names[file]
+                self.split_names[file_] = image_names[file_].split(spliter)
+            elif file_ == self.import_template.text:
+                self.split_names[file_] = image_names[file_]
         if len(self.split_names) == 0:
             mari.utils.message('No files match import template %s' %self.import_template.text)
             return
@@ -222,26 +228,28 @@ class importImagesGUI(QtGui.QDialog):
         self.image_template = []
         self.file_names_short = []
         self.file_names_long = []
-        for file in self.split_names:
-            if len(self.template) == len(self.split_names[file]):
+        self.except_template = []
+        for file_ in self.split_names:
+            if len(self.template) == len(self.split_names[file_]):
                 if '$UDIM' in self.template:
                     it = self.template.index('$UDIM')
-                    copy_split_names = list(self.split_names[file])
+                    copy_split_names = list(self.split_names[file_])
                     copy_split_names.pop(it)
                     join_names = ".".join(copy_split_names)
                     if join_names in self.file_names_short:
                         pass
                     else:
                         self.file_names_short.append(join_names)
-                        self.file_names_long.append(file)
+                        self.file_names_long.append(file_)
+                        self.match_image_template[file_] = self.split_names[file_]
                     if tuple(copy_split_names) in self.image_template:
                         pass
                     else:
                         self.image_template.append(tuple(copy_split_names))
                 else:
-                    self.file_names_short.append(file)
-                    self.file_names_long.append(file)
-                    self.match_image_template[file] = self.split_names[file]
+                    self.file_names_short.append(file_)
+                    self.file_names_long.append(file_)
+                    self.match_image_template[file_] = self.split_names[file_]
         if len(self.match_image_template) == 0:
             mari.utils.misc.message('Import template and image name(s) do not match')
             return
@@ -267,7 +275,7 @@ class importImagesGUI(QtGui.QDialog):
                                 mari.utils.misc.message("Import template $ENTITY image file name '%s' does not match geo name(s) in project" %entity)
                                 return
         
-        #Get a list of file paths that co-inside with file names
+        #Get a list of file_ paths that co-inside with file_ names
         self.file_paths = []
         for name in self.file_names_long:
             if name in self.file_path_dict:
@@ -279,26 +287,16 @@ class importImagesGUI(QtGui.QDialog):
         return self.import_template.text
         
     def returnChannelResOption(self):
-        return int(self.channel_res_options.currentText)
+        return self.channel_res_options.currentIndex
         
     def returnChannelBitOption(self):
-        return int(self.channel_bit_options.currentText)
+        return self.channel_bit_options.currentIndex
         
     def returnLayerImportOption(self):
-        if self.layer_import_options.currentText == 'Update':
-            layer_import_option = 1
-        elif self.layer_import_options.currentText == 'Create New':
-            layer_import_option = 2
-        else:
-            layer_import_option = 3
-        return layer_import_option
+        return self.layer_import_options.currentIndex + 1
         
     def returnResizeOption(self):
-        if self.resize_options.currentText == 'Patch':
-            resize_option = 0
-        else:
-            resize_option = 1
-        return resize_option
+        return self.resize_options.currentIndex
         
     def returnTemplate(self):
         return self.template
@@ -360,120 +358,134 @@ class SearchingGUI(QtGui.QDialog):
         
 # ------------------------------------------------------------------------------        
 def importImages():
-    "Import images using template given and rename layers to match file image names"
+    "Import images using template given and rename layers to match file_ image names"
     if not isProjectSuitable():
         return
 
     #Create dialog and return inputs
-    dialog = importImagesGUI()
-    if dialog.exec_():
-        import_template = dialog.returnImportTemplate()
-        channel_res = dialog.returnChannelResOption()
-        channel_bit = dialog.returnChannelBitOption()
-        layer_option = dialog.returnLayerImportOption()
-        resize_option = dialog.returnResizeOption()
-        template = dialog.returnTemplate()
-        geo_dict = dialog.returnGeoDict()
-        file_names_short = dialog.returnFileNamesShort()
-        file_paths = dialog.returnFilePaths()
-        image_template = dialog.returnImageTemplate()
-        
-        #Import images onto corresponding token info
-        for file in file_names_short:
-            ifile = file_names_short.index(file)
-            if '$ENTITY' in template:
-                ient = template.index('$ENTITY')
-                entity = image_template[ifile][ient]
-                geo_dict[entity][0].setSelected(True)
-                if '$CHANNEL' in template:
-                    ichan = template.index('$CHANNEL')
-                    channel = image_template[ifile][ichan]
-                    item_list = []
-                    for item in geo_dict[entity]:
-                        item_list.append(item.name())
-                    if channel in item_list:
-                        ilist = item_list.index(channel)
-                        channel = geo_dict[entity][ilist]
-                        channel.makeCurrent()
-                        old_layer_list = channel.layerList()
-                        channel.importImages(os.path.join(file_paths[ifile], import_template), resize_option, layer_option)
-                        layer_list = channel.layerList()
-                        if len(old_layer_list) != len(layer_list):
-                            if '$LAYER' in template:
-                                ilay = template.index('$LAYER')
-                                layer_list[0].setName(image_template[ifile][ilay])
-                            else:
-                                layer_list[0].setName(file_names_short[ifile])
-                    else:
-                        channel = geo_dict[entity][0].createChannel(channel, channel_res, channel_res, channel_bit)
-                        old_layer_list = channel.layerList()
-                        channel.importImages(os.path.join(file_paths[ifile], import_template), resize_option, layer_option)
-                        layer_list = channel.layerList()
-                        if len(old_layer_list) != len(layer_list):
-                            if '$LAYER' in template:
-                                ilay = template.index('$LAYER')
-                                layer_list[0].setName(image_template[ifile][ilay])
-                            else:
-                                layer_list[0].setName(file_names_short[ifile])
-                else:
-                    channel = geo_dict[entity][0].createChannel(file, channel_res, channel_res, channel_bit)
-                    old_layer_list = channel.layerList()
-                    channel.importImages(os.path.join(file_paths[ifile], import_template), resize_option, layer_option)
-                    layer_list = channel.layerList()
-                    if len(old_layer_list) != len(layer_list):
-                        if '$LAYER' in template:
-                            ilay = template.index('$LAYER')
-                            layer_list[0].setName(image_template[ifile][ilay])
-                        else:
-                            layer_list[0].setName(file_names_short[ifile])
-                        
-            elif '$CHANNEL' in template:
+    dialog = importImagesUI()
+    if not dialog.exec_():
+        return
+
+    import_template = dialog.returnImportTemplate()
+    channel_res = dialog.returnChannelResOption()
+    channel_bit = dialog.returnChannelBitOption()
+    layer_option = dialog.returnLayerImportOption()
+    resize_option = dialog.returnResizeOption()
+    template = dialog.returnTemplate()
+    geo_dict = dialog.returnGeoDict()
+    file_names_short = dialog.returnFileNamesShort()
+    file_paths = dialog.returnFilePaths()
+    image_template = dialog.returnImageTemplate()
+
+    # Save user config for ImportUI settings
+    settings = mari.Settings()
+    settings.beginGroup('jtoolsImportImagesUI')
+    settings.setValue('resolution', channel_res)
+    settings.setValue('bitDepth', channel_bit)
+    settings.setValue('layerOption', layer_option)
+    settings.setValue('resize', resize_option)
+    settings.endGroup()
+    
+    channel_res = channel_resolution_options[channel_res]
+    channel_bit = channel_bit_depth_options[channel_bit]
+
+    #Import images onto corresponding token info
+    for file_ in file_names_short:
+        ifile_ = file_names_short.index(file_)
+        if '$ENTITY' in template:
+            ient = template.index('$ENTITY')
+            entity = image_template[ifile_][ient]
+            geo_dict[entity][0].setSelected(True)
+            if '$CHANNEL' in template:
                 ichan = template.index('$CHANNEL')
-                channel = image_template[ifile][ichan]
+                channel = image_template[ifile_][ichan]
                 item_list = []
-                for item in mari.geo.current().channelList():
+                for item in geo_dict[entity]:
                     item_list.append(item.name())
                 if channel in item_list:
                     ilist = item_list.index(channel)
-                    channel = mari.geo.current().channelList()[ilist]
+                    channel = geo_dict[entity][ilist]
                     channel.makeCurrent()
                     old_layer_list = channel.layerList()
-                    channel.importImages(os.path.join(file_paths[ifile], import_template), resize_option, layer_option)
+                    channel.importImages(os.path.join(file_paths[ifile_], import_template), resize_option, layer_option)
                     layer_list = channel.layerList()
                     if len(old_layer_list) != len(layer_list):
                         if '$LAYER' in template:
                             ilay = template.index('$LAYER')
-                            layer_list[0].setName(image_template[ifile][ilay])
+                            layer_list[0].setName(image_template[ifile_][ilay])
                         else:
-                            layer_list[0].setName(file_names_short[ifile])
+                            layer_list[0].setName(file_names_short[ifile_])
                 else:
-                    channel = mari.geo.current().createChannel(channel, channel_res, channel_res, channel_bit)
+                    channel = geo_dict[entity][0].createChannel(channel, channel_res, channel_res, channel_bit)
                     old_layer_list = channel.layerList()
-                    channel.importImages(os.path.join(file_paths[ifile], import_template), resize_option, layer_option)
+                    channel.importImages(os.path.join(file_paths[ifile_], import_template), resize_option, layer_option)
                     layer_list = channel.layerList()
                     if len(old_layer_list) != len(layer_list):
                         if '$LAYER' in template:
                             ilay = template.index('$LAYER')
-                            layer_list[0].setName(image_template[ifile][ilay])
+                            layer_list[0].setName(image_template[ifile_][ilay])
                         else:
-                            layer_list[0].setName(file_names_short[ifile])
-                    
-            elif '$LAYER' in template:
-                ilay = template.index('$LAYER')
-                channel = mari.geo.current().currentChannel()
-                old_layer_list = channel.layerList()
-                channel.importImages(os.path.join(file_paths[ifile], import_template), resize_option, layer_option)
-                layer_list = channel.layerList()
-                if len(old_layer_list) != len(layer_list):
-                    layer_list[0].setName(image_template[ifile][ilay])
-                
+                            layer_list[0].setName(file_names_short[ifile_])
             else:
-                channel = mari.geo.current().currentChannel()
+                channel = geo_dict[entity][0].createChannel(file_, channel_res, channel_res, channel_bit)
                 old_layer_list = channel.layerList()
-                channel.importImages(os.path.join(file_paths[ifile], import_template), resize_option, layer_option)
+                channel.importImages(os.path.join(file_paths[ifile_], import_template), resize_option, layer_option)
                 layer_list = channel.layerList()
                 if len(old_layer_list) != len(layer_list):
-                    layer_list[0].setName(file)
+                    if '$LAYER' in template:
+                        ilay = template.index('$LAYER')
+                        layer_list[0].setName(image_template[ifile_][ilay])
+                    else:
+                        layer_list[0].setName(file_names_short[ifile_])
+                    
+        elif '$CHANNEL' in template:
+            ichan = template.index('$CHANNEL')
+            channel = image_template[ifile_][ichan]
+            item_list = []
+            for item in mari.geo.current().channelList():
+                item_list.append(item.name())
+            if channel in item_list:
+                ilist = item_list.index(channel)
+                channel = mari.geo.current().channelList()[ilist]
+                channel.makeCurrent()
+                old_layer_list = channel.layerList()
+                channel.importImages(os.path.join(file_paths[ifile_], import_template), resize_option, layer_option)
+                layer_list = channel.layerList()
+                if len(old_layer_list) != len(layer_list):
+                    if '$LAYER' in template:
+                        ilay = template.index('$LAYER')
+                        layer_list[0].setName(image_template[ifile_][ilay])
+                    else:
+                        layer_list[0].setName(file_names_short[ifile_])
+            else:
+                channel = mari.geo.current().createChannel(channel, channel_res, channel_res, channel_bit)
+                old_layer_list = channel.layerList()
+                channel.importImages(os.path.join(file_paths[ifile_], import_template), resize_option, layer_option)
+                layer_list = channel.layerList()
+                if len(old_layer_list) != len(layer_list):
+                    if '$LAYER' in template:
+                        ilay = template.index('$LAYER')
+                        layer_list[0].setName(image_template[ifile_][ilay])
+                    else:
+                        layer_list[0].setName(file_names_short[ifile_])
+                
+        elif '$LAYER' in template:
+            ilay = template.index('$LAYER')
+            channel = mari.geo.current().currentChannel()
+            old_layer_list = channel.layerList()
+            channel.importImages(os.path.join(file_paths[ifile_], import_template), resize_option, layer_option)
+            layer_list = channel.layerList()
+            if len(old_layer_list) != len(layer_list):
+                layer_list[0].setName(image_template[ifile_][ilay])
+            
+        else:
+            channel = mari.geo.current().currentChannel()
+            old_layer_list = channel.layerList()
+            channel.importImages(os.path.join(file_paths[ifile_], import_template), resize_option, layer_option)
+            layer_list = channel.layerList()
+            if len(old_layer_list) != len(layer_list):
+                layer_list[0].setName(file_)
                     
 # ------------------------------------------------------------------------------
 def isProjectSuitable():

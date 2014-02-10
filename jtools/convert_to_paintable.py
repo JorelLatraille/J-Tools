@@ -24,8 +24,9 @@
 # ------------------------------------------------------------------------------
 
 import mari
+import PythonQt.QtGui as QtGui
 
-version = "0.01"
+version = "0.02"
 
 # ------------------------------------------------------------------------------
 class ConvertToPaintableUI(QtGui.QDialog):

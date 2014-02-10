@@ -32,12 +32,6 @@ geo_dict = {}
 # ------------------------------------------------------------------------------
 def getChannelTemplate():
     "Get current channel's patch resolutions and create a template."
-    action = mari.actions.get('/Mari/Scripts/Get Channel Template')
-    mari.menus.addAction(action, 'MainWindow/&Channels/Template')
-    icon_filename = "Channel.png"
-    icon_path = mari.resources.path(mari.resources.ICONS) + '/' + icon_filename
-    action.setIconPath(icon_path)
-
     if not _isProjectSuitable():
         return
     global geo_dict
@@ -51,12 +45,6 @@ def getChannelTemplate():
 # ------------------------------------------------------------------------------
 def setChannelFromTemplate():
     "Set current channel's patch resolutions from a template."
-    action = mari.actions.get('/Mari/Scripts/Set Channel From Template')
-    mari.menus.addAction(action, 'MainWindow/&Channels/Template')
-    icon_filename = "ChannelPresets.png"
-    icon_path = mari.resources.path(mari.resources.ICONS) + '/' + icon_filename
-    action.setIconPath(icon_path)
-
     if not _isProjectSuitable():
         return
     geo = mari.geo.current()
@@ -75,12 +63,6 @@ def setChannelFromTemplate():
 # ------------------------------------------------------------------------------
 def createChannelFromTemplate():
     "Create a channel from a template."
-    action = mari.actions.get('/Mari/Scripts/Create Channel From Template')
-    mari.menus.addAction(action, 'MainWindow/&Channels/Template')
-    icon_filename = "AddChannel.png"
-    icon_path = mari.resources.path(mari.resources.ICONS) + '/' + icon_filename
-    action.setIconPath(icon_path)
-
     if not _isProjectSuitable():
         return
     geo = mari.geo.current()
@@ -115,3 +97,23 @@ def _isProjectSuitable():
     else:
         mari.utils.message("You can only run this script in Mari 2.5v2 or newer.")
         return False
+
+# ------------------------------------------------------------------------------
+# Add action to Mari menu.
+action = mari.actions.create("Get Channel Template", "getChannelTemplate()")
+mari.menus.addAction(action, "MainWindow/&Channels/Template")
+icon_filename = "Channel.png"
+icon_path = mari.resources.path(mari.resources.ICONS) + "/" + icon_filename
+action.setIconPath(icon_path)
+
+action = mari.actions.create("Create Channel From Template", "createChannelFromTemplate()")
+mari.menus.addAction(action, "MainWindow/&Channels/Template")
+icon_filename = "AddChannel.png"
+icon_path = mari.resources.path(mari.resources.ICONS) + "/" + icon_filename
+action.setIconPath(icon_path)
+
+action = mari.actions.create("Set Channel From Template", "setChannelFromTemplate()")
+mari.menus.addAction(action, "MainWindow/&Channels/Template")
+icon_filename = "ChannelPresets.png"
+icon_path = mari.resources.path(mari.resources.ICONS) + "/" + icon_filename
+action.setIconPath(icon_path)
