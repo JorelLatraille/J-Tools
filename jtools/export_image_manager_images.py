@@ -47,9 +47,9 @@ def exportImageManagerImages():
         for image in image_list:
             mari.app.stepProgress()
             image_object = image.data(USER_ROLE)
-            for type in file_types:
-                if image.text().endswith(type):
-                    image_name = image.text().split(type)
+            for type_ in file_types:
+                if image.text().endswith(type_):
+                    image_name = image.text().split(type_)
                     image_name = "".join(image_name)
                     break
             image_object.saveAs(os.path.join(export_path, image_name + combo_text), None, 0)
@@ -90,11 +90,11 @@ class exportImageManagerImagesUI(QtGui.QDialog):
         
         image_list = []
         for image in mari.images.list():
-            split_image_path = os.path.abspath(image.filePath()).split('\\')
+            split_image_path = os.path.abspath(image.filePath()).split(os.sep)
             image_list.extend(split_image_path[-1:])    
         
         for image in mari.images.list():
-            images_list.addItem("".join(os.path.abspath(image.filePath()).split('\\')[-1:]))
+            images_list.addItem("".join(os.path.abspath(image.filePath()).split(os.sep)[-1:]))
             images_list.item(images_list.count - 1).setData(USER_ROLE, image)
         
         images_layout.addLayout(images_header_layout)
