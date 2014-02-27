@@ -52,7 +52,7 @@ class ConvertToPaintableUI(QtGui.QDialog):
         self.setLayout(main_layout)
 
 # ------------------------------------------------------------------------------
-def convertToPaintable():
+def convertSelectedToPaintable():
     "Convert selected layers to paintable layers."
     if not isProjectSuitable(): #Check if project is suitable
         return False
@@ -135,4 +135,14 @@ def isProjectSuitable():
 
 # ------------------------------------------------------------------------------
 if __name__ == "__main__":
-    convertToPaintable()
+    convertSelectedToPaintable()
+
+# ------------------------------------------------------------------------------
+# Add action to Mari menu.
+action = mari.actions.create(
+    "Convert Selected To Paintable", "mari.jtools.convertSelectedToPaintable()"
+    )
+mari.menus.addAction(action, "MainWindow/&Layers", "Convert Selected To Paintable")
+icon_filename = "Painting.png"
+icon_path = mari.resources.path(mari.resources.ICONS) + "/" + icon_filename
+action.setIconPath(icon_path)

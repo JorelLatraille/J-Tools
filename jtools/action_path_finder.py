@@ -114,7 +114,7 @@ if __name__ == "__main__":
 
 # ------------------------------------------------------------------------------
 # Add action to Mari menu.
-action = mari.actions.create("Action Path Finder", "actionPathFinder()")
+action = mari.actions.create("Action Path Finder", "mari.jtools.actionPathFinder()")
 mari.menus.addAction(action, 'MainWindow/P&ython', "&Examples")
 icon_filename = "Zoom.png"
 icon_path = mari.resources.path(mari.resources.ICONS) + '/' + icon_filename

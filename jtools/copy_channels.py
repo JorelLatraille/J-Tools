@@ -119,7 +119,9 @@ if __name__ == "__main__":
 
 # ------------------------------------------------------------------------------
 # Add action to Mari menu.
-action = mari.actions.create("Copy Channels", "copyChannels()")
+action = mari.actions.create(
+    "Copy Channels", "mari.jtools.copyChannels()"
+    )
 mari.menus.addAction(action, "MainWindow/&Channels", "Copy")
 icon_filename = "CopyChannel.png"
 icon_path = mari.resources.path(mari.resources.ICONS) + "/" + icon_filename

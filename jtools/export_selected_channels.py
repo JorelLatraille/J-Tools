@@ -635,7 +635,9 @@ if __name__ == "__main__":
 
 # ------------------------------------------------------------------------------
 # Add action to Mari menu.
-action = mari.actions.create("Export Selected Channels", "exportSelectedChannels()")
+action = mari.actions.create(
+    "Export Selected Channels", "mari.jtools.exportSelectedChannels()"
+    )
 mari.menus.addAction(action, "MainWindow/&Channels", "Export")
 icon_filename = "ExportImages.png"
 icon_path = mari.resources.path(mari.resources.ICONS) + "/" + icon_filename

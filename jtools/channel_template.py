@@ -100,19 +100,25 @@ def _isProjectSuitable():
 
 # ------------------------------------------------------------------------------
 # Add action to Mari menu.
-action = mari.actions.create("Get Channel Template", "getChannelTemplate()")
+action = mari.actions.create(
+    "Get Channel Template", "mari.jtools.getChannelTemplate()"
+    )
 mari.menus.addAction(action, "MainWindow/&Channels/Template")
 icon_filename = "Channel.png"
 icon_path = mari.resources.path(mari.resources.ICONS) + "/" + icon_filename
 action.setIconPath(icon_path)
 
-action = mari.actions.create("Create Channel From Template", "createChannelFromTemplate()")
+action = mari.actions.create(
+    "Create Channel From Template", "mari.jtools.createChannelFromTemplate()"
+    )
 mari.menus.addAction(action, "MainWindow/&Channels/Template")
 icon_filename = "AddChannel.png"
 icon_path = mari.resources.path(mari.resources.ICONS) + "/" + icon_filename
 action.setIconPath(icon_path)
 
-action = mari.actions.create("Set Channel From Template", "setChannelFromTemplate()")
+action = mari.actions.create(
+    "Set Channel From Template", "mari.jtools.setChannelFromTemplate()"
+    )
 mari.menus.addAction(action, "MainWindow/&Channels/Template")
 icon_filename = "ChannelPresets.png"
 icon_path = mari.resources.path(mari.resources.ICONS) + "/" + icon_filename

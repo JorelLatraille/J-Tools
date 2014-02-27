@@ -55,7 +55,9 @@ if __name__ == "__main__":
 
 # ------------------------------------------------------------------------------
 # Add action to Mari menu.
-action = mari.actions.create("Toggle Navigation", "toggleNavigation()")
+action = mari.actions.create(
+    "Toggle Navigation", "mari.jtools.toggleNavigation()"
+    )
 mari.menus.addAction(action, "MainWindow/&Camera")
 icon_filename = "Lock.png"
 icon_path = mari.resources.path(mari.resources.ICONS) + "/" + icon_filename

@@ -571,7 +571,7 @@ if __name__ == "__main__":
 
 # ------------------------------------------------------------------------------
 # Add action to Mari menu.
-action = mari.actions.create("Copy Udim To Udim", "showUI()")
+action = mari.actions.create("Copy Udim To Udim", "mari.jtools.copyUdimToUdim()")
 mari.menus.addAction(action, "MainWindow/P&atches", "Copy Textures")
 icon_filename = "DuplicateChannel.png"
 icon_path = mari.resources.path(mari.resources.ICONS) + "/" + icon_filename

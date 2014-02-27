@@ -249,7 +249,9 @@ if __name__ == "__main__":
 
 # ------------------------------------------------------------------------------
 # Add action to Mari menu.
-action = mari.actions.create("Flatten Selected Channels", "flattenSelectedChannels()")
+action = mari.actions.create(
+    "Flatten Selected Channels", "mari.jtools.flattenSelectedChannels()"
+    )
 mari.menus.addAction(action, "MainWindow/&Channels", "Flatten")
 icon_filename = "BakeAttribute.png"
 icon_path = mari.resources.path(mari.resources.ICONS) + "/" + icon_filename

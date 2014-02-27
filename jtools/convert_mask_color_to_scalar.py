@@ -147,7 +147,9 @@ if __name__ == "__main__":
 
 # ------------------------------------------------------------------------------
 # Add action to Mari menu.
-action = mari.actions.create("Convert Mask Color To Scalar", "convertMaskColorToScalar()")
+action = mari.actions.create(
+    "Convert Mask Color To Scalar", "mari.jtools.convertMaskColorToScalar()"
+    )
 mari.menus.addAction(action, "MainWindow/&Layers", "Convert To Paintable")
 icon_filename = "Colors.png"
 icon_path = mari.resources.path(mari.resources.ICONS) + "/" + icon_filename

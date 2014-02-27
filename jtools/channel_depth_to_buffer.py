@@ -56,13 +56,17 @@ def _setBuffer(channel):
 
 # ------------------------------------------------------------------------------
 # Add action to Mari menu.
-action = mari.actions.create('Link Channel Depth To Buffer', 'linkChannelDepthToBuffer()')
+action = mari.actions.create(
+    'Link Channel Depth To Buffer', 'mari.jtools.linkChannelDepthToBuffer()'
+    )
 mari.menus.addAction(action, "MainWindow/&Channels/&Buffer")
 icon_filename = "Linked.png"
 icon_path = mari.resources.path(mari.resources.ICONS) + "/" + icon_filename
 action.setIconPath(icon_path)
 
-action = mari.actions.create('Unlink Channel Depth To Buffer', 'unlinkChannelDepthToBuffer()')
+action = mari.actions.create(
+    'Unlink Channel Depth To Buffer', 'mari.jtools.unlinkChannelDepthToBuffer()'
+    )
 mari.menus.addAction(action, "MainWindow/&Channels/&Buffer")
 icon_filename = "Unlinked.png"
 icon_path = mari.resources.path(mari.resources.ICONS) + "/" + icon_filename

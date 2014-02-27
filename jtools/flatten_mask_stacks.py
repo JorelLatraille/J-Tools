@@ -114,7 +114,9 @@ if __name__ == "__main__":
 
 # ------------------------------------------------------------------------------
 # Add action to Mari menu.
-action = mari.actions.create("Flatten Mask Stacks", "flattenMaskStacks()")
+action = mari.actions.create(
+    "Flatten Mask Stacks", "mari.jtools.flattenMaskStacks()"
+    )
 mari.menus.addAction(action, "MainWindow/&Layers/Layer Mask", "Flatten Mask Stack")
 icon_filename = "BakeAttribute.png"
 icon_path = mari.resources.path(mari.resources.ICONS) + "/" + icon_filename

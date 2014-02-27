@@ -72,7 +72,7 @@ if __name__ == "__main__":
 
 # ------------------------------------------------------------------------------
 # Add action to Mari menu.
-action = mari.actions.create("Batch Archive", "batchArchive()")
+action = mari.actions.create("Batch Archive", "mari.jtools.batchArchive()")
 mari.menus.addAction(action, 'MriProject/ItemContext')
 icon_filename = "DualPane.png"
 icon_path = mari.resources.path(mari.resources.ICONS) + '/' + icon_filename

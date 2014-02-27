@@ -39,7 +39,7 @@ import change_geo_version_path
 import channel_template
 import class_method_finder
 import convert_mask_color_to_scalar
-import convert_to_paintable
+import convert_selected_to_paintable
 import copy_channels
 import copy_udim_to_udim
 import create_directories_move_files
@@ -75,8 +75,8 @@ class JTools():
     def convertMaskColorToScalar(self):
         convert_mask_color_to_scalar.convertMaskColorToScalar()
 
-    def convertToPaintable(self):
-        convert_to_paintable.convertToPaintable()
+    def convertSelectedToPaintable(self):
+        convert_selected_to_paintable.convertSelectedToPaintable()
 
     def copyChannels(self):
         copy_channels.copyChannels()

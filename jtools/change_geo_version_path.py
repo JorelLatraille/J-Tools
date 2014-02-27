@@ -146,7 +146,9 @@ if __name__ == "__main__":
 
 # ------------------------------------------------------------------------------
 # Add action to Mari menu.
-action = mari.actions.create("Change Geo Version Path", "changeGeoVersionPath()")
+action = mari.actions.create(
+    "Change Geo Version Path", "mari.jtools.changeGeoVersionPath()"
+    )
 mari.menus.addAction(action, 'MainWindow/&Objects')
 mari.menus.addSeparator('MainWindow/&Objects', 'Change Geo Version Path')
 mari.menus.addAction(action, 'MriGeoEntity/ItemContext')
