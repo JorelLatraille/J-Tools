@@ -173,7 +173,7 @@ if __name__ == "__main__":
 action = mari.actions.create(
     "Create Directories Move Files", "mari.jtools.createDirectoriesMoveFiles()"
     )
-mari.menus.addAction(action, "MainWindow/&Tools", "Create Directories Move Files")
+mari.menus.addAction(action, "MainWindow/&Tools")
 icon_filename = "DuplicateChannel.png"
 icon_path = mari.resources.path(mari.resources.ICONS) + "/" + icon_filename
 action.setIconPath(icon_path) 

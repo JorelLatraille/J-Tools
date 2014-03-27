@@ -142,7 +142,7 @@ if __name__ == "__main__":
 action = mari.actions.create(
     "Convert Selected To Paintable", "mari.jtools.convertSelectedToPaintable()"
     )
-mari.menus.addAction(action, "MainWindow/&Layers", "Convert Selected To Paintable")
+mari.menus.addAction(action, "MainWindow/&Layers", "Convert To Paintable")
 icon_filename = "Painting.png"
 icon_path = mari.resources.path(mari.resources.ICONS) + "/" + icon_filename
 action.setIconPath(icon_path)
