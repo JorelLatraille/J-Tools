@@ -24,15 +24,14 @@
 # ------------------------------------------------------------------------------
 
 import mari, os, hashlib
-import PythonQt.QtGui as QtGui
-import PythonQt.QtCore as QtCore
+import PythonQt
 
-version = "0.04"
+version = "0.05"
 
-USER_ROLE = 34          # PythonQtGui.Qt.UserRole
+USER_ROLE = 34          # PythonPythonQt.QtGui.Qt.UserRole
 
 # ------------------------------------------------------------------------------
-class ExportSelectedChannelsUI(QtGui.QDialog):
+class ExportSelectedChannelsUI(PythonQt.QtGui.QDialog):
     """Export channels from one or more objects."""
     def __init__(self, bool_, parent=None):
         super(ExportSelectedChannelsUI, self).__init__(parent)
@@ -40,31 +39,31 @@ class ExportSelectedChannelsUI(QtGui.QDialog):
         #Set window title and create a main layout
         self.bool_ = bool_
         self.setWindowTitle("Export Selected Channels")
-        main_layout = QtGui.QVBoxLayout()
-        top_group = QtGui.QGroupBox()
-        middle_group = QtGui.QGroupBox()
-        bottom_group = QtGui.QGroupBox()
+        main_layout = PythonQt.QtGui.QVBoxLayout()
+        top_group = PythonQt.QtGui.QGroupBox()
+        middle_group = PythonQt.QtGui.QGroupBox()
+        bottom_group = PythonQt.QtGui.QGroupBox()
         
         #Create layout for middle section
-        top_layout = QtGui.QHBoxLayout()
+        top_layout = PythonQt.QtGui.QHBoxLayout()
         
         #Create channel layout, label, and widget. Finally populate.
-        channel_layout = QtGui.QVBoxLayout()
-        channel_header_layout = QtGui.QHBoxLayout()
-        self.channel_label = QtGui.QLabel("Channels")
+        channel_layout = PythonQt.QtGui.QVBoxLayout()
+        channel_header_layout = PythonQt.QtGui.QHBoxLayout()
+        self.channel_label = PythonQt.QtGui.QLabel("Channels")
         _setBold(self.channel_label)
-        self.channel_list = QtGui.QListWidget()
+        self.channel_list = PythonQt.QtGui.QListWidget()
         self.channel_list.setSelectionMode(self.channel_list.ExtendedSelection)
         
         #Create filter box for channel list
-        self.channel_filter_box = QtGui.QLineEdit()
+        self.channel_filter_box = PythonQt.QtGui.QLineEdit()
         mari.utils.connect(self.channel_filter_box.textEdited, lambda: _updateChannelFilter(self.channel_filter_box, self.channel_list))
         
         #Create layout and icon/label for channel filter
         channel_header_layout.addWidget(self.channel_label)
         channel_header_layout.addStretch()
-        self.channel_search_icon = QtGui.QLabel()
-        search_pixmap = QtGui.QPixmap(mari.resources.path(mari.resources.ICONS) + '/Lookup.png')
+        self.channel_search_icon = PythonQt.QtGui.QLabel()
+        search_pixmap = PythonQt.QtGui.QPixmap(mari.resources.path(mari.resources.ICONS) + '/Lookup.png')
         self.channel_search_icon.setPixmap(search_pixmap)
         channel_header_layout.addWidget(self.channel_search_icon)
         channel_header_layout.addWidget(self.channel_filter_box)
@@ -84,30 +83,30 @@ class ExportSelectedChannelsUI(QtGui.QDialog):
         channel_layout.addWidget(self.channel_list)
         
         #Create middle button section
-        middle_button_layout = QtGui.QVBoxLayout()
-        self.add_button = QtGui.QPushButton("+")
-        self.remove_button = QtGui.QPushButton("-")
+        middle_button_layout = PythonQt.QtGui.QVBoxLayout()
+        self.add_button = PythonQt.QtGui.QPushButton("+")
+        self.remove_button = PythonQt.QtGui.QPushButton("-")
         middle_button_layout.addStretch()
         middle_button_layout.addWidget(self.add_button)
         middle_button_layout.addWidget(self.remove_button)
         middle_button_layout.addStretch()
         
-        #Add wrapped QtGui.QListWidget with custom functions
-        export_layout = QtGui.QVBoxLayout()
-        export_header_layout = QtGui.QHBoxLayout()
-        self.export_label = QtGui.QLabel("Channels To Export")
+        #Add wrapped PythonQt.QtGui.QListWidget with custom functions
+        export_layout = PythonQt.QtGui.QVBoxLayout()
+        export_header_layout = PythonQt.QtGui.QHBoxLayout()
+        self.export_label = PythonQt.QtGui.QLabel("Channels To Export")
         _setBold(self.export_label)
         self.export_list = ChannelsToExportList()
         self.export_list.setSelectionMode(self.export_list.ExtendedSelection)
         
         #Create filter box for export list
-        self.export_filter_box = QtGui.QLineEdit()
+        self.export_filter_box = PythonQt.QtGui.QLineEdit()
         mari.utils.connect(self.export_filter_box.textEdited, lambda: _updateExportFilter(self.export_filter_box, self.export_list))
         
         #Create layout and icon/label for export filter
         export_header_layout.addWidget(self.export_label)
         export_header_layout.addStretch()
-        self.export_search_icon = QtGui.QLabel()
+        self.export_search_icon = PythonQt.QtGui.QLabel()
         self.export_search_icon.setPixmap(search_pixmap)
         export_header_layout.addWidget(self.export_search_icon)
         export_header_layout.addWidget(self.export_filter_box)
@@ -128,7 +127,7 @@ class ExportSelectedChannelsUI(QtGui.QDialog):
 # -----------------------------------------------------------------------------------------------------    
     
         #Add path layout.
-        path_layout = QtGui.QHBoxLayout()
+        path_layout = PythonQt.QtGui.QHBoxLayout()
 
         #Get mari default path and template
         path = os.path.abspath(mari.resources.path(mari.resources.DEFAULT_EXPORT))
@@ -136,11 +135,11 @@ class ExportSelectedChannelsUI(QtGui.QDialog):
         export_path_template = os.path.join(path, template)
 
         #Add path line input and button, also set text to Mari default path and template
-        path_label = QtGui.QLabel('Path:')
-        self.path_line_edit = QtGui.QLineEdit()
-        path_pixmap = QtGui.QPixmap(mari.resources.path(mari.resources.ICONS) + '/ExportImages.png')
-        icon = QtGui.QIcon(path_pixmap)
-        path_button = QtGui.QPushButton(icon, "")
+        path_label = PythonQt.QtGui.QLabel('Path:')
+        self.path_line_edit = PythonQt.QtGui.QLineEdit()
+        path_pixmap = PythonQt.QtGui.QPixmap(mari.resources.path(mari.resources.ICONS) + '/ExportImages.png')
+        icon = PythonQt.QtGui.QIcon(path_pixmap)
+        path_button = PythonQt.QtGui.QPushButton(icon, "")
         path_button.connect("clicked()", self._getPath)
         self.path_line_edit.setText(export_path_template)
             
@@ -150,10 +149,10 @@ class ExportSelectedChannelsUI(QtGui.QDialog):
         path_layout.addWidget(path_button)
 
         #Add to top group
-        top_group_layout = QtGui.QVBoxLayout()
+        top_group_layout = PythonQt.QtGui.QVBoxLayout()
 
         #Add export everything check box
-        self.export_everything_box = QtGui.QCheckBox('Export Everything')
+        self.export_everything_box = PythonQt.QtGui.QCheckBox('Export Everything')
         self.export_everything_box.connect("clicked()", self._exportEverything)
 
         top_group_layout.addLayout(top_layout)
@@ -162,21 +161,21 @@ class ExportSelectedChannelsUI(QtGui.QDialog):
         top_group.setLayout(top_group_layout)
     
         #Add middle group layout and check boxes
-        middle_group_layout = QtGui.QHBoxLayout()
-        self.export_only_modified_textures_box = QtGui.QCheckBox('Only Modified Textures')
+        middle_group_layout = PythonQt.QtGui.QHBoxLayout()
+        self.export_only_modified_textures_box = PythonQt.QtGui.QCheckBox('Only Modified Textures')
         self.export_only_modified_textures_box.setChecked(True)
         middle_group_layout.addWidget(self.export_only_modified_textures_box)
         middle_group.setLayout(middle_group_layout)
 
         #Add check box layout.
-        check_box_layout = QtGui.QGridLayout()
+        check_box_layout = PythonQt.QtGui.QGridLayout()
         
         #Add export option check boxes
-        self.export_flattened_box = QtGui.QCheckBox('Export Flattened')
-        self.export_full_patch_bleed_box = QtGui.QCheckBox('Full Patch Bleed')
-        self.export_small_textures_box = QtGui.QCheckBox('Disable Small Textures')
+        self.export_flattened_box = PythonQt.QtGui.QCheckBox('Export Flattened')
+        self.export_full_patch_bleed_box = PythonQt.QtGui.QCheckBox('Full Patch Bleed')
+        self.export_small_textures_box = PythonQt.QtGui.QCheckBox('Disable Small Textures')
         if self.bool_:
-            self.export_remove_alpha_box = QtGui.QCheckBox('Remove Alpha')
+            self.export_remove_alpha_box = PythonQt.QtGui.QCheckBox('Remove Alpha')
     
         #Add tick boxes and buttons to bottom layout
         check_box_layout.addWidget(self.export_flattened_box, 0, 0)
@@ -193,11 +192,11 @@ class ExportSelectedChannelsUI(QtGui.QDialog):
         main_layout.addWidget(bottom_group)
 
         # Add OK Cancel buttons
-        self.button_box = QtGui.QDialogButtonBox()
-        self.button_box.setOrientation(QtCore.Qt.Horizontal)
-        self.button_box.setStandardButtons(QtGui.QDialogButtonBox.Ok | QtGui.QDialogButtonBox.Cancel)
-        self.button_box.button(QtGui.QDialogButtonBox.Ok).connect("clicked()", self._checkInput)
-        self.button_box.button(QtGui.QDialogButtonBox.Cancel).connect("clicked()", self.reject)
+        self.button_box = PythonQt.QtGui.QDialogButtonBox()
+        self.button_box.setOrientation(PythonQt.QtCore.Qt.Horizontal)
+        self.button_box.setStandardButtons(PythonQt.QtGui.QDialogButtonBox.Ok | PythonQt.QtGui.QDialogButtonBox.Cancel)
+        self.button_box.button(PythonQt.QtGui.QDialogButtonBox.Ok).connect("clicked()", self._checkInput)
+        self.button_box.button(PythonQt.QtGui.QDialogButtonBox.Cancel).connect("clicked()", self.reject)
 
         #Add bottom layout to main layout and set main layout to dialog's layout
         main_layout.addWidget(self.button_box)
@@ -287,7 +286,7 @@ class ExportSelectedChannelsUI(QtGui.QDialog):
             return False
 
 # ------------------------------------------------------------------------------   
-class ChannelsToExportList(QtGui.QListWidget):
+class ChannelsToExportList(PythonQt.QtGui.QListWidget):
     """Stores a list of operations to perform."""
     
     def __init__(self, title="For Export"):
@@ -348,7 +347,7 @@ def _setBold(widget):
     widget.setFont(font)
 
 # ------------------------------------------------------------------------------
-class InfoUI(QtGui.QMessageBox):
+class InfoUI(PythonQt.QtGui.QMessageBox):
     """Show the user information for them to make a decision on whether to procede."""
     def __init__(self, title, text, info=None, details=None, bool_=False, parent=None):
         super(InfoUI, self).__init__(parent)
@@ -362,8 +361,8 @@ class InfoUI(QtGui.QMessageBox):
         if not details == None:
             self.setDetailedText(details)
         if not bool_:
-            self.setStandardButtons(QtGui.QMessageBox.Ok | QtGui.QMessageBox.Cancel)
-            self.setDefaultButton(QtGui.QMessageBox.Ok)
+            self.setStandardButtons(PythonQt.QtGui.QMessageBox.Ok | PythonQt.QtGui.QMessageBox.Cancel)
+            self.setDefaultButton(PythonQt.QtGui.QMessageBox.Ok)
 
 # ------------------------------------------------------------------------------ 
 def _exportChannels(args_dict):

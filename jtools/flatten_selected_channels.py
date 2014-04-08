@@ -24,42 +24,42 @@
 # ------------------------------------------------------------------------------
 
 import mari
-import PythonQt.QtGui as QtGui
+import PythonQt
 
-version = "0.03"
+version = "0.04"
 
 USER_ROLE = 32          # PythonQt.Qt.UserRole
 
 # ------------------------------------------------------------------------------       
-class FlattenSelectedChannelsGUI(QtGui.QDialog):
+class FlattenSelectedChannelsGUI(PythonQt.QtGui.QDialog):
     "Create main UI."
     def __init__(self, parent=None):
         super(FlattenSelectedChannelsGUI, self).__init__(parent)
 
         #Set window title and create a main layout
         self.setWindowTitle("Flatten Selected Channels")
-        main_layout = QtGui.QVBoxLayout()
+        main_layout = PythonQt.QtGui.QVBoxLayout()
         
         #Create layout for middle section
-        centre_layout = QtGui.QHBoxLayout()
+        centre_layout = PythonQt.QtGui.QHBoxLayout()
         
         #Create channel layout, label, and widget. Finally populate.
-        channel_layout = QtGui.QVBoxLayout()
-        channel_header_layout = QtGui.QHBoxLayout()
-        channel_label = QtGui.QLabel("Channels")
+        channel_layout = PythonQt.QtGui.QVBoxLayout()
+        channel_header_layout = PythonQt.QtGui.QHBoxLayout()
+        channel_label = PythonQt.QtGui.QLabel("Channels")
         setBold(channel_label)
-        channel_list = QtGui.QListWidget()
+        channel_list = PythonQt.QtGui.QListWidget()
         channel_list.setSelectionMode(channel_list.ExtendedSelection)
         
         #Create filter box for channel list
-        channel_filter_box = QtGui.QLineEdit()
+        channel_filter_box = PythonQt.QtGui.QLineEdit()
         mari.utils.connect(channel_filter_box.textEdited, lambda: updateChannelFilter(channel_filter_box, channel_list))
         
         #Create layout and icon/label for channel filter
         channel_header_layout.addWidget(channel_label)
         channel_header_layout.addStretch()
-        channel_search_icon = QtGui.QLabel()
-        search_pixmap = QtGui.QPixmap(mari.resources.path(mari.resources.ICONS) + '/Lookup.png')
+        channel_search_icon = PythonQt.QtGui.QLabel()
+        search_pixmap = PythonQt.QtGui.QPixmap(mari.resources.path(mari.resources.ICONS) + '/Lookup.png')
         channel_search_icon.setPixmap(search_pixmap)
         channel_header_layout.addWidget(channel_search_icon)
         channel_header_layout.addWidget(channel_filter_box)
@@ -79,30 +79,30 @@ class FlattenSelectedChannelsGUI(QtGui.QDialog):
         channel_layout.addWidget(channel_list)
         
         #Create middle button section
-        middle_button_layout = QtGui.QVBoxLayout()
-        add_button = QtGui.QPushButton("+")
-        remove_button = QtGui.QPushButton("-")
+        middle_button_layout = PythonQt.QtGui.QVBoxLayout()
+        add_button = PythonQt.QtGui.QPushButton("+")
+        remove_button = PythonQt.QtGui.QPushButton("-")
         middle_button_layout.addStretch()
         middle_button_layout.addWidget(add_button)
         middle_button_layout.addWidget(remove_button)
         middle_button_layout.addStretch()
         
-        #Add wrapped QtGui.QListWidget with custom functions
-        flatten_layout = QtGui.QVBoxLayout()
-        flatten_header_layout = QtGui.QHBoxLayout()
-        flatten_label = QtGui.QLabel("Channels To Flatten")
+        #Add wrapped PythonQt.QtGui.QListWidget with custom functions
+        flatten_layout = PythonQt.QtGui.QVBoxLayout()
+        flatten_header_layout = PythonQt.QtGui.QHBoxLayout()
+        flatten_label = PythonQt.QtGui.QLabel("Channels To Flatten")
         setBold(flatten_label)
         self.flatten_list = ChannelsToFlattenList()
         self.flatten_list.setSelectionMode(self.flatten_list.ExtendedSelection)
         
         #Create filter box for flatten list
-        flatten_filter_box = QtGui.QLineEdit()
+        flatten_filter_box = PythonQt.QtGui.QLineEdit()
         mari.utils.connect(flatten_filter_box.textEdited, lambda: updateFlattenFilter(flatten_filter_box, self.flatten_list))
         
         #Create layout and icon/label for flatten filter
         flatten_header_layout.addWidget(flatten_label)
         flatten_header_layout.addStretch()
-        flatten_search_icon = QtGui.QLabel()
+        flatten_search_icon = PythonQt.QtGui.QLabel()
         flatten_search_icon.setPixmap(search_pixmap)
         flatten_header_layout.addWidget(flatten_search_icon)
         flatten_header_layout.addWidget(flatten_filter_box)
@@ -121,9 +121,9 @@ class FlattenSelectedChannelsGUI(QtGui.QDialog):
         centre_layout.addLayout(flatten_layout)
         
         #Create button layout and hook them up
-        button_layout = QtGui.QHBoxLayout()
-        ok_button = QtGui.QPushButton("&OK")
-        cancel_button = QtGui.QPushButton("&Cancel")
+        button_layout = PythonQt.QtGui.QHBoxLayout()
+        ok_button = PythonQt.QtGui.QPushButton("&OK")
+        cancel_button = PythonQt.QtGui.QPushButton("&Cancel")
         button_layout.addStretch()
         button_layout.addWidget(ok_button)
         button_layout.addWidget(cancel_button)
@@ -141,7 +141,7 @@ class FlattenSelectedChannelsGUI(QtGui.QDialog):
         return self.flatten_list.currentChannels()
     
 # ------------------------------------------------------------------------------   
-class ChannelsToFlattenList(QtGui.QListWidget):
+class ChannelsToFlattenList(PythonQt.QtGui.QListWidget):
     "Stores a list of operations to perform."
     
     def __init__(self, title="For Export"):

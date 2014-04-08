@@ -24,24 +24,24 @@
 # ------------------------------------------------------------------------------
 
 import mari
-import PythonQt.QtGui as QtGui
+import PythonQt
 
-version = "0.02"
+version = "0.03"
 
 # ------------------------------------------------------------------------------
-class ConvertToPaintableUI(QtGui.QDialog):
+class ConvertToPaintableUI(PythonQt.QtGui.QDialog):
     "Create ConvertToPaintableUI"
     def __init__(self, parent=None):
         super(ConvertToPaintableUI, self).__init__(parent)
 
         #Set title and create the major layouts
         self.setWindowTitle('Convert To Paintable')
-        main_layout = QtGui.QVBoxLayout()
-        button_layout = QtGui.QHBoxLayout()
+        main_layout = PythonQt.QtGui.QVBoxLayout()
+        button_layout = PythonQt.QtGui.QHBoxLayout()
 
-        message = QtGui.QLabel("Are you sure you wish to convert the selected layers to paintable?")
-        yes = QtGui.QPushButton('Yes')
-        no = QtGui.QPushButton('no')
+        message = PythonQt.QtGui.QLabel("Are you sure you wish to convert the selected layers to paintable?")
+        yes = PythonQt.QtGui.QPushButton('Yes')
+        no = PythonQt.QtGui.QPushButton('no')
         yes.connect('clicked()', self.accept)
         no.connect('clicked()', self.reject)
 

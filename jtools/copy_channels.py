@@ -24,9 +24,9 @@
 # ------------------------------------------------------------------------------
 
 import mari
-import PythonQt.QtGui as QtGui
+import PythonQt
 
-version = "0.03"
+version = "0.04"
 
 # ------------------------------------------------------------------------------
 def copyChannels():
@@ -54,9 +54,9 @@ def copyChannels():
 # ------------------------------------------------------------------------------        
 def fromGeoToGeo():
     "GUI's for user input."
-    fu = QtGui.QInputDialog()
+    fu = PythonQt.QtGui.QInputDialog()
     fuInput = fu.getText(fu, 'To copy from','Object name e.g. head_old')
-    tu = QtGui.QInputDialog()
+    tu = PythonQt.QtGui.QInputDialog()
     tuInput = tu.getText(tu, 'To copy to','Object name e.g. head_new')
     geo_names = (fuInput,tuInput)
     if '' in geo_names:

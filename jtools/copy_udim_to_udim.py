@@ -24,9 +24,9 @@
 # ------------------------------------------------------------------------------
 
 import mari
-import PythonQt.QtGui as QtGui
+import PythonQt
 
-version = "0.03"
+version = "0.04"
 
 USER_ROLE = 32          # PythonQt.Qt.UserRole
 
@@ -58,29 +58,29 @@ def showUI():
     
     #Create main dialog, add main layout and set title
     global g_u2u_window
-    g_u2u_window = QtGui.QDialog()
-    u2u_layout = QtGui.QVBoxLayout()
+    g_u2u_window = PythonQt.QtGui.QDialog()
+    u2u_layout = PythonQt.QtGui.QVBoxLayout()
     g_u2u_window.setLayout(u2u_layout)
     g_u2u_window.setWindowTitle("Copy Udim To Udim")
     
     #Create layout for middle section
-    centre_layout = QtGui.QHBoxLayout()
+    centre_layout = PythonQt.QtGui.QHBoxLayout()
     
     #Create channels layout, label, and widget. Finally populate.
-    channel_layout = QtGui.QVBoxLayout()
-    channel_header_layout = QtGui.QHBoxLayout()
-    channel_label = QtGui.QLabel("Channels")
+    channel_layout = PythonQt.QtGui.QVBoxLayout()
+    channel_header_layout = PythonQt.QtGui.QHBoxLayout()
+    channel_label = PythonQt.QtGui.QLabel("Channels")
     setBold(channel_label)
-    channel_list = QtGui.QListWidget()
+    channel_list = PythonQt.QtGui.QListWidget()
     channel_list.setSelectionMode(channel_list.ExtendedSelection)
     
-    filter_box = QtGui.QLineEdit()
+    filter_box = PythonQt.QtGui.QLineEdit()
     mari.utils.connect(filter_box.textEdited, lambda: updateFilter(filter_box, channel_list))
     
     channel_header_layout.addWidget(channel_label)
     channel_header_layout.addStretch()
-    channel_search_icon = QtGui.QLabel()
-    search_pixmap = QtGui.QPixmap(mari.resources.path(mari.resources.ICONS) + '/Lookup.png')
+    channel_search_icon = PythonQt.QtGui.QLabel()
+    search_pixmap = PythonQt.QtGui.QPixmap(mari.resources.path(mari.resources.ICONS) + '/Lookup.png')
     channel_search_icon.setPixmap(search_pixmap)
     channel_header_layout.addWidget(channel_search_icon)
     channel_header_layout.addWidget(filter_box)
@@ -94,17 +94,17 @@ def showUI():
     channel_layout.addWidget(channel_list)
     
     #Create middle button section
-    middle_button_layout = QtGui.QVBoxLayout()
-    add_button = QtGui.QPushButton("+")
-    remove_button = QtGui.QPushButton("-")
+    middle_button_layout = PythonQt.QtGui.QVBoxLayout()
+    add_button = PythonQt.QtGui.QPushButton("+")
+    remove_button = PythonQt.QtGui.QPushButton("-")
     middle_button_layout.addStretch()
     middle_button_layout.addWidget(add_button)
     middle_button_layout.addWidget(remove_button)
     middle_button_layout.addStretch()
     
-    #Add wrapped QtGui.QListWidget with custom functions
-    channels_to_copy_layout = QtGui.QVBoxLayout()
-    channels_to_copy_label = QtGui.QLabel("Channels To Run Copy On")
+    #Add wrapped PythonQt.QtGui.QListWidget with custom functions
+    channels_to_copy_layout = PythonQt.QtGui.QVBoxLayout()
+    channels_to_copy_label = PythonQt.QtGui.QLabel("Channels To Run Copy On")
     setBold(channels_to_copy_label)
     channels_to_copy_widget = ChannelsToCopyList()
     channels_to_copy_layout.addWidget(channels_to_copy_label)
@@ -123,11 +123,11 @@ def showUI():
     u2u_layout.addLayout(centre_layout)
     
     #Add bottom layout.
-    bottom_layout = QtGui.QHBoxLayout()
+    bottom_layout = PythonQt.QtGui.QHBoxLayout()
     
-    unlock_channels_box = QtGui.QCheckBox('Unlock channels')
-    uncache_layers_box = QtGui.QCheckBox('Uncache layers')
-    unlock_layers_box = QtGui.QCheckBox('Unlock layers')
+    unlock_channels_box = PythonQt.QtGui.QCheckBox('Unlock channels')
+    uncache_layers_box = PythonQt.QtGui.QCheckBox('Uncache layers')
+    unlock_layers_box = PythonQt.QtGui.QCheckBox('Unlock layers')
     
     bottom_layout.addWidget(unlock_channels_box)
     bottom_layout.addStretch()
@@ -139,31 +139,31 @@ def showUI():
     u2u_layout.addLayout(bottom_layout)
 
     #Add very bottom layout.
-    very_bottom_layout = QtGui.QHBoxLayout()
+    very_bottom_layout = PythonQt.QtGui.QHBoxLayout()
     
     #Create copy/paste text labels
-    copy_from_text = QtGui.QLabel("Copy from UDIM")
+    copy_from_text = PythonQt.QtGui.QLabel("Copy from UDIM")
     setBold(copy_from_text)
-    paste_to_text = QtGui.QLabel("Paste to UDIM")
+    paste_to_text = PythonQt.QtGui.QLabel("Paste to UDIM")
     setBold(paste_to_text)
     
     #Create copy layout and add widgets
-    copy_line_layout = QtGui.QHBoxLayout()
+    copy_line_layout = PythonQt.QtGui.QHBoxLayout()
     # global copy_line
     copy_line_layout.addWidget(copy_from_text)
-    copy_line = QtGui.QLineEdit()
+    copy_line = PythonQt.QtGui.QLineEdit()
     copy_line_layout.addWidget(copy_line)
     
     #Create paste layout and add widgets
-    paste_line_layout = QtGui.QHBoxLayout()
+    paste_line_layout = PythonQt.QtGui.QHBoxLayout()
     # global paste_line
     paste_line_layout.addWidget(paste_to_text)
-    paste_line = QtGui.QLineEdit()
+    paste_line = PythonQt.QtGui.QLineEdit()
     paste_line_layout.addWidget(paste_line)
     
     #Add OK Cancel buttons layout, buttons and add
-    main_ok_button = QtGui.QPushButton("OK")
-    main_cancel_button = QtGui.QPushButton("Cancel")
+    main_ok_button = PythonQt.QtGui.QPushButton("OK")
+    main_cancel_button = PythonQt.QtGui.QPushButton("Cancel")
     main_ok_button.connect("clicked()", lambda: compareInput(g_u2u_window, channels_to_copy_widget, unlock_channels_box, uncache_layers_box, unlock_layers_box, copy_line, paste_line))
     main_cancel_button.connect("clicked()", g_u2u_window.reject)
     uncache_layers_box.connect("clicked()", lambda: uncacheBoxTicked(uncache_layers_box))
@@ -186,7 +186,7 @@ def uncacheBoxTicked(uncache_layers_box):
         mari.utils.message("Please be aware that uncaching and re-caching the layers could take some time")
     
 # ------------------------------------------------------------------------------   
-class ChannelsToCopyList(QtGui.QListWidget):
+class ChannelsToCopyList(PythonQt.QtGui.QListWidget):
     "Stores a list of operations to perform."
     
     def __init__(self, title="For Export"):

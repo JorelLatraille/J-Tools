@@ -24,14 +24,14 @@
 # ------------------------------------------------------------------------------
 
 import mari
-import PythonQt.QtGui as QtGui
+import PythonQt
 
-version = "0.02"
+version = "0.03"
 
 USER_ROLE_01 = 34          # PythonQt.Qt.UserRole
 
 # ------------------------------------------------------------------------------        
-class actionPathFinderGUI(QtGui.QDialog):
+class actionPathFinderGUI(PythonQt.QtGui.QDialog):
     
     def __init__(self, parent=None):
         super(actionPathFinderGUI, self).__init__(parent)
@@ -39,19 +39,19 @@ class actionPathFinderGUI(QtGui.QDialog):
         self.setWindowTitle("Action Path Finder")
         
         #Create geometrys layout, label, and widget. Finally populate.
-        action_layout = QtGui.QVBoxLayout()
-        action_header_layout = QtGui.QHBoxLayout()
-        action_label = QtGui.QLabel("Action Paths")
+        action_layout = PythonQt.QtGui.QVBoxLayout()
+        action_header_layout = PythonQt.QtGui.QHBoxLayout()
+        action_label = PythonQt.QtGui.QLabel("Action Paths")
         setBold(action_label)
-        action_list = QtGui.QListWidget()
+        action_list = PythonQt.QtGui.QListWidget()
         
-        filter_action_box = QtGui.QLineEdit()
+        filter_action_box = PythonQt.QtGui.QLineEdit()
         mari.utils.connect(filter_action_box.textEdited, lambda: updateActionPathFilter(filter_action_box, action_list))
         
         action_header_layout.addWidget(action_label)
         action_header_layout.addStretch()
-        action_search_icon = QtGui.QLabel()
-        search_pixmap = QtGui.QPixmap(mari.resources.path(mari.resources.ICONS) + '/Lookup.png')
+        action_search_icon = PythonQt.QtGui.QLabel()
+        search_pixmap = PythonQt.QtGui.QPixmap(mari.resources.path(mari.resources.ICONS) + '/Lookup.png')
         action_search_icon.setPixmap(search_pixmap)
         action_header_layout.addWidget(action_search_icon)
         action_header_layout.addWidget(filter_action_box)
@@ -61,7 +61,7 @@ class actionPathFinderGUI(QtGui.QDialog):
             action_list.addItem(action)
             action_list.item(action_list.count - 1).setData(USER_ROLE_01, action)
        
-        selected_action_box = QtGui.QLineEdit()
+        selected_action_box = PythonQt.QtGui.QLineEdit()
         action_list.connect('currentTextChanged(QString)', selected_action_box, 'setText(QString)')
         
         action_layout.addLayout(action_header_layout)

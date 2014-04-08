@@ -24,10 +24,9 @@
 # ------------------------------------------------------------------------------
 
 import mari, os
-import PythonQt.QtGui as QtGui
-from PythonQt.QtCore import QRegExp
+import PythonQt
 
-version = "0.02"
+version = "0.03"
 
 image_file_types = ['.' + format for format in mari.images.supportedReadFormats()]
 tokens = ['$ENTITY', '$CHANNEL', '$LAYER', '$UDIM']
@@ -37,7 +36,7 @@ layer_import_options = ['Update', 'Create New', 'Skip']
 resize_options = ['Patch', 'Image']
 
 # ------------------------------------------------------------------------------
-class importImagesUI(QtGui.QDialog):
+class importImagesUI(PythonQt.QtGui.QDialog):
     "Create ImportImagesGUI"
     def __init__(self, parent=None):
         super(importImagesUI, self).__init__(parent)
@@ -49,52 +48,52 @@ class importImagesUI(QtGui.QDialog):
         layer_option = int(settings.value('jtoolsImportImagesUI/layerOption')) if settings.value('jtoolsImportImagesUI/layerOption') != None else 0
         resize = int(settings.value('jtoolsImportImagesUI/resize')) if settings.value('jtoolsImportImagesUI/resize') != None else 0
 
-        main_layout = QtGui.QVBoxLayout()
-        path_layout = QtGui.QGridLayout()
-        import_layout = QtGui.QHBoxLayout()
-        options_layout = QtGui.QHBoxLayout()
-        button_layout = QtGui.QGridLayout()
+        main_layout = PythonQt.QtGui.QVBoxLayout()
+        path_layout = PythonQt.QtGui.QGridLayout()
+        import_layout = PythonQt.QtGui.QHBoxLayout()
+        options_layout = PythonQt.QtGui.QHBoxLayout()
+        button_layout = PythonQt.QtGui.QGridLayout()
         
         #Add path line input and button
-        path_label = QtGui.QLabel('Path:')
-        self.path = QtGui.QLineEdit()
-        path_pixmap = QtGui.QPixmap(mari.resources.path(mari.resources.ICONS) + '/ExportImages.png')
-        icon = QtGui.QIcon(path_pixmap)
-        path_button = QtGui.QPushButton(icon, "")
+        path_label = PythonQt.QtGui.QLabel('Path:')
+        self.path = PythonQt.QtGui.QLineEdit()
+        path_pixmap = PythonQt.QtGui.QPixmap(mari.resources.path(mari.resources.ICONS) + '/ExportImages.png')
+        icon = PythonQt.QtGui.QIcon(path_pixmap)
+        path_button = PythonQt.QtGui.QPushButton(icon, "")
         path_button.connect("clicked()", lambda: self.getPath())
         
         #Add import template line input and validator
-        punctuation_re = QRegExp(r"[a-zA-Z0-9\$\._]*")
-        import_label = QtGui.QLabel('Import Template:')
-        self.import_template = QtGui.QLineEdit()
-        self.import_template.setValidator(QtGui.QRegExpValidator(punctuation_re, self))
+        punctuation_re = PythonQt.QtCore.QRegExp(r"[a-zA-Z0-9\$\._]*")
+        import_label = PythonQt.QtGui.QLabel('Import Template:')
+        self.import_template = PythonQt.QtGui.QLineEdit()
+        self.import_template.setValidator(PythonQt.QtGui.PythonQt.QtCore.QRegExpValidator(punctuation_re, self))
         self.import_template.setPlaceholderText('e.g. $CHANNEL.$LAYER.$UDIM.tif')
         
         #Add import resize options, channel creation options and layer import options
-        channel_res_label = QtGui.QLabel('Channel Resolution:')
-        self.channel_res_options = QtGui.QComboBox()
+        channel_res_label = PythonQt.QtGui.QLabel('Channel Resolution:')
+        self.channel_res_options = PythonQt.QtGui.QComboBox()
         for option in channel_resolution_options:
             self.channel_res_options.addItem(option)
         self.channel_res_options.setCurrentIndex(resolution)
-        channel_bit_label = QtGui.QLabel('Channel Bit Depth:')
-        self.channel_bit_options = QtGui.QComboBox()
+        channel_bit_label = PythonQt.QtGui.QLabel('Channel Bit Depth:')
+        self.channel_bit_options = PythonQt.QtGui.QComboBox()
         for option in channel_bit_depth_options:
             self.channel_bit_options.addItem(option)
         self.channel_bit_options.setCurrentIndex(bit_depth)
-        layer_import_label = QtGui.QLabel('Layer Import Option:')
-        self.layer_import_options = QtGui.QComboBox()
+        layer_import_label = PythonQt.QtGui.QLabel('Layer Import Option:')
+        self.layer_import_options = PythonQt.QtGui.QComboBox()
         for option in layer_import_options:
             self.layer_import_options.addItem(option)
         self.layer_import_options.setCurrentIndex(layer_option)
-        resize_label = QtGui.QLabel('Resize:')
-        self.resize_options = QtGui.QComboBox()
+        resize_label = PythonQt.QtGui.QLabel('Resize:')
+        self.resize_options = PythonQt.QtGui.QComboBox()
         for option in resize_options:
             self.resize_options.addItem(option)
         self.resize_options.setCurrentIndex(resize)
         
         #Add OK/Cancel buttons
-        ok_button = QtGui.QPushButton("&OK")
-        cancel_button = QtGui.QPushButton("Cancel")
+        ok_button = PythonQt.QtGui.QPushButton("&OK")
+        cancel_button = PythonQt.QtGui.QPushButton("Cancel")
         
         #Add widgets to respective layouts
         path_layout.addWidget(path_label, 0, 0)
@@ -113,7 +112,7 @@ class importImagesUI(QtGui.QDialog):
         button_layout.addWidget(ok_button, 1, 0)
         button_layout.addWidget(cancel_button, 1, 1)
         
-        #Add layouts to main QtGui.QDialog layout
+        #Add layouts to main PythonQt.QtGui.QDialog layout
         main_layout.addLayout(path_layout)
         main_layout.addLayout(import_layout)
         main_layout.addLayout(options_layout)
@@ -314,21 +313,21 @@ class importImagesUI(QtGui.QDialog):
         return self.image_template
 
 # ------------------------------------------------------------------------------       
-class SearchingGUI(QtGui.QDialog):
+class SearchingGUI(PythonQt.QtGui.QDialog):
     "Create SearchingGUI"
     def __init__(self, parent=None):
         super(SearchingGUI, self).__init__(parent)
         
         self.setModal(True)
         self.setWindowTitle('Search')
-        main_layout = QtGui.QVBoxLayout()
+        main_layout = PythonQt.QtGui.QVBoxLayout()
         
         #Add label, progress bar and cancel button
-        search_label = QtGui.QLabel('Searching for images...')
-        self.progressBar = QtGui.QProgressBar()
+        search_label = PythonQt.QtGui.QLabel('Searching for images...')
+        self.progressBar = PythonQt.QtGui.QProgressBar()
         self.progressBar.setMaximum(0)
         self.progressBar.setTextVisible(False)
-        cancel_button = QtGui.QPushButton("Cancel")
+        cancel_button = PythonQt.QtGui.QPushButton("Cancel")
         #Connect cancel button clicked to reject the GUI
         cancel_button.connect("clicked()", self.setRejected)
         self.rejected_status = False
@@ -347,7 +346,7 @@ class SearchingGUI(QtGui.QDialog):
         
     def setProgressBar(self, value):
         self.progressBar.setValue(value)
-        QtGui.QApplication.processEvents()
+        PythonQt.QtGui.QApplication.processEvents()
         
     def updateProgressBar(self):
         current_value = self.progressBar.value

@@ -24,12 +24,11 @@
 # ------------------------------------------------------------------------------
 
 import mari
-import PythonQt.QtGui as QtGui
-from PythonQt.QtCore import QSize
+import PythonQt
 
-version = "0.02"
+version = "0.03"
 
-g_resolutions = [str(QSize.width()) for QSize in mari.images.supportedTextureSizes()]
+g_resolutions = [str(PythonQt.QtCore.QSize.width()) for PythonQt.QtCore.QSize in mari.images.supportedTextureSizes()]
 g_rc_window = None
 
 # ------------------------------------------------------------------------------
@@ -52,7 +51,7 @@ def resizeChannels(g_rc_window, resolutions, all_geo_box):
                     images.extend(layer.maskImageSet().imageList())
         
             for image in images:
-                image.resize(QSize(resolution, resolution))
+                image.resize(PythonQt.QtCore.QSize(resolution, resolution))
                 
     else:
         geo_list = mari.geo.list()
@@ -68,7 +67,7 @@ def resizeChannels(g_rc_window, resolutions, all_geo_box):
                         images.extend(layer.maskImageSet().imageList())
             
                 for image in images:
-                    image.resize(QSize(resolution, resolution))
+                    image.resize(PythonQt.QtCore.QSize(resolution, resolution))
                     
     mari.utils.message("Resize channels successful.")
 
@@ -81,22 +80,22 @@ def showUI():
     
     #Create main dialog, add main layout and set title
     global g_rc_window
-    g_rc_window = QtGui.QDialog()
-    rc_layout = QtGui.QVBoxLayout()
+    g_rc_window = PythonQt.QtGui.QDialog()
+    rc_layout = PythonQt.QtGui.QVBoxLayout()
     g_rc_window.setLayout(rc_layout)
     g_rc_window.setWindowTitle("Resize Channels")
     
     #Add main layout.
-    main_layout = QtGui.QHBoxLayout()
+    main_layout = PythonQt.QtGui.QHBoxLayout()
     
     #Add res options
-    resolutions_text = QtGui.QLabel('Resolutions:')
-    resolutions = QtGui.QComboBox()
+    resolutions_text = PythonQt.QtGui.QLabel('Resolutions:')
+    resolutions = PythonQt.QtGui.QComboBox()
     for resolution in g_resolutions :
         resolutions.addItem(resolution)
     resolutions.setCurrentIndex(resolutions.findText('1024'))
     
-    all_geo_box = QtGui.QCheckBox('All Geo')
+    all_geo_box = PythonQt.QtGui.QCheckBox('All Geo')
     
     main_layout.addWidget(resolutions_text)
     main_layout.addWidget(resolutions)
@@ -105,8 +104,8 @@ def showUI():
     main_layout.addStretch()
     
     #Add main buttons layout, buttons and add
-    main_ok_button = QtGui.QPushButton("OK")
-    main_cancel_button = QtGui.QPushButton("Cancel")
+    main_ok_button = PythonQt.QtGui.QPushButton("OK")
+    main_cancel_button = PythonQt.QtGui.QPushButton("Cancel")
     main_ok_button.connect("clicked()", lambda: resizeChannels(g_rc_window, resolutions, all_geo_box))
     main_cancel_button.connect("clicked()", g_rc_window.reject)
     

@@ -24,24 +24,24 @@
 # ------------------------------------------------------------------------------
 
 import mari
-import PythonQt.QtGui as QtGui
+import PythonQt
 
-version = "0.02"
+version = "0.03"
 
 # ------------------------------------------------------------------------------
-class flattenMaskStacksUI(QtGui.QDialog):
+class flattenMaskStacksUI(PythonQt.QtGui.QDialog):
     "Create ImportImagesGUI"
     def __init__(self, parent=None):
         super(flattenMaskStacksUI, self).__init__(parent)
 
         #Set title and create the major layouts
         self.setWindowTitle('Flatten Mask Stacks')
-        main_layout = QtGui.QVBoxLayout()
-        button_layout = QtGui.QHBoxLayout()
+        main_layout = PythonQt.QtGui.QVBoxLayout()
+        button_layout = PythonQt.QtGui.QHBoxLayout()
 
-        message = QtGui.QLabel("Are you sure you wish to flatten all the current geo's channel layer mask stacks?")
-        yes = QtGui.QPushButton('Yes')
-        no = QtGui.QPushButton('no')
+        message = PythonQt.QtGui.QLabel("Are you sure you wish to flatten all the current geo's channel layer mask stacks?")
+        yes = PythonQt.QtGui.QPushButton('Yes')
+        no = PythonQt.QtGui.QPushButton('no')
         yes.connect('clicked()', self.accept)
         no.connect('clicked()', self.reject)
 
