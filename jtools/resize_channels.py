@@ -24,50 +24,33 @@
 # ------------------------------------------------------------------------------
 
 import mari
-import PythonQt
+import PySide.QtGui as QtGui
+import PySide.QtCore as QtCore
 
-version = "0.03"
+version = "0.04"
 
-g_resolutions = [str(PythonQt.QtCore.QSize.width()) for PythonQt.QtCore.QSize in mari.images.supportedTextureSizes()]
+g_resolutions = [str(QtCore.QSize.width()) for QtCore.QSize in mari.images.supportedTextureSizes()]
 g_rc_window = None
 
 # ------------------------------------------------------------------------------
 def resizeChannels(g_rc_window, resolutions, all_geo_box):
     "Resize all geometry channels or selected geometry's channels."
     g_rc_window.accept()
-    resolution = int(resolutions.currentText)
+    resolution = int(resolutions.currentText())
     all_geo = all_geo_box.isChecked()
     
     if not all_geo:
         geo = mari.geo.current()
         channel_list = geo.channelList()
         for channel in channel_list:
-            all_layers = getMatchingLayers(channel.layerList(), returnTrue)
-            images = []
-            for layer in all_layers:
-                if layer.isPaintableLayer():
-                    images.extend(layer.imageSet().imageList())
-                if layer.hasMask() and not layer.hasMaskStack():
-                    images.extend(layer.maskImageSet().imageList())
-        
-            for image in images:
-                image.resize(PythonQt.QtCore.QSize(resolution, resolution))
+            channel.resize(resolution)
                 
     else:
         geo_list = mari.geo.list()
         for geo in geo_list:
             channel_list = geo.channelList()
             for channel in channel_list:
-                all_layers = getMatchingLayers(channel.layerList(), returnTrue)
-                images = []
-                for layer in all_layers:
-                    if layer.isPaintableLayer():
-                        images.extend(layer.imageSet().imageList())
-                    if layer.hasMask() and not layer.hasMaskStack():
-                        images.extend(layer.maskImageSet().imageList())
-            
-                for image in images:
-                    image.resize(PythonQt.QtCore.QSize(resolution, resolution))
+                channel.resize(resolution)
                     
     mari.utils.message("Resize channels successful.")
 
@@ -80,22 +63,22 @@ def showUI():
     
     #Create main dialog, add main layout and set title
     global g_rc_window
-    g_rc_window = PythonQt.QtGui.QDialog()
-    rc_layout = PythonQt.QtGui.QVBoxLayout()
+    g_rc_window = QtGui.QDialog()
+    rc_layout = QtGui.QVBoxLayout()
     g_rc_window.setLayout(rc_layout)
     g_rc_window.setWindowTitle("Resize Channels")
     
     #Add main layout.
-    main_layout = PythonQt.QtGui.QHBoxLayout()
+    main_layout = QtGui.QHBoxLayout()
     
     #Add res options
-    resolutions_text = PythonQt.QtGui.QLabel('Resolutions:')
-    resolutions = PythonQt.QtGui.QComboBox()
+    resolutions_text = QtGui.QLabel('Resolutions:')
+    resolutions = QtGui.QComboBox()
     for resolution in g_resolutions :
         resolutions.addItem(resolution)
     resolutions.setCurrentIndex(resolutions.findText('1024'))
     
-    all_geo_box = PythonQt.QtGui.QCheckBox('All Geo')
+    all_geo_box = QtGui.QCheckBox('All Geo')
     
     main_layout.addWidget(resolutions_text)
     main_layout.addWidget(resolutions)
@@ -104,10 +87,10 @@ def showUI():
     main_layout.addStretch()
     
     #Add main buttons layout, buttons and add
-    main_ok_button = PythonQt.QtGui.QPushButton("OK")
-    main_cancel_button = PythonQt.QtGui.QPushButton("Cancel")
-    main_ok_button.connect("clicked()", lambda: resizeChannels(g_rc_window, resolutions, all_geo_box))
-    main_cancel_button.connect("clicked()", g_rc_window.reject)
+    main_ok_button = QtGui.QPushButton("OK")
+    main_cancel_button = QtGui.QPushButton("Cancel")
+    main_ok_button.clicked.connect(lambda: resizeChannels(g_rc_window, resolutions, all_geo_box))
+    main_cancel_button.clicked.connect(g_rc_window.reject)
     
     main_layout.addWidget(main_ok_button)
     main_layout.addWidget(main_cancel_button)
@@ -171,3 +154,14 @@ def isProjectSuitable():
 # ------------------------------------------------------------------------------
 if __name__ == "__main__":
     showUI()
+
+    # ------------------------------------------------------------------------------
+# Add action to Mari menu.
+action = mari.actions.create(
+    "Resize Channels", "mari.jtools.resizeChannels()"
+    )
+mari.menus.addAction(action, 'MainWindow/&Channels/Resize')
+mari.menus.addSeparator('MainWindow/&Channels/Resize', 'Resize Channels')
+icon_filename = "ManageToolbars.png"
+icon_path = mari.resources.path(mari.resources.ICONS) + '/' + icon_filename
+action.setIconPath(icon_path)

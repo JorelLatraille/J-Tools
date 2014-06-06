@@ -24,125 +24,126 @@
 # ------------------------------------------------------------------------------
 
 import mari, os
-import PythonQt
+import PySide.QtGui as QtGui
+import PySide.QtCore as QtCore
 
-version = "0.03"
+version = "0.04"
 
 lighting_mode_list = ['Flat', 'Basic', 'Full']
 color_depth_list = ['8bit (Byte)', '16bit (Half)', '32bit (Float)']
 size_list = ['2048 x 2048', '4096 x 4096', '8192 x 8192', '16384 x 16384', '32768 x 32768']
 
 # ------------------------------------------------------------------------------
-class playblastUI(PythonQt.QtGui.QDialog):
+class playblastUI(QtGui.QDialog):
     "Create ImportImagesUI"
     def __init__(self, parent=None):
         super(playblastUI, self).__init__(parent)
 
         #Set title and create the major layouts
         self.setWindowTitle('Playblast')
-        main_layout = PythonQt.QtGui.QVBoxLayout()
-        top_layout = PythonQt.QtGui.QVBoxLayout()
-        middle_layout = PythonQt.QtGui.QVBoxLayout()
-        bottom_layout = PythonQt.QtGui.QHBoxLayout()
-        final_layout = PythonQt.QtGui.QVBoxLayout()
+        main_layout = QtGui.QVBoxLayout()
+        top_layout = QtGui.QVBoxLayout()
+        middle_layout = QtGui.QVBoxLayout()
+        bottom_layout = QtGui.QHBoxLayout()
+        final_layout = QtGui.QVBoxLayout()
 
         #Create time widgets and hook them up
-        time_label = PythonQt.QtGui.QLabel('Time range:')
-        self.time_slider = PythonQt.QtGui.QRadioButton('Time Slider')
-        self.start_end = PythonQt.QtGui.QRadioButton('Start/End')
-        self.start_label = PythonQt.QtGui.QLabel('Start time:')
-        self.end_label = PythonQt.QtGui.QLabel('End time:')
-        self.start_time = PythonQt.QtGui.QLineEdit()
+        time_label = QtGui.QLabel('Time range:')
+        self.time_slider = QtGui.QRadioButton('Time Slider')
+        self.start_end = QtGui.QRadioButton('Start/End')
+        self.start_label = QtGui.QLabel('Start time:')
+        self.end_label = QtGui.QLabel('End time:')
+        self.start_time = QtGui.QLineEdit()
         self.original_start_time = mari.clock.startFrame()
-        self.start_time.setText(self.original_start_time)
-        self.end_time = PythonQt.QtGui.QLineEdit()
+        self.start_time.setText(str(self.original_start_time))
+        self.end_time = QtGui.QLineEdit()
         self.original_end_time = mari.clock.stopFrame()
-        self.end_time.setText(self.original_end_time)
-        self.time_slider.connect('toggled(bool)', self._timeSliderToggle)
+        self.end_time.setText(str(self.original_end_time))
+        self.time_slider.toggled.connect(self._timeSliderToggle)
         self.time_slider.setChecked(True)
 
         #Create padding widgets and hook them up
-        padding_label = PythonQt.QtGui.QLabel('Frame padding:')
-        punctuation_re = PythonQt.QtCore.QRegExp(r"[0-4]") #Force the line edit to only be able to enter numbers from 0-4
-        self.frame_padding = PythonQt.QtGui.QLineEdit()
-        self.frame_padding.setValidator(PythonQt.QtGui.PythonQt.QtCore.QRegExpValidator(punctuation_re, self))
-        self.padding_slider = PythonQt.QtGui.QSlider(PythonQt.QtCore.Qt.Orientation(PythonQt.QtCore.Qt.Horizontal))
+        padding_label = QtGui.QLabel('Frame padding:')
+        punctuation_re = QtCore.QRegExp(r"[0-4]") #Force the line edit to only be able to enter numbers from 0-4
+        self.frame_padding = QtGui.QLineEdit()
+        self.frame_padding.setValidator(QtGui.QRegExpValidator(punctuation_re, self))
+        self.padding_slider = QtGui.QSlider(QtCore.Qt.Orientation(QtCore.Qt.Horizontal))
         self.padding_slider.setMinimum(0)
         self.padding_slider.setMaximum(4)
         self.padding_slider.setTickInterval(1)
-        self.padding_slider.setTickPosition(0)
-        self.padding_slider.connect('valueChanged(int)', self._updateFramePadding)      
+        self.padding_slider.setTickPosition(QtGui.QSlider.NoTicks)
+        self.padding_slider.valueChanged.connect(self._updateFramePadding)      
         self.padding_slider.setValue(4)
-        self.frame_padding.connect('editingFinished()', self._updateSliderPosition)
+        self.frame_padding.editingFinished.connect(self._updateSliderPosition)
 
         #Create grid layout called time_layout
-        time_layout = PythonQt.QtGui.QGridLayout()
+        time_layout = QtGui.QGridLayout()
 
         #Add time widgets to time_layout
-        time_layout.addWidget(time_label, 0, 0, PythonQt.QtCore.Qt.AlignRight)
-        time_layout.addWidget(self.time_slider, 0, 1, PythonQt.QtCore.Qt.AlignCenter)
-        time_layout.addWidget(self.start_end, 0, 2, PythonQt.QtCore.Qt.AlignLeft)
-        time_layout.addWidget(self.start_label, 1, 0, PythonQt.QtCore.Qt.AlignRight)
-        time_layout.addWidget(self.start_time, 1, 1, PythonQt.QtCore.Qt.AlignCenter)
-        time_layout.addWidget(self.end_label, 2, 0, PythonQt.QtCore.Qt.AlignRight)
-        time_layout.addWidget(self.end_time, 2, 1, PythonQt.QtCore.Qt.AlignCenter)
-        time_layout.addWidget(padding_label, 3, 0, PythonQt.QtCore.Qt.AlignRight)
-        time_layout.addWidget(self.frame_padding, 3, 1, PythonQt.QtCore.Qt.AlignCenter)
-        time_layout.addWidget(self.padding_slider, 3, 2, PythonQt.QtCore.Qt.AlignLeft)
+        time_layout.addWidget(time_label, 0, 0, QtCore.Qt.AlignRight)
+        time_layout.addWidget(self.time_slider, 0, 1, QtCore.Qt.AlignCenter)
+        time_layout.addWidget(self.start_end, 0, 2, QtCore.Qt.AlignLeft)
+        time_layout.addWidget(self.start_label, 1, 0, QtCore.Qt.AlignRight)
+        time_layout.addWidget(self.start_time, 1, 1, QtCore.Qt.AlignCenter)
+        time_layout.addWidget(self.end_label, 2, 0, QtCore.Qt.AlignRight)
+        time_layout.addWidget(self.end_time, 2, 1, QtCore.Qt.AlignCenter)
+        time_layout.addWidget(padding_label, 3, 0, QtCore.Qt.AlignRight)
+        time_layout.addWidget(self.frame_padding, 3, 1, QtCore.Qt.AlignCenter)
+        time_layout.addWidget(self.padding_slider, 3, 2, QtCore.Qt.AlignLeft)
         time_layout.setColumnStretch(0, 2)
         time_layout.setColumnStretch(1, 2)
         time_layout.setColumnStretch(2, 2)
         time_layout.setColumnStretch(3, 2)
 
         #Add time_layout to time_group (Group Box) widget and add the widget to top_layout
-        time_group = PythonQt.QtGui.QGroupBox()
+        time_group = QtGui.QGroupBox()
         time_group.setLayout(time_layout)
         top_layout.addWidget(time_group)
 
         #Widgets for unproject settings
-        clamp_label = PythonQt.QtGui.QLabel('Clamp:')
-        self.clamp = PythonQt.QtGui.QCheckBox()
+        clamp_label = QtGui.QLabel('Clamp:')
+        self.clamp = QtGui.QCheckBox()
         self.original_clamp = mari.projectors.current().clampColors()
         self.clamp.setChecked(self.original_clamp)
-        shader_used_label = PythonQt.QtGui.QLabel('Shader Used:')
-        self.shader_used = PythonQt.QtGui.QComboBox()
+        shader_used_label = QtGui.QLabel('Shader Used:')
+        self.shader_used = QtGui.QComboBox()
         shader_list = mari.projectors.current().useShaderList()
         self.original_shader = mari.projectors.current().useShader()
         for shader in shader_list:
             self.shader_used.addItem(shader)
         self.shader_used.setCurrentIndex(self.shader_used.findText(self.original_shader))
-        lighting_mode_label = PythonQt.QtGui.QLabel('Lighting mode:')
-        self.lighting_mode = PythonQt.QtGui.QComboBox()
+        lighting_mode_label = QtGui.QLabel('Lighting mode:')
+        self.lighting_mode = QtGui.QComboBox()
         self.original_mode = mari.projectors.current().lightingMode()
         for mode in lighting_mode_list:
             self.lighting_mode.addItem(mode)
         self.lighting_mode.setCurrentIndex(self.original_mode)
-        color_depth_label = PythonQt.QtGui.QLabel('Color depth:')
-        self.color_depth = PythonQt.QtGui.QComboBox()
+        color_depth_label = QtGui.QLabel('Color depth:')
+        self.color_depth = QtGui.QComboBox()
         self.original_depth = mari.projectors.current().bitDepth()
         for depth in color_depth_list:
             self.color_depth.addItem(depth)
         self.color_depth.setCurrentIndex(self.color_depth.findText(([bit for bit in color_depth_list if str(self.original_depth) in bit])[0]))
-        size_label = PythonQt.QtGui.QLabel('Size:')
-        self._size = PythonQt.QtGui.QComboBox()
+        size_label = QtGui.QLabel('Size:')
+        self._size = QtGui.QComboBox()
         self.original_size = mari.projectors.current().width()
         for size in size_list:
             self._size.addItem(size)
         self._size.setCurrentIndex(self._size.findText(([bit for bit in size_list if str(self.original_size) in bit])[0]))
 
         #Create unproject_layout
-        unproject_layout = PythonQt.QtGui.QGridLayout()
+        unproject_layout = QtGui.QGridLayout()
 
-        unproject_layout.addWidget(clamp_label, 0, 0, PythonQt.QtCore.Qt.AlignRight)
-        unproject_layout.addWidget(self.clamp, 0, 1, PythonQt.QtCore.Qt.AlignLeft)
-        unproject_layout.addWidget(shader_used_label, 1, 0, PythonQt.QtCore.Qt.AlignRight)
-        unproject_layout.addWidget(self.shader_used, 1, 1, PythonQt.QtCore.Qt.AlignLeft)
-        unproject_layout.addWidget(lighting_mode_label, 2, 0, PythonQt.QtCore.Qt.AlignRight)
-        unproject_layout.addWidget(self.lighting_mode, 2, 1, PythonQt.QtCore.Qt.AlignLeft)
-        unproject_layout.addWidget(color_depth_label, 3, 0, PythonQt.QtCore.Qt.AlignRight)
-        unproject_layout.addWidget(self.color_depth, 3, 1, PythonQt.QtCore.Qt.AlignLeft)
-        unproject_layout.addWidget(size_label, 4, 0, PythonQt.QtCore.Qt.AlignRight)
-        unproject_layout.addWidget(self._size, 4, 1, PythonQt.QtCore.Qt.AlignLeft)
+        unproject_layout.addWidget(clamp_label, 0, 0, QtCore.Qt.AlignRight)
+        unproject_layout.addWidget(self.clamp, 0, 1, QtCore.Qt.AlignLeft)
+        unproject_layout.addWidget(shader_used_label, 1, 0, QtCore.Qt.AlignRight)
+        unproject_layout.addWidget(self.shader_used, 1, 1, QtCore.Qt.AlignLeft)
+        unproject_layout.addWidget(lighting_mode_label, 2, 0, QtCore.Qt.AlignRight)
+        unproject_layout.addWidget(self.lighting_mode, 2, 1, QtCore.Qt.AlignLeft)
+        unproject_layout.addWidget(color_depth_label, 3, 0, QtCore.Qt.AlignRight)
+        unproject_layout.addWidget(self.color_depth, 3, 1, QtCore.Qt.AlignLeft)
+        unproject_layout.addWidget(size_label, 4, 0, QtCore.Qt.AlignRight)
+        unproject_layout.addWidget(self._size, 4, 1, QtCore.Qt.AlignLeft)
         unproject_layout.setColumnStretch(1, 1)
         unproject_layout.setColumnStretch(2, 1)
         unproject_layout.setColumnStretch(3, 1)
@@ -152,8 +153,8 @@ class playblastUI(PythonQt.QtGui.QDialog):
         middle_layout.addLayout(unproject_layout)
 
         #Add path line input and button
-        path_label = PythonQt.QtGui.QLabel('Path:')
-        self.path = PythonQt.QtGui.QLineEdit()
+        path_label = QtGui.QLabel('Path:')
+        self.path = QtGui.QLineEdit()
         if mari.projectors.current().exportPath() == '':
             path = os.path.abspath(mari.resources.path(mari.resources.DEFAULT_EXPORT)) #Get the default export directory from Mari
         else:
@@ -161,13 +162,13 @@ class playblastUI(PythonQt.QtGui.QDialog):
         template = mari.projectors.current().name() + '.$FRAME.tif'
         self.export_path_template = os.path.join(path, template)
         self.path.setText(self.export_path_template)
-        path_pixmap = PythonQt.QtGui.QPixmap(mari.resources.path(mari.resources.ICONS) + '/ExportImages.png')
-        icon = PythonQt.QtGui.QIcon(path_pixmap)
-        path_button = PythonQt.QtGui.QPushButton(icon, "")
-        path_button.connect('clicked()', lambda: self._getPath())
+        path_pixmap = QtGui.QPixmap(mari.resources.path(mari.resources.ICONS) + '/ExportImages.png')
+        icon = QtGui.QIcon(path_pixmap)
+        path_button = QtGui.QPushButton(icon, "")
+        path_button.clicked.connect(self._getSavePath)
 
         #Create path_layout
-        path_layout = PythonQt.QtGui.QHBoxLayout()
+        path_layout = QtGui.QHBoxLayout()
 
         #Add widgets to path_layout
         path_layout.addWidget(path_label)
@@ -178,12 +179,12 @@ class playblastUI(PythonQt.QtGui.QDialog):
         middle_layout.addLayout(path_layout)
 
         #Add OK/Cancel buttons
-        ok_button = PythonQt.QtGui.QPushButton("&Playblast")
-        cancel_button = PythonQt.QtGui.QPushButton("Cancel")
+        ok_button = QtGui.QPushButton("&Playblast")
+        cancel_button = QtGui.QPushButton("Cancel")
 
         #Hook up OK/Cancel buttons
-        ok_button.connect("clicked()", self.accepted)
-        cancel_button.connect("clicked()", self.reject)
+        ok_button.clicked.connect(self.accepting)
+        cancel_button.clicked.connect(self.reject)
 
         #Add buttons to bottom_layout
         bottom_layout.addWidget(ok_button)
@@ -191,7 +192,7 @@ class playblastUI(PythonQt.QtGui.QDialog):
 
         #Add layouts to main_group (Group Box) widget and add it to final_layout
         #Then set the UI layout to final_layout
-        main_group = PythonQt.QtGui.QGroupBox()
+        main_group = QtGui.QGroupBox()
         main_layout.addLayout(top_layout)
         main_layout.addLayout(middle_layout)
         main_group.setLayout(main_layout)
@@ -214,28 +215,36 @@ class playblastUI(PythonQt.QtGui.QDialog):
 
     def _updateFramePadding(self, _int):
         "Set the text in the frame padding line edit box using the padding slider value"
-        self.frame_padding.setText(_int)
+        self.frame_padding.setText(str(_int))
 
     def _updateSliderPosition(self):
         "Set the padding slider value using the text in the frame padding line edit box"
-        self.padding_slider.setValue(int(self.frame_padding.text))
+        self.padding_slider.setValue(int(self.frame_padding.text()))
 
-    def _getPath(self):
+    def _getSavePath(self):
         "Get file path and set the text in path LineEdit widget"
-        file_path = mari.utils.misc.getSaveFileName(parent=self, caption='Save As', dir='', filter='', selected_filter=None, options=0, save_filename='playblast.$FRAME.tif')
+        file_path = mari.utils.misc.getSaveFileName(
+            parent=None,
+            caption='Save As',
+            dir='',
+            filter='',
+            selected_filter=None,
+            options=0,
+            save_filename='playblast.$FRAME.tif'
+        )
         if file_path == "":
             return
         else:
             self.path.setText(file_path)
 
-    def accepted(self):
+    def accepting(self):
         "Check user settings provided before accepting"
-        if self.path.text == '':
+        if self.path.text() == '':
             mari.utils.message("Please provide a path and image template, e.g. '%s'" %self.export_path_template)
             return
 
         file_types = ['.' + format for format in mari.images.supportedWriteFormats()]
-        path_template = self.path.text
+        path_template = self.path.text()
         if not os.path.exists(os.path.split(path_template)[0]):
             make_dir = makeDirUI(os.path.split(path_template)[0])
             if not make_dir.exec_():
@@ -262,11 +271,11 @@ class playblastUI(PythonQt.QtGui.QDialog):
 
     def _getStartEndTime(self):
         "Return start and end times as a list"
-        return [self.start_time.text, self.end_time.text]
+        return [self.start_time.text(), self.end_time.text()]
 
     def _getFramePadding(self):
         "Return frame padding number as int"
-        return int(self.frame_padding.text)
+        return int(self.frame_padding.text())
 
     def _getOriginalClamp(self):
         "Return original clamp setting"
@@ -282,7 +291,7 @@ class playblastUI(PythonQt.QtGui.QDialog):
 
     def _getShader(self):
         "Return shader setting"
-        return self.shader_used.currentText
+        return self.shader_used.currentText()
 
     def _getOriginalMode(self):
         "Return original lighting mode"
@@ -290,7 +299,7 @@ class playblastUI(PythonQt.QtGui.QDialog):
 
     def _getLightingMode(self):
         "Return lighting mode"
-        return self.lighting_mode.currentIndex
+        return self.lighting_mode.currentIndex()
 
     def _getOriginalDepth(self):
         "Return original bit depth setting"
@@ -298,7 +307,7 @@ class playblastUI(PythonQt.QtGui.QDialog):
 
     def _getColorDepth(self):
         "Return color bit depth setting"
-        return self.color_depth.currentText
+        return self.color_depth.currentText()
 
     def _getOriginalSize(self):
         "Return original size setting"
@@ -306,14 +315,14 @@ class playblastUI(PythonQt.QtGui.QDialog):
 
     def _getSize(self):
         "Return size setting"
-        return self._size.currentText
+        return self._size.currentText()
 
     def _getPath(self):
         "Return path"
-        return self.path.text
+        return self.path.text()
 
 # ------------------------------------------------------------------------------
-class makeDirUI(PythonQt.QtGui.QDialog):
+class makeDirUI(QtGui.QDialog):
     "Create ImportImagesUI"
     def __init__(self, path, parent=None):
         super(makeDirUI, self).__init__(parent)
@@ -322,14 +331,14 @@ class makeDirUI(PythonQt.QtGui.QDialog):
         self.path = path
         self.setModal(True)
         self.setWindowTitle('Make Directory')
-        main_layout = PythonQt.QtGui.QVBoxLayout()
-        button_layout = PythonQt.QtGui.QHBoxLayout()
+        main_layout = QtGui.QVBoxLayout()
+        button_layout = QtGui.QHBoxLayout()
 
-        text = PythonQt.QtGui.QLabel("Path does not exist '%s' make path?" %self.path)
-        create = PythonQt.QtGui.QPushButton('Create')
-        cancel = PythonQt.QtGui.QPushButton('Cancel')
-        create.connect('clicked()', self.accepted)
-        cancel.connect('clicked()', self.reject)
+        text = QtGui.QLabel("Path does not exist '%s' make path?" %self.path)
+        create = QtGui.QPushButton('Create')
+        cancel = QtGui.QPushButton('Cancel')
+        create.clicked.connect(self.accepted)
+        cancel.clicked.connect(self.reject)
 
         main_layout.addWidget(text)
         button_layout.addWidget(create)
@@ -461,3 +470,16 @@ def isProjectSuitable():
 # ------------------------------------------------------------------------------
 if __name__ == "__main__":
     playblast()
+
+# ------------------------------------------------------------------------------
+# Add action to Mari menu.
+action = mari.actions.create(
+    "Playblast", "mari.jtools.playblast()"
+    )
+mari.menus.addAction(action, 'MainWindow/&Camera')
+mari.menus.addSeparator('MainWindow/&Camera', 'Playblast')
+mari.menus.addAction(action, 'MriProjector/ItemContext')
+mari.menus.addSeparator('MriProjector/ItemContext', 'Playblast')
+icon_filename = "MoveToCamera.png"
+icon_path = mari.resources.path(mari.resources.ICONS) + '/' + icon_filename
+action.setIconPath(icon_path)

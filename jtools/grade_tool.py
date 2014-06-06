@@ -24,80 +24,80 @@
 # ------------------------------------------------------------------------------
 
 import mari
-import PythonQt
+import PySide.QtGui as QtGui
 
-version = "0.02"
+version = "0.03"
 
 # ------------------------------------------------------------------------------
-class GradeToolGUI(PythonQt.QtGui.QDialog):
+class GradeToolGUI(QtGui.QDialog):
     "Create GradeToolGUI"
     def __init__(self, parent=None):
         super(GradeToolGUI, self).__init__(parent)
 
         self.setWindowTitle('Grade Tool')
-        main_layout = PythonQt.QtGui.QVBoxLayout()
-        blackpoint_layout = PythonQt.QtGui.QHBoxLayout()
-        whitepoint_layout = PythonQt.QtGui.QHBoxLayout()
-        lift_layout = PythonQt.QtGui.QHBoxLayout()
-        gain_layout = PythonQt.QtGui.QHBoxLayout()
-        multiply_layout = PythonQt.QtGui.QHBoxLayout()
-        offset_layout = PythonQt.QtGui.QHBoxLayout()
-        gamma_layout = PythonQt.QtGui.QHBoxLayout()
+        main_layout = QtGui.QVBoxLayout()
+        blackpoint_layout = QtGui.QHBoxLayout()
+        whitepoint_layout = QtGui.QHBoxLayout()
+        lift_layout = QtGui.QHBoxLayout()
+        gain_layout = QtGui.QHBoxLayout()
+        multiply_layout = QtGui.QHBoxLayout()
+        offset_layout = QtGui.QHBoxLayout()
+        gamma_layout = QtGui.QHBoxLayout()
 
         punctuation_re_0 = PythonQt.QtCore.QRegExp(r"-?[0-1]?[.]?\d?\d?") #Force the line edit to only be able to enter the numbers set
         punctuation_re_1 = PythonQt.QtCore.QRegExp(r"-?[0-1]?[.]?\d?\d?") #Force the line edit to only be able to enter the numbers set
         punctuation_re_2 = PythonQt.QtCore.QRegExp(r"[0-5]?[.]?\d?\d?") #Force the line edit to only be able to enter the numbers set
 
-        blackpoint_label = PythonQt.QtGui.QLabel('Blackpoint')
-        self.blackpoint_line_0 = PythonQt.QtGui.QLineEdit()
+        blackpoint_label = QtGui.QLabel('Blackpoint')
+        self.blackpoint_line_0 = QtGui.QLineEdit()
         self.blackpoint_line_0.setFixedSize(40,20)
-        self.blackpoint_line_1 = PythonQt.QtGui.QLineEdit()
+        self.blackpoint_line_1 = QtGui.QLineEdit()
         self.blackpoint_line_1.setFixedSize(40,20)
         self.blackpoint_line_1.setHidden(True)
-        self.blackpoint_line_2 = PythonQt.QtGui.QLineEdit()
+        self.blackpoint_line_2 = QtGui.QLineEdit()
         self.blackpoint_line_2.setFixedSize(40,20)
         self.blackpoint_line_2.setHidden(True)
-        self.blackpoint_line_3 = PythonQt.QtGui.QLineEdit()
+        self.blackpoint_line_3 = QtGui.QLineEdit()
         self.blackpoint_line_3.setFixedSize(40,20)
         self.blackpoint_line_3.setHidden(True)
-        self.blackpoint_line_4 = PythonQt.QtGui.QLineEdit()
+        self.blackpoint_line_4 = QtGui.QLineEdit()
         self.blackpoint_line_4.setFixedSize(40,20)
         self.blackpoint_line_4.setHidden(True)
-        self.blackpoint_line_0.setValidator(PythonQt.QtGui.PythonQt.QtCore.QRegExpValidator(punctuation_re_0, self))
-        self.blackpoint_slider = PythonQt.QtGui.QSlider(PythonQt.QtCore.Qt.Orientation(PythonQt.QtCore.Qt.Horizontal))
+        self.blackpoint_line_0.setValidator(QtGui.PythonQt.QtCore.QRegExpValidator(punctuation_re_0, self))
+        self.blackpoint_slider = QtGui.QSlider(PythonQt.QtCore.Qt.Orientation(PythonQt.QtCore.Qt.Horizontal))
         self.blackpoint_slider.setMinimum(-100)
         self.blackpoint_slider.setMaximum(100)
-        self.blackpoint_slider.connect('valueChanged(int)', self._updateBlackpointLine)
-        self.blackpoint_line_0.connect('editingFinished()', self._updateBlackpointSlider)
+        self.blackpoint_slider.valueChanged.connect(self._updateBlackpointLine)
+        self.blackpoint_line_0.editingFinished.connect(self._updateBlackpointSlider)
         self.blackpoint_line_0.setText('0.00')
-        self.blackpoint_s = PythonQt.QtGui.QPushButton('S')
+        self.blackpoint_s = QtGui.QPushButton('S')
         self.blackpoint_s.setFixedSize(20,20)
-        self.blackpoint_s.connect('clicked()', lambda: _updateInput(self.blackpoint_s, self.blackpoint_line_0, self.blackpoint_slider, self.blackpoint_line_1, self.blackpoint_line_2, self.blackpoint_line_3, self.blackpoint_line_4))
-        self.blackpoint_r = PythonQt.QtGui.QPushButton('R')
+        self.blackpoint_s.clicked.connect(lambda: _updateInput(self.blackpoint_s, self.blackpoint_line_0, self.blackpoint_slider, self.blackpoint_line_1, self.blackpoint_line_2, self.blackpoint_line_3, self.blackpoint_line_4))
+        self.blackpoint_r = QtGui.QPushButton('R')
         self.blackpoint_r.setFixedSize(20,20)
 
-        whitepoint_label = PythonQt.QtGui.QLabel('Whitepoint')
-        self.whitepoint_line_0 = PythonQt.QtGui.QLineEdit()
+        whitepoint_label = QtGui.QLabel('Whitepoint')
+        self.whitepoint_line_0 = QtGui.QLineEdit()
         self.whitepoint_line_0.setFixedSize(40,20)
-        self.whitepoint_line_1 = PythonQt.QtGui.QLineEdit()
+        self.whitepoint_line_1 = QtGui.QLineEdit()
         self.whitepoint_line_1.setFixedSize(40,20)
-        self.whitepoint_line_2 = PythonQt.QtGui.QLineEdit()
+        self.whitepoint_line_2 = QtGui.QLineEdit()
         self.whitepoint_line_2.setFixedSize(40,20)
-        self.whitepoint_line_3 = PythonQt.QtGui.QLineEdit()
+        self.whitepoint_line_3 = QtGui.QLineEdit()
         self.whitepoint_line_3.setFixedSize(40,20)
-        self.whitepoint_line_4 = PythonQt.QtGui.QLineEdit()
+        self.whitepoint_line_4 = QtGui.QLineEdit()
         self.whitepoint_line_4.setFixedSize(40,20)
-        self.whitepoint_line_0.setValidator(PythonQt.QtGui.PythonQt.QtCore.QRegExpValidator(punctuation_re_1, self))
-        self.whitepoint_slider = PythonQt.QtGui.QSlider(PythonQt.QtCore.Qt.Orientation(PythonQt.QtCore.Qt.Horizontal))
+        self.whitepoint_line_0.setValidator(QtGui.PythonQt.QtCore.QRegExpValidator(punctuation_re_1, self))
+        self.whitepoint_slider = QtGui.QSlider(PythonQt.QtCore.Qt.Orientation(PythonQt.QtCore.Qt.Horizontal))
         self.whitepoint_slider.setMinimum(-100)
         self.whitepoint_slider.setMaximum(400)
-        self.whitepoint_slider.connect('valueChanged(int)', self._updateWhitepointLine)
-        self.whitepoint_line_0.connect('editingFinished()', self._updateWhitepointSlider)
+        self.whitepoint_slider.valueChanged.connect(self._updateWhitepointLine)
+        self.whitepoint_line_0.editingFinished.connect(self._updateWhitepointSlider)
         self.whitepoint_line_0.setText('1.00')
-        self.whitepoint_s = PythonQt.QtGui.QPushButton('S')
+        self.whitepoint_s = QtGui.QPushButton('S')
         self.whitepoint_s.setFixedSize(20,20)
-        self.whitepoint_s.connect('clicked()', lambda: _updateInput(self.blackpoint_s, self.blackpoint_line_0, self.blackpoint_slider, self.blackpoint_line_1, self.blackpoint_line_2, self.blackpoint_line_3, self.blackpoint_line_4))
-        self.whitepoint_r = PythonQt.QtGui.QPushButton('R')
+        self.whitepoint_s.clicked.connect(lambda: _updateInput(self.blackpoint_s, self.blackpoint_line_0, self.blackpoint_slider, self.blackpoint_line_1, self.blackpoint_line_2, self.blackpoint_line_3, self.blackpoint_line_4))
+        self.whitepoint_r = QtGui.QPushButton('R')
         self.whitepoint_r.setFixedSize(20,20)
         
         blackpoint_layout.addWidget(blackpoint_label)

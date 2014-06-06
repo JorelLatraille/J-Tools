@@ -24,34 +24,33 @@
 # ------------------------------------------------------------------------------
 
 import mari
-import PythonQt
+import PySide.QtGui as QtGui
 
-version = "0.03"
+version = "0.04"
 
-USER_ROLE_01 = 34          # PythonQt.Qt.UserRole
+USER_ROLE_01 = 34          # PySide.Qt.UserRole
 
 # ------------------------------------------------------------------------------        
-class actionPathFinderGUI(PythonQt.QtGui.QDialog):
+class ActionPathFinderGUI(QtGui.QDialog):
     
     def __init__(self, parent=None):
-        super(actionPathFinderGUI, self).__init__(parent)
+        super(ActionPathFinderGUI, self).__init__(parent)
         
         self.setWindowTitle("Action Path Finder")
         
         #Create geometrys layout, label, and widget. Finally populate.
-        action_layout = PythonQt.QtGui.QVBoxLayout()
-        action_header_layout = PythonQt.QtGui.QHBoxLayout()
-        action_label = PythonQt.QtGui.QLabel("Action Paths")
-        setBold(action_label)
-        action_list = PythonQt.QtGui.QListWidget()
+        action_layout = QtGui.QVBoxLayout()
+        action_header_layout = QtGui.QHBoxLayout()
+        action_label = QtGui.QLabel("<strong>Action Paths</strong>") #Using rich text
+        action_list = QtGui.QListWidget()
         
-        filter_action_box = PythonQt.QtGui.QLineEdit()
+        filter_action_box = QtGui.QLineEdit()
         mari.utils.connect(filter_action_box.textEdited, lambda: updateActionPathFilter(filter_action_box, action_list))
         
         action_header_layout.addWidget(action_label)
         action_header_layout.addStretch()
-        action_search_icon = PythonQt.QtGui.QLabel()
-        search_pixmap = PythonQt.QtGui.QPixmap(mari.resources.path(mari.resources.ICONS) + '/Lookup.png')
+        action_search_icon = QtGui.QLabel()
+        search_pixmap = QtGui.QPixmap(mari.resources.path(mari.resources.ICONS) + '/Lookup.png')
         action_search_icon.setPixmap(search_pixmap)
         action_header_layout.addWidget(action_search_icon)
         action_header_layout.addWidget(filter_action_box)
@@ -59,10 +58,10 @@ class actionPathFinderGUI(PythonQt.QtGui.QDialog):
         action_path_list = mari.actions.list()
         for action in action_path_list:
             action_list.addItem(action)
-            action_list.item(action_list.count - 1).setData(USER_ROLE_01, action)
+            action_list.item(action_list.count() - 1).setData(USER_ROLE_01, action)
        
-        selected_action_box = PythonQt.QtGui.QLineEdit()
-        action_list.connect('currentTextChanged(QString)', selected_action_box, 'setText(QString)')
+        selected_action_box = QtGui.QLineEdit()
+        action_list.currentTextChanged.connect(selected_action_box.setText)
         
         action_layout.addLayout(action_header_layout)
         action_layout.addWidget(action_list)
@@ -73,19 +72,12 @@ class actionPathFinderGUI(PythonQt.QtGui.QDialog):
 # ------------------------------------------------------------------------------
 def updateActionPathFilter(filter_action_box, action_list):
     "For each item in the channel list display, set it to hidden if it doesn't match the filter text."
-    match_words = filter_action_box.text.lower().split()
-    for item_index in range(action_list.count):
+    match_words = filter_action_box.text().lower().split()
+    for item_index in range(action_list.count()):
         item = action_list.item(item_index)
         item_text_lower = item.text().lower()
         matches = all([word in item_text_lower for word in match_words])
-        item.setHidden(not matches)        
-        
-# ------------------------------------------------------------------------------  
-def setBold(widget):
-    "Sets text to bold."
-    font = widget.font
-    font.setWeight(75)
-    widget.setFont(font)        
+        item.setHidden(not matches)             
         
 # ------------------------------------------------------------------------------        
 def actionPathFinder():
@@ -94,8 +86,8 @@ def actionPathFinder():
         return
 
     #Create dialog
-    dialog = actionPathFinderGUI()
-    dialog.show()
+    ActionPathFinderGUI.isinstance = ActionPathFinderGUI()
+    ActionPathFinderGUI.isinstance.show()
         
 # ------------------------------------------------------------------------------
 def isProjectSuitable():

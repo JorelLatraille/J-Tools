@@ -25,6 +25,7 @@
 # ------------------------------------------------------------------------------
 
 import mari
+import PySide.QtGui as QtGui
 
 version = "0.01"
 geo_dict = {}
@@ -69,7 +70,13 @@ def createChannelFromTemplate():
     if not geo_dict.has_key(geo):
         mari.utils.message('There is no template for the current geometry, please get a template.')
         return
-    channel = geo.createChannel(name, geo_dict[geo][1][0], geo_dict[geo][1][0], geo_dict[geo][0])
+    name = (u'', True)
+    while name == (u'', True):
+        iD = QtGui.QInputDialog()
+        name = iD.getText(iD, 'Channel Name','Channel name e.g. COL_skin')
+    if name[1] == False:
+        return
+    channel = geo.createChannel(name[0], geo_dict[geo][1][0], geo_dict[geo][1][0], geo_dict[geo][0])
     for item in geo_dict[geo]:
         if item == geo_dict[geo][0]:
             continue

@@ -24,9 +24,9 @@
 # ------------------------------------------------------------------------------
 
 import mari, os
-import PythonQt
+import PySide.QtGui as QtGui
 
-version = "0.03"
+version = "0.04"
 
 USER_ROLE = 34
 
@@ -57,33 +57,32 @@ def exportImageManagerImages():
         mari.utils.message("Export Complete.")        
         
 # ------------------------------------------------------------------------------
-class exportImageManagerImagesUI(PythonQt.QtGui.QDialog):
+class exportImageManagerImagesUI(QtGui.QDialog):
     #Create UI
     def __init__(self, file_types, parent=None):
         super(exportImageManagerImagesUI, self).__init__(parent)
 
-        eimi_layout = PythonQt.QtGui.QVBoxLayout()
+        eimi_layout = QtGui.QVBoxLayout()
         self.setLayout(eimi_layout)
         self.setWindowTitle("Export Image Manager Images")
         
         #Create layout for middle section
-        centre_layout = PythonQt.QtGui.QHBoxLayout()
+        centre_layout = QtGui.QHBoxLayout()
         
         #Create images layout, label, and widget. Finally populate.
-        images_layout = PythonQt.QtGui.QVBoxLayout()
-        images_header_layout = PythonQt.QtGui.QHBoxLayout()
-        images_label = PythonQt.QtGui.QLabel("Images")
-        setBold(images_label)
-        images_list = PythonQt.QtGui.QListWidget()
+        images_layout = QtGui.QVBoxLayout()
+        images_header_layout = QtGui.QHBoxLayout()
+        images_label = QtGui.QLabel("<strong>Images</strong>")
+        images_list = QtGui.QListWidget()
         images_list.setSelectionMode(images_list.ExtendedSelection)
         
-        filter_box = PythonQt.QtGui.QLineEdit()
+        filter_box = QtGui.QLineEdit()
         mari.utils.connect(filter_box.textEdited, lambda: updateFilter(filter_box, images_list))
         
         images_header_layout.addWidget(images_label)
         images_header_layout.addStretch()
-        images_search_icon = PythonQt.QtGui.QLabel()
-        search_pixmap = PythonQt.QtGui.QPixmap(mari.resources.path(mari.resources.ICONS) + '/Lookup.png')
+        images_search_icon = QtGui.QLabel()
+        search_pixmap = QtGui.QPixmap(mari.resources.path(mari.resources.ICONS) + '/Lookup.png')
         images_search_icon.setPixmap(search_pixmap)
         images_header_layout.addWidget(images_search_icon)
         images_header_layout.addWidget(filter_box)
@@ -95,31 +94,30 @@ class exportImageManagerImagesUI(PythonQt.QtGui.QDialog):
         
         for image in mari.images.list():
             images_list.addItem("".join(os.path.abspath(image.filePath()).split(os.sep)[-1:]))
-            images_list.item(images_list.count - 1).setData(USER_ROLE, image)
+            images_list.item(images_list.count() - 1).setData(USER_ROLE, image)
         
         images_layout.addLayout(images_header_layout)
         images_layout.addWidget(images_list)
         
         #Create middle button section
-        middle_button_layout = PythonQt.QtGui.QVBoxLayout()
-        add_button = PythonQt.QtGui.QPushButton("+")
-        remove_button = PythonQt.QtGui.QPushButton("-")
+        middle_button_layout = QtGui.QVBoxLayout()
+        add_button = QtGui.QPushButton("+")
+        remove_button = QtGui.QPushButton("-")
         middle_button_layout.addStretch()
         middle_button_layout.addWidget(add_button)
         middle_button_layout.addWidget(remove_button)
         middle_button_layout.addStretch()
         
-        #Add wrapped PythonQt.QtGui.QListWidget with custom functions
-        images_to_export_layout = PythonQt.QtGui.QVBoxLayout()
-        images_to_export_label = PythonQt.QtGui.QLabel("Images to export")
-        setBold(images_to_export_label)
+        #Add wrapped QtGui.QListWidget with custom functions
+        images_to_export_layout = QtGui.QVBoxLayout()
+        images_to_export_label = QtGui.QLabel("<strong>Images to export</strong>")
         self.images_to_export = ImagesToExportList()
         images_to_export_layout.addWidget(images_to_export_label)
         images_to_export_layout.addWidget(self.images_to_export)
         
         #Hook up add/remove buttons
-        remove_button.connect("clicked()", self.images_to_export.removeImages)
-        add_button.connect("clicked()", lambda: self.images_to_export.addImages(images_list))
+        remove_button.clicked.connect(self.images_to_export.removeImages)
+        add_button.clicked.connect(lambda: self.images_to_export.addImages(images_list))
 
         #Add widgets to centre layout
         centre_layout.addLayout(images_layout)
@@ -130,22 +128,22 @@ class exportImageManagerImagesUI(PythonQt.QtGui.QDialog):
         eimi_layout.addLayout(centre_layout)
 
         #Add bottom layout.
-        bottom_layout = PythonQt.QtGui.QHBoxLayout()
+        bottom_layout = QtGui.QHBoxLayout()
         
         #Add file type options
-        file_type_combo_text = PythonQt.QtGui.QLabel('File Types:')
-        self.file_type_combo = PythonQt.QtGui.QComboBox()
+        file_type_combo_text = QtGui.QLabel('File Types:')
+        self.file_type_combo = QtGui.QComboBox()
         for file_type in file_types:
             self.file_type_combo.addItem(file_type)
         self.file_type_combo.setCurrentIndex(self.file_type_combo.findText('.tif'))
         
         #Add path line input and button
-        path_label = PythonQt.QtGui.QLabel('Path:')
-        self.path = PythonQt.QtGui.QLineEdit()
-        path_pixmap = PythonQt.QtGui.QPixmap(mari.resources.path(mari.resources.ICONS) + '/ExportImages.png')
-        icon = PythonQt.QtGui.QIcon(path_pixmap)
-        path_button = PythonQt.QtGui.QPushButton(icon, "")
-        path_button.connect("clicked()", self.getPath)
+        path_label = QtGui.QLabel('Path:')
+        self.path = QtGui.QLineEdit()
+        path_pixmap = QtGui.QPixmap(mari.resources.path(mari.resources.ICONS) + '/ExportImages.png')
+        icon = QtGui.QIcon(path_pixmap)
+        path_button = QtGui.QPushButton(icon, "")
+        path_button.clicked.connect(self.getPath)
         
         bottom_layout.addWidget(path_label)
         bottom_layout.addWidget(self.path)
@@ -154,10 +152,10 @@ class exportImageManagerImagesUI(PythonQt.QtGui.QDialog):
         bottom_layout.addWidget(self.file_type_combo)
         
         #Add OK Cancel buttons layout, buttons and add
-        main_apply_button = PythonQt.QtGui.QPushButton("Apply")
-        main_cancel_button = PythonQt.QtGui.QPushButton("Cancel")
-        main_apply_button.connect("clicked()", self.accepted)
-        main_cancel_button.connect("clicked()", self.reject)
+        main_apply_button = QtGui.QPushButton("Apply")
+        main_cancel_button = QtGui.QPushButton("Cancel")
+        main_apply_button.clicked.connect(self.accepting)
+        main_cancel_button.clicked.connect(self.reject)
         
         bottom_layout.addWidget(main_apply_button)
         bottom_layout.addWidget(main_cancel_button)
@@ -167,35 +165,35 @@ class exportImageManagerImagesUI(PythonQt.QtGui.QDialog):
 
     def getPath(self):
         "Get export path and set the text in path LineEdit widget"
-        file_path = mari.utils.misc.getExistingDirectory(parent=self, caption='Export Path', dir='')
+        file_path = mari.utils.misc.getExistingDirectory(caption='Export Path')
         if file_path == "":
             return
         else:
             self.path.setText(file_path)
     
-    def accepted(self):
+    def accepting(self):
         if len(self.images_to_export.currentImageNames()) == 0:
             mari.utils.message('Please add some images to export.')
             return
-        if self.path.text == "":
+        if self.path.text() == "":
             mari.utils.message('Please provide a path to export to.')
             return
-        if not os.path.exists(os.path.abspath(self.path.text)):
-            mari.utils.message('The path "%s" does not exist.' %(os.path.abspath(self.path.text)))
+        if not os.path.exists(os.path.abspath(self.path.text())):
+            mari.utils.message('The path "%s" does not exist.' %(os.path.abspath(self.path.text())))
             return
         self.accept()
         
     def getExportPath(self):
-        return os.path.abspath(r'%s' %self.path.text)
+        return os.path.abspath(r'%s' %self.path.text())
         
     def getImagesToExport(self):
         return self.images_to_export.currentImageNames()
         
     def getComboText(self):
-        return self.file_type_combo.currentText
+        return self.file_type_combo.currentText()
     
 # ------------------------------------------------------------------------------   
-class ImagesToExportList(PythonQt.QtGui.QListWidget):
+class ImagesToExportList(QtGui.QListWidget):
     "Stores a list of operations to perform."
     
     def __init__(self, title="For Export"):
@@ -204,10 +202,10 @@ class ImagesToExportList(PythonQt.QtGui.QListWidget):
         self.setSelectionMode(self.ExtendedSelection)
         
     def currentImages(self):
-        return [self.item(index).data(USER_ROLE) for index in range(self.count)]
+        return [self.item(index).data(USER_ROLE) for index in range(self.count())]
         
     def currentImageNames(self):
-        return [self.item(index) for index in range(self.count)]
+        return [self.item(index) for index in range(self.count())]
         
     def addImages(self, images_list):
         "Adds an operation from the current selections of images and directories."
@@ -220,7 +218,7 @@ class ImagesToExportList(PythonQt.QtGui.QListWidget):
             if image not in current_images:
                 current_images.add(image)
                 self.addItem(item.text())
-                self.item(self.count - 1).setData(USER_ROLE, image)
+                self.item(self.count() - 1).setData(USER_ROLE, image)
         
     def removeImages(self):
         "Removes any currently selected operations."
@@ -231,19 +229,12 @@ class ImagesToExportList(PythonQt.QtGui.QListWidget):
 # ------------------------------------------------------------------------------
 def updateFilter(filter_box, images_list):
     "For each item in the image list display, set it to hidden if it doesn't match the filter text."
-    match_words = filter_box.text.lower().split()
-    for item_index in range(images_list.count):
+    match_words = filter_box.text().lower().split()
+    for item_index in range(images_list.count()):
         item = images_list.item(item_index)
         item_text_lower = item.text().lower()
         matches = all([word in item_text_lower for word in match_words])
         item.setHidden(not matches)
-    
-# ------------------------------------------------------------------------------  
-def setBold(widget):
-    "Sets text to bold."
-    font = widget.font
-    font.setWeight(75)
-    widget.setFont(font)    
 
 # ------------------------------------------------------------------------------
 def isProjectSuitable():
@@ -260,3 +251,16 @@ def isProjectSuitable():
 # ------------------------------------------------------------------------------    
 if __name__ == "__main__":
     exportImageManagerImages()
+
+# ------------------------------------------------------------------------------
+# Add action to Mari menu.
+action = mari.actions.create(
+    "Export Image Manager Images", "mari.jtools.exportImageManagerImages()"
+    )
+mari.menus.addAction(action, 'MainWindow/&Selection')
+mari.menus.addSeparator('MainWindow/&Selection', 'Export Image Manager Images')
+mari.menus.addAction(action, 'MriImageManager/ItemContext')
+mari.menus.addSeparator('MriImageManager/ItemContext', 'Export Image Manager Images')
+icon_filename = "SaveFileAs.png"
+icon_path = mari.resources.path(mari.resources.ICONS) + '/' + icon_filename
+action.setIconPath(icon_path)

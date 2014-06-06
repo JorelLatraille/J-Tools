@@ -24,11 +24,12 @@
 # ------------------------------------------------------------------------------
 
 import mari
-import PythonQt
+import PySide.QtGui as QtGui
+import PySide.QtCore as QtCore
 
-version = "0.04"
+version = "0.05"
 
-USER_ROLE = 32          # PythonQt.Qt.UserRole
+USER_ROLE = 32          # PySide.Qt.UserRole
 
 g_u2u_window = None
 g_u2u_cancelled = False
@@ -58,29 +59,28 @@ def showUI():
     
     #Create main dialog, add main layout and set title
     global g_u2u_window
-    g_u2u_window = PythonQt.QtGui.QDialog()
-    u2u_layout = PythonQt.QtGui.QVBoxLayout()
+    g_u2u_window = QtGui.QDialog()
+    u2u_layout = QtGui.QVBoxLayout()
     g_u2u_window.setLayout(u2u_layout)
     g_u2u_window.setWindowTitle("Copy Udim To Udim")
     
     #Create layout for middle section
-    centre_layout = PythonQt.QtGui.QHBoxLayout()
+    centre_layout = QtGui.QHBoxLayout()
     
     #Create channels layout, label, and widget. Finally populate.
-    channel_layout = PythonQt.QtGui.QVBoxLayout()
-    channel_header_layout = PythonQt.QtGui.QHBoxLayout()
-    channel_label = PythonQt.QtGui.QLabel("Channels")
-    setBold(channel_label)
-    channel_list = PythonQt.QtGui.QListWidget()
+    channel_layout = QtGui.QVBoxLayout()
+    channel_header_layout = QtGui.QHBoxLayout()
+    channel_label = QtGui.QLabel("<strong>Channels</strong>")
+    channel_list = QtGui.QListWidget()
     channel_list.setSelectionMode(channel_list.ExtendedSelection)
     
-    filter_box = PythonQt.QtGui.QLineEdit()
+    filter_box = QtGui.QLineEdit()
     mari.utils.connect(filter_box.textEdited, lambda: updateFilter(filter_box, channel_list))
     
     channel_header_layout.addWidget(channel_label)
     channel_header_layout.addStretch()
-    channel_search_icon = PythonQt.QtGui.QLabel()
-    search_pixmap = PythonQt.QtGui.QPixmap(mari.resources.path(mari.resources.ICONS) + '/Lookup.png')
+    channel_search_icon = QtGui.QLabel()
+    search_pixmap = QtGui.QPixmap(mari.resources.path(mari.resources.ICONS) + '/Lookup.png')
     channel_search_icon.setPixmap(search_pixmap)
     channel_header_layout.addWidget(channel_search_icon)
     channel_header_layout.addWidget(filter_box)
@@ -88,31 +88,30 @@ def showUI():
     geo = mari.geo.current()
     for channel in getChannelList(geo):
         channel_list.addItem(channel.name())
-        channel_list.item(channel_list.count - 1).setData(USER_ROLE, channel)
+        channel_list.item(channel_list.count() - 1).setData(USER_ROLE, channel)
     
     channel_layout.addLayout(channel_header_layout)
     channel_layout.addWidget(channel_list)
     
     #Create middle button section
-    middle_button_layout = PythonQt.QtGui.QVBoxLayout()
-    add_button = PythonQt.QtGui.QPushButton("+")
-    remove_button = PythonQt.QtGui.QPushButton("-")
+    middle_button_layout = QtGui.QVBoxLayout()
+    add_button = QtGui.QPushButton("+")
+    remove_button = QtGui.QPushButton("-")
     middle_button_layout.addStretch()
     middle_button_layout.addWidget(add_button)
     middle_button_layout.addWidget(remove_button)
     middle_button_layout.addStretch()
     
-    #Add wrapped PythonQt.QtGui.QListWidget with custom functions
-    channels_to_copy_layout = PythonQt.QtGui.QVBoxLayout()
-    channels_to_copy_label = PythonQt.QtGui.QLabel("Channels To Run Copy On")
-    setBold(channels_to_copy_label)
+    #Add wrapped QtGui.QListWidget with custom functions
+    channels_to_copy_layout = QtGui.QVBoxLayout()
+    channels_to_copy_label = QtGui.QLabel("<strong>Channels To Run Copy On</strong>")
     channels_to_copy_widget = ChannelsToCopyList()
     channels_to_copy_layout.addWidget(channels_to_copy_label)
     channels_to_copy_layout.addWidget(channels_to_copy_widget)
     
     #Hook up add/remove buttons
-    remove_button.connect("clicked()", channels_to_copy_widget.removeChannels)
-    add_button.connect("clicked()", lambda: channels_to_copy_widget.addChannels(channel_list))
+    remove_button.clicked.connect(channels_to_copy_widget.removeChannels)
+    add_button.clicked.connect(lambda: channels_to_copy_widget.addChannels(channel_list))
 
     #Add widgets to centre layout
     centre_layout.addLayout(channel_layout)
@@ -123,11 +122,11 @@ def showUI():
     u2u_layout.addLayout(centre_layout)
     
     #Add bottom layout.
-    bottom_layout = PythonQt.QtGui.QHBoxLayout()
+    bottom_layout = QtGui.QHBoxLayout()
     
-    unlock_channels_box = PythonQt.QtGui.QCheckBox('Unlock channels')
-    uncache_layers_box = PythonQt.QtGui.QCheckBox('Uncache layers')
-    unlock_layers_box = PythonQt.QtGui.QCheckBox('Unlock layers')
+    unlock_channels_box = QtGui.QCheckBox('Unlock channels')
+    uncache_layers_box = QtGui.QCheckBox('Uncache layers')
+    unlock_layers_box = QtGui.QCheckBox('Unlock layers')
     
     bottom_layout.addWidget(unlock_channels_box)
     bottom_layout.addStretch()
@@ -139,34 +138,32 @@ def showUI():
     u2u_layout.addLayout(bottom_layout)
 
     #Add very bottom layout.
-    very_bottom_layout = PythonQt.QtGui.QHBoxLayout()
+    very_bottom_layout = QtGui.QHBoxLayout()
     
     #Create copy/paste text labels
-    copy_from_text = PythonQt.QtGui.QLabel("Copy from UDIM")
-    setBold(copy_from_text)
-    paste_to_text = PythonQt.QtGui.QLabel("Paste to UDIM")
-    setBold(paste_to_text)
+    copy_from_text = QtGui.QLabel("<strong>Copy from UDIM</strong>")
+    paste_to_text = QtGui.QLabel("<strong>Paste to UDIM</strong>")
     
     #Create copy layout and add widgets
-    copy_line_layout = PythonQt.QtGui.QHBoxLayout()
+    copy_line_layout = QtGui.QHBoxLayout()
     # global copy_line
     copy_line_layout.addWidget(copy_from_text)
-    copy_line = PythonQt.QtGui.QLineEdit()
+    copy_line = QtGui.QLineEdit()
     copy_line_layout.addWidget(copy_line)
     
     #Create paste layout and add widgets
-    paste_line_layout = PythonQt.QtGui.QHBoxLayout()
+    paste_line_layout = QtGui.QHBoxLayout()
     # global paste_line
     paste_line_layout.addWidget(paste_to_text)
-    paste_line = PythonQt.QtGui.QLineEdit()
+    paste_line = QtGui.QLineEdit()
     paste_line_layout.addWidget(paste_line)
     
     #Add OK Cancel buttons layout, buttons and add
-    main_ok_button = PythonQt.QtGui.QPushButton("OK")
-    main_cancel_button = PythonQt.QtGui.QPushButton("Cancel")
-    main_ok_button.connect("clicked()", lambda: compareInput(g_u2u_window, channels_to_copy_widget, unlock_channels_box, uncache_layers_box, unlock_layers_box, copy_line, paste_line))
-    main_cancel_button.connect("clicked()", g_u2u_window.reject)
-    uncache_layers_box.connect("clicked()", lambda: uncacheBoxTicked(uncache_layers_box))
+    main_ok_button = QtGui.QPushButton("OK")
+    main_cancel_button = QtGui.QPushButton("Cancel")
+    main_ok_button.clicked.connect(lambda: compareInput(g_u2u_window, channels_to_copy_widget, unlock_channels_box, uncache_layers_box, unlock_layers_box, copy_line, paste_line))
+    main_cancel_button.clicked.connect(g_u2u_window.reject)
+    uncache_layers_box.clicked.connect(lambda: uncacheBoxTicked(uncache_layers_box))
     
     very_bottom_layout.addLayout(copy_line_layout)
     very_bottom_layout.addLayout(paste_line_layout)
@@ -186,7 +183,7 @@ def uncacheBoxTicked(uncache_layers_box):
         mari.utils.message("Please be aware that uncaching and re-caching the layers could take some time")
     
 # ------------------------------------------------------------------------------   
-class ChannelsToCopyList(PythonQt.QtGui.QListWidget):
+class ChannelsToCopyList(QtGui.QListWidget):
     "Stores a list of operations to perform."
     
     def __init__(self, title="For Export"):
@@ -195,7 +192,7 @@ class ChannelsToCopyList(PythonQt.QtGui.QListWidget):
         self.setSelectionMode(self.ExtendedSelection)
         
     def currentChannels(self):
-        return [self.item(index).data(USER_ROLE) for index in range(self.count)]
+        return [self.item(index).data(USER_ROLE) for index in range(self.count())]
         
     def addChannels(self, channel_list):
         "Adds an operation from the current selections of channels and directories."
@@ -211,7 +208,7 @@ class ChannelsToCopyList(PythonQt.QtGui.QListWidget):
             if channel not in current_channels:
                 current_channels.add(channel)
                 self.addItem(channel.name())
-                self.item(self.count - 1).setData(USER_ROLE, channel)
+                self.item(self.count() - 1).setData(USER_ROLE, channel)
         
     def removeChannels(self):
         "Removes any currently selected operations."
@@ -322,8 +319,8 @@ def copyUdimRange(layer_list, copy_udim_list, paste_udim_list):
 def compareInput(g_u2u_window, channels_to_copy, unlock_channels_box, uncache_layers_box, unlock_layers_box, copy_line, paste_line):
     "Check copy and paste input from the dialog are udim numbers i.e. 1001 - 9999, and not alphabetical, they can contain multiple ranges and individual udims i.e. 1001-1005,1006,1009,1021-1030"
 
-    copy_line = copy_line.text
-    paste_line = paste_line.text
+    copy_line = copy_line.text()
+    paste_line = paste_line.text()
     copy_list = copy_line.split(',')
     paste_list = paste_line.split(',')           
     copy_udim_check = []
@@ -486,19 +483,12 @@ def maskToMaskStack(layer_list):
 # ------------------------------------------------------------------------------
 def updateFilter(filter_box, channel_list):
     "For each item in the channel list display, set it to hidden if it doesn't match the filter text."
-    match_words = filter_box.text.lower().split()
-    for item_index in range(channel_list.count):
+    match_words = filter_box.text().lower().split()
+    for item_index in range(channel_list.count()):
         item = channel_list.item(item_index)
         item_text_lower = item.text().lower()
         matches = all([word in item_text_lower for word in match_words])
         item.setHidden(not matches)
-    
-# ------------------------------------------------------------------------------  
-def setBold(widget):
-    "Sets text to bold."
-    font = widget.font
-    font.setWeight(75)
-    widget.setFont(font)
 
 # ------------------------------------------------------------------------------
 def isProjectSuitable():

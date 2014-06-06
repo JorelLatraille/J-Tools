@@ -24,26 +24,26 @@
 # ------------------------------------------------------------------------------
 
 import mari
-import PythonQt
+import PySide.QtGui as QtGui
 
-version = "0.05"
+version = "0.06"
 
 # ------------------------------------------------------------------------------
-class ConvertMaskColorToScalarUI(PythonQt.QtGui.QDialog):
+class ConvertMaskColorToScalarUI(QtGui.QDialog):
     "Create ConvertMaskColorToScalarUI"
     def __init__(self, parent=None):
         super(ConvertMaskColorToScalarUI, self).__init__(parent)
 
         #Set title and create the major layouts
         self.setWindowTitle('Convert Mask Color To Scalar')
-        main_layout = PythonQt.QtGui.QVBoxLayout()
-        button_layout = PythonQt.QtGui.QHBoxLayout()
+        main_layout = QtGui.QVBoxLayout()
+        button_layout = QtGui.QHBoxLayout()
 
-        message = PythonQt.QtGui.QLabel("Are you sure you wish to convert the current geo's masks from color to scalar?")
-        yes = PythonQt.QtGui.QPushButton('Yes')
-        no = PythonQt.QtGui.QPushButton('no')
-        yes.connect('clicked()', self.accept)
-        no.connect('clicked()', self.reject)
+        message = QtGui.QLabel("Are you sure you wish to convert the current geo's masks from color to scalar?")
+        yes = QtGui.QPushButton('Yes')
+        no = QtGui.QPushButton('no')
+        yes.clicked.connect(self.accept)
+        no.clicked.connect(self.reject)
 
         button_layout.addWidget(yes)
         button_layout.addWidget(no)

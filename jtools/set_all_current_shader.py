@@ -78,3 +78,14 @@ def isProjectSuitable():
 # ------------------------------------------------------------------------------
 if __name__ == "__main__":
     setAllCurrentShader()
+
+    # ------------------------------------------------------------------------------
+# Add action to Mari menu.
+action = mari.actions.create(
+    "Set All Current Shader", "mari.jtools.setAllCurrentShader()"
+    )
+mari.menus.addAction(action, 'MainWindow/&Shading', '-Flat')
+mari.menus.addAction(action, 'Shaders/Panel')
+icon_filename = "Shader.png"
+icon_path = mari.resources.path(mari.resources.ICONS) + '/' + icon_filename
+action.setIconPath(icon_path)

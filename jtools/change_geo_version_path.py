@@ -24,12 +24,13 @@
 # ------------------------------------------------------------------------------
 
 import mari, os
-import PythonQt
+import PySide.QtGui as QtGui
+# import PySide.QtCore as QtCore
 
-version = "0.05"
+version = "0.06"
 
 # ------------------------------------------------------------------------------
-class ChangeGeoVersionPathUI(PythonQt.QtGui.QDialog):
+class ChangeGeoVersionPathUI(QtGui.QDialog):
     "Create ImportImagesGUI"
     def __init__(self, filter_types, parent=None):
         super(ChangeGeoVersionPathUI, self).__init__(parent)
@@ -37,14 +38,14 @@ class ChangeGeoVersionPathUI(PythonQt.QtGui.QDialog):
         #Set title and create the major layouts
         self.filter_types = filter_types
         self.setWindowTitle('Change Current Geo Version Path')
-        main_layout = PythonQt.QtGui.QVBoxLayout()
-        current_path_layout = PythonQt.QtGui.QHBoxLayout()
-        path_layout = PythonQt.QtGui.QHBoxLayout()
-        button_layout = PythonQt.QtGui.QHBoxLayout()
+        main_layout = QtGui.QVBoxLayout()
+        current_path_layout = QtGui.QHBoxLayout()
+        path_layout = QtGui.QHBoxLayout()
+        button_layout = QtGui.QHBoxLayout()
 
         #Create label to display current geo version path
-        current_path_label = PythonQt.QtGui.QLabel("Current Geo Version Path:")
-        self.current_path = PythonQt.QtGui.QLineEdit(mari.geo.current().currentVersion().path())
+        current_path_label = QtGui.QLabel("Current Geo Version Path:")
+        self.current_path = QtGui.QLineEdit(mari.geo.current().currentVersion().path())
         self.current_path.setReadOnly(True)
         self.current_path.setMinimumWidth(600)
 
@@ -52,12 +53,12 @@ class ChangeGeoVersionPathUI(PythonQt.QtGui.QDialog):
         current_path_layout.addWidget(self.current_path)
 
         #Create path line input and button
-        path_label = PythonQt.QtGui.QLabel('New Path:')
-        self.path = PythonQt.QtGui.QLineEdit(mari.geo.current().currentVersion().path())
-        path_pixmap = PythonQt.QtGui.QPixmap(mari.resources.path(mari.resources.ICONS) + '/ExportImages.png')
-        icon = PythonQt.QtGui.QIcon(path_pixmap)
-        path_button = PythonQt.QtGui.QPushButton(icon, "")
-        path_button.connect('clicked()', lambda: self._getPath())
+        path_label = QtGui.QLabel('New Path:')
+        self.path = QtGui.QLineEdit(mari.geo.current().currentVersion().path())
+        path_pixmap = QtGui.QPixmap(mari.resources.path(mari.resources.ICONS) + '/ExportImages.png')
+        icon = QtGui.QIcon(path_pixmap)
+        path_button = QtGui.QPushButton(icon, "")
+        path_button.clicked.connect(self._getPath)
 
         #Add path widgets to path_layout
         path_layout.addWidget(path_label)
@@ -65,10 +66,10 @@ class ChangeGeoVersionPathUI(PythonQt.QtGui.QDialog):
         path_layout.addWidget(path_button)
 
         #Create buttons and hook them up
-        _apply = PythonQt.QtGui.QPushButton('&Apply')
-        close = PythonQt.QtGui.QPushButton('&Close')
-        _apply.connect('clicked()', self._accepted)
-        close.connect('clicked()', self.reject)
+        _apply = QtGui.QPushButton('&Apply')
+        close = QtGui.QPushButton('&Close')
+        _apply.clicked.connect(self._accepted)
+        close.clicked.connect(self.reject)
 
         #Add buttons to button_layout
         button_layout.addWidget(_apply)
@@ -80,8 +81,8 @@ class ChangeGeoVersionPathUI(PythonQt.QtGui.QDialog):
         main_layout.addLayout(button_layout)
         self.setLayout(main_layout)
 
-        #Keep dialog on top
-        self.setWindowFlags(PythonQt.QtCore.Qt.WindowStaysOnTopHint)
+        # #Keep dialog on top
+        # self.setWindowFlags(QtCore.Qt.WindowStaysOnTopHint)
 
         #Connect mari geo entity current selection changed to self._updatePath
         mari.utils.signal_helpers.connect(mari.geo.entityMadeCurrent, self._updatePath)
@@ -93,7 +94,7 @@ class ChangeGeoVersionPathUI(PythonQt.QtGui.QDialog):
 
     def _getPath(self):
         "Get file path and set the text in path LineEdit widget"
-        file_path = mari.utils.misc.getOpenFileName(parent=self, caption='New Path', dir='', filter=self.filter_types, selected_filter=0, options=0) # If you wish to add more filters either '*.obj *.mb' or '*.obj *.mb;;*.txt' will work
+        file_path = mari.utils.misc.getOpenFileName(parent=None, caption='New Path', dir='', filter=self.filter_types, selected_filter=0, options=0) # If you wish to add more filters either '*.obj *.mb' or '*.obj *.mb;;*.txt' will work
         if file_path == "":
             return
         else:
@@ -101,12 +102,12 @@ class ChangeGeoVersionPathUI(PythonQt.QtGui.QDialog):
 
     def _accepted(self):
         "Check file path provided exists and ends with filter_types"
-        if not os.path.isfile(self.path.text) and not self.path.text.endswith((self.filter_types)):
+        if not os.path.isfile(self.path.text()) and not self.path.text().endswith((self.filter_types)):
             self.path.selectAll()
             return
 
         #Change the geo version path
-        mari.geo.current().currentVersion().setPath(r'%s' %self.path.text)
+        mari.geo.current().currentVersion().setPath(r'%s' %self.path.text())
         self._updatePath()
 
 # ------------------------------------------------------------------------------
@@ -116,10 +117,7 @@ def changeGeoVersionPath():
         return
 
     #Create dialog and return inputs
-    if mari.app.version().number() >= 20599999:
-        filter_types = '*.' + ' *.'.join(mari.geo.supportedReadFormats())
-    else:
-        filter_types = '*.obj'
+    filter_types = '*.' + ' *.'.join(mari.geo.supportedReadFormats())
     dialog = ChangeGeoVersionPathUI(filter_types)
     dialog.show()
 

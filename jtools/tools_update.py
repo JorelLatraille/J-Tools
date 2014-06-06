@@ -51,3 +51,12 @@ def update():
 #-------------------------------------------------------------------------------    
 if __name__ == "__main__":
     update()
+
+# ------------------------------------------------------------------------------
+# Add action to Mari menu.
+action = mari.actions.create(
+    "Update", "mari.jtools.update()"
+    )
+icon_filename = "SaveToImageManager.png"
+icon_path = mari.resources.path(mari.resources.ICONS) + '/' + icon_filename
+action.setIconPath(icon_path)

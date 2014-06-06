@@ -44,10 +44,6 @@ def createJToolsMenu(menu_items):
                 mari.menus.addAction(action_dict[key_name], "MainWindow/Sc&ripts/&J-Tools/Channel/Template")
             else:
                 mari.menus.addAction(action_dict[key_name], "MainWindow/Sc&ripts/&J-Tools")
-            if key_name == "update":
-                icon_filename = "SaveToImageManager.png"
-                icon_path = mari.resources.path(mari.resources.ICONS) + '/' + icon_filename
-                action_dict[key_name].setIconPath(icon_path)
         except:
             pass
 

@@ -24,11 +24,11 @@
 # ------------------------------------------------------------------------------
 
 import mari, os
-import PythonQt
+import PySide.QtGui as QtGui
 
-version = "0.04"
+version = "0.05"
 
-USER_ROLE = 32          # PythonQt.Qt.UserRole
+USER_ROLE = 32          # PySide.Qt.UserRole
 
 g_eum_window = None
 g_eum_cancelled = False
@@ -56,7 +56,7 @@ def exportUVMasks():
 def exportMasks(g_eum_window, q_geo_list, file_type_combo):
     "Export the masks"
     geo_list = q_geo_list.currentGeometry()
-    file_type = file_type_combo.currentText
+    file_type = file_type_combo.currentText()
 
     if len(geo_list) == 0:
         return False
@@ -95,29 +95,28 @@ def showUI():
     
     #Create main dialog, add main layout and set title
     global g_eum_window
-    g_eum_window = PythonQt.QtGui.QDialog()
-    eum_layout = PythonQt.QtGui.QVBoxLayout()
+    g_eum_window = QtGui.QDialog()
+    eum_layout = QtGui.QVBoxLayout()
     g_eum_window.setLayout(eum_layout)
     g_eum_window.setWindowTitle("Export UV Masks")
     
     #Create layout for middle section
-    centre_layout = PythonQt.QtGui.QHBoxLayout()
+    centre_layout = QtGui.QHBoxLayout()
     
     #Create geometry layout, label, and widget. Finally populate.
-    geo_layout = PythonQt.QtGui.QVBoxLayout()
-    geo_header_layout = PythonQt.QtGui.QHBoxLayout()
-    geo_label = PythonQt.QtGui.QLabel("Geometry")
-    setBold(geo_label)
-    geo_list = PythonQt.QtGui.QListWidget()
+    geo_layout = QtGui.QVBoxLayout()
+    geo_header_layout = QtGui.QHBoxLayout()
+    geo_label = QtGui.QLabel("<strong>Geometry</strong>")
+    geo_list = QtGui.QListWidget()
     geo_list.setSelectionMode(geo_list.ExtendedSelection)
     
-    filter_box = PythonQt.QtGui.QLineEdit()
+    filter_box = QtGui.QLineEdit()
     mari.utils.connect(filter_box.textEdited, lambda: updateFilter(filter_box, geo_list))
     
     geo_header_layout.addWidget(geo_label)
     geo_header_layout.addStretch()
-    geo_search_icon = PythonQt.QtGui.QLabel()
-    search_pixmap = PythonQt.QtGui.QPixmap(mari.resources.path(mari.resources.ICONS) + '/Lookup.png')
+    geo_search_icon = QtGui.QLabel()
+    search_pixmap = QtGui.QPixmap(mari.resources.path(mari.resources.ICONS) + '/Lookup.png')
     geo_search_icon.setPixmap(search_pixmap)
     geo_header_layout.addWidget(geo_search_icon)
     geo_header_layout.addWidget(filter_box)
@@ -125,31 +124,30 @@ def showUI():
     geo = mari.geo.current()
     for geo in mari.geo.list():
         geo_list.addItem(geo.name())
-        geo_list.item(geo_list.count - 1).setData(USER_ROLE, geo)
+        geo_list.item(geo_list.count() - 1).setData(USER_ROLE, geo)
     
     geo_layout.addLayout(geo_header_layout)
     geo_layout.addWidget(geo_list)
     
     #Create middle button section
-    middle_button_layout = PythonQt.QtGui.QVBoxLayout()
-    add_button = PythonQt.QtGui.QPushButton("+")
-    remove_button = PythonQt.QtGui.QPushButton("-")
+    middle_button_layout = QtGui.QVBoxLayout()
+    add_button = QtGui.QPushButton("+")
+    remove_button = QtGui.QPushButton("-")
     middle_button_layout.addStretch()
     middle_button_layout.addWidget(add_button)
     middle_button_layout.addWidget(remove_button)
     middle_button_layout.addStretch()
     
-    #Add wrapped PythonQt.QtGui.QListWidget with custom functions
-    geometry_to_copy_layout = PythonQt.QtGui.QVBoxLayout()
-    geometry_to_copy_label = PythonQt.QtGui.QLabel("Geometry to export UV masks from.")
-    setBold(geometry_to_copy_label)
+    #Add wrapped QtGui.QListWidget with custom functions
+    geometry_to_copy_layout = QtGui.QVBoxLayout()
+    geometry_to_copy_label = QtGui.QLabel("<strong>Geometry to export UV masks from.</strong>")
     geometry_to_copy_widget = GeoToExportList()
     geometry_to_copy_layout.addWidget(geometry_to_copy_label)
     geometry_to_copy_layout.addWidget(geometry_to_copy_widget)
     
     #Hook up add/remove buttons
-    remove_button.connect("clicked()", geometry_to_copy_widget.removeGeometry)
-    add_button.connect("clicked()", lambda: geometry_to_copy_widget.addGeometry(geo_list))
+    remove_button.clicked.connect(geometry_to_copy_widget.removeGeometry)
+    add_button.clicked.connect(lambda: geometry_to_copy_widget.addGeometry(geo_list))
 
     #Add widgets to centre layout
     centre_layout.addLayout(geo_layout)
@@ -160,24 +158,24 @@ def showUI():
     eum_layout.addLayout(centre_layout)
 
     #Add bottom layout.
-    bottom_layout = PythonQt.QtGui.QHBoxLayout()
+    bottom_layout = QtGui.QHBoxLayout()
     
     #Add file type options
-    file_type_combo_text = PythonQt.QtGui.QLabel('File Types:')
-    file_type_combo = PythonQt.QtGui.QComboBox()
+    file_type_combo_text = QtGui.QLabel('File Types:')
+    file_type_combo = QtGui.QComboBox()
     for file_type in g_file_types:
         file_type_combo.addItem(file_type)
-    file_type_combo.setCurrentIndex(file_type_combo.findText('tif'))
+    file_type_combo.setCurrentIndex(0)
     
     bottom_layout.addWidget(file_type_combo_text)
     bottom_layout.addWidget(file_type_combo)
     bottom_layout.addStretch()
     
     #Add OK Cancel buttons layout, buttons and add
-    main_ok_button = PythonQt.QtGui.QPushButton("OK")
-    main_cancel_button = PythonQt.QtGui.QPushButton("Cancel")
-    main_ok_button.connect("clicked()", lambda: exportMasks(g_eum_window, geometry_to_copy_widget, file_type_combo))
-    main_cancel_button.connect("clicked()", g_eum_window.reject)
+    main_ok_button = QtGui.QPushButton("OK")
+    main_cancel_button = QtGui.QPushButton("Cancel")
+    main_ok_button.clicked.connect(lambda: exportMasks(g_eum_window, geometry_to_copy_widget, file_type_combo))
+    main_cancel_button.clicked.connect(g_eum_window.reject)
     
     bottom_layout.addWidget(main_ok_button)
     bottom_layout.addWidget(main_cancel_button)
@@ -189,7 +187,7 @@ def showUI():
     g_eum_window.show()
     
 # ------------------------------------------------------------------------------   
-class GeoToExportList(PythonQt.QtGui.QListWidget):
+class GeoToExportList(QtGui.QListWidget):
     "Stores a list of operations to perform."
     
     def __init__(self, title="For Export"):
@@ -198,7 +196,7 @@ class GeoToExportList(PythonQt.QtGui.QListWidget):
         self.setSelectionMode(self.ExtendedSelection)
         
     def currentGeometry(self):
-        return [self.item(index).data(USER_ROLE) for index in range(self.count)]
+        return [self.item(index).data(USER_ROLE) for index in range(self.count())]
         
     def addGeometry(self, geo_list):
         "Adds an operation from the current selections of geometry and directories."
@@ -214,7 +212,7 @@ class GeoToExportList(PythonQt.QtGui.QListWidget):
             if geo not in current_geometry:
                 current_geometry.add(geo)
                 self.addItem(geo.name())
-                self.item(self.count - 1).setData(USER_ROLE, geo)
+                self.item(self.count() - 1).setData(USER_ROLE, geo)
         
     def removeGeometry(self):
         "Removes any currently selected operations."
@@ -225,19 +223,12 @@ class GeoToExportList(PythonQt.QtGui.QListWidget):
 # ------------------------------------------------------------------------------
 def updateFilter(filter_box, geo_list):
     "For each item in the geo list display, set it to hidden if it doesn't match the filter text."
-    match_words = filter_box.text.lower().split()
-    for item_index in range(geo_list.count):
+    match_words = filter_box.text().lower().split()
+    for item_index in range(geo_list.count()):
         item = geo_list.item(item_index)
         item_text_lower = item.text().lower()
         matches = all([word in item_text_lower for word in match_words])
-        item.setHidden(not matches)
-
-# ------------------------------------------------------------------------------  
-def setBold(widget):
-    "Sets text to bold."
-    font = widget.font
-    font.setWeight(75)
-    widget.setFont(font)            
+        item.setHidden(not matches)           
     
 # ------------------------------------------------------------------------------
 def isProjectSuitable():
@@ -258,3 +249,16 @@ def isProjectSuitable():
 # ------------------------------------------------------------------------------    
 if __name__ == "__main__":
     exportUVMasks()
+
+# ------------------------------------------------------------------------------
+# Add action to Mari menu.
+action = mari.actions.create(
+    "Export UV Masks", "mari.jtools.exportUVMasks()"
+    )
+mari.menus.addAction(action, 'MainWindow/&Objects')
+mari.menus.addSeparator('MainWindow/&Objects', 'Export UV Masks')
+mari.menus.addAction(action, 'MriGeoEntity/ItemContext')
+mari.menus.addSeparator('MriGeoEntity/ItemContext', 'Export UV Masks')
+icon_filename = "ExtractImage.png"
+icon_path = mari.resources.path(mari.resources.ICONS) + '/' + icon_filename
+action.setIconPath(icon_path)

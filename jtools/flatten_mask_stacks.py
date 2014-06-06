@@ -24,26 +24,26 @@
 # ------------------------------------------------------------------------------
 
 import mari
-import PythonQt
+import PySide.QtGui as QtGui
 
-version = "0.03"
+version = "0.04"
 
 # ------------------------------------------------------------------------------
-class flattenMaskStacksUI(PythonQt.QtGui.QDialog):
+class flattenMaskStacksUI(QtGui.QDialog):
     "Create ImportImagesGUI"
     def __init__(self, parent=None):
         super(flattenMaskStacksUI, self).__init__(parent)
 
         #Set title and create the major layouts
         self.setWindowTitle('Flatten Mask Stacks')
-        main_layout = PythonQt.QtGui.QVBoxLayout()
-        button_layout = PythonQt.QtGui.QHBoxLayout()
+        main_layout = QtGui.QVBoxLayout()
+        button_layout = QtGui.QHBoxLayout()
 
-        message = PythonQt.QtGui.QLabel("Are you sure you wish to flatten all the current geo's channel layer mask stacks?")
-        yes = PythonQt.QtGui.QPushButton('Yes')
-        no = PythonQt.QtGui.QPushButton('no')
-        yes.connect('clicked()', self.accept)
-        no.connect('clicked()', self.reject)
+        message = QtGui.QLabel("Are you sure you wish to flatten all the current geo's channel layer mask stacks?")
+        yes = QtGui.QPushButton('Yes')
+        no = QtGui.QPushButton('no')
+        yes.clicked.connect(self.accept)
+        no.clicked.connect(self.reject)
 
         button_layout.addWidget(yes)
         button_layout.addWidget(no)
@@ -115,9 +115,9 @@ if __name__ == "__main__":
 # ------------------------------------------------------------------------------
 # Add action to Mari menu.
 action = mari.actions.create(
-    "Flatten Mask Stacks", "mari.jtools.flattenMaskStacks()"
+    "Flatten All Mask Stacks", "mari.jtools.flattenMaskStacks()"
     )
-mari.menus.addAction(action, "MainWindow/&Layers/Layer Mask", "Flatten Mask Stack")
+mari.menus.addAction(action, "MainWindow/&Layers/Layer Mask", "-Enable Mask")
 icon_filename = "BakeAttribute.png"
 icon_path = mari.resources.path(mari.resources.ICONS) + "/" + icon_filename
 action.setIconPath(icon_path)

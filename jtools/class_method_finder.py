@@ -24,34 +24,33 @@
 # ------------------------------------------------------------------------------
 
 import mari, inspect
-import PythonQt
+import PySide.QtGui as QtGui
 
-version = "0.03"
+version = "0.04"
 
-USER_ROLE_01 = 34          # PythonQt.Qt.UserRole
+USER_ROLE_01 = 34          # PySide.Qt.UserRole
 
 # ------------------------------------------------------------------------------        
-class classMethodFinderGUI(PythonQt.QtGui.QDialog):
+class ClassMethodFinderGUI(QtGui.QDialog):
     
     def __init__(self, parent=None):
-        super(classMethodFinderGUI, self).__init__(parent)
+        super(ClassMethodFinderGUI, self).__init__(parent)
         
         self.setWindowTitle("Class Method Finder")
         
         #Create geometrys layout, label, and widget. Finally populate.
-        class_method_layout = PythonQt.QtGui.QVBoxLayout()
-        class_method_header_layout = PythonQt.QtGui.QHBoxLayout()
-        class_method_label = PythonQt.QtGui.QLabel("Class Methods")
-        setBold(class_method_label)
-        class_method_list = PythonQt.QtGui.QListWidget()
+        class_method_layout = QtGui.QVBoxLayout()
+        class_method_header_layout = QtGui.QHBoxLayout()
+        class_method_label = QtGui.QLabel("<strong>Class Methods</strong>") #Using rich text
+        class_method_list = QtGui.QListWidget()
         
-        filter_class_method_box = PythonQt.QtGui.QLineEdit()
+        filter_class_method_box = QtGui.QLineEdit()
         mari.utils.connect(filter_class_method_box.textEdited, lambda: updateClassMethodFilter(filter_class_method_box, class_method_list))
         
         class_method_header_layout.addWidget(class_method_label)
         class_method_header_layout.addStretch()
-        class_method_search_icon = PythonQt.QtGui.QLabel()
-        search_pixmap = PythonQt.QtGui.QPixmap(mari.resources.path(mari.resources.ICONS) + '/Lookup.png')
+        class_method_search_icon = QtGui.QLabel()
+        search_pixmap = QtGui.QPixmap(mari.resources.path(mari.resources.ICONS) + '/Lookup.png')
         class_method_search_icon.setPixmap(search_pixmap)
         class_method_header_layout.addWidget(class_method_search_icon)
         class_method_header_layout.addWidget(filter_class_method_box)
@@ -70,10 +69,10 @@ class classMethodFinderGUI(PythonQt.QtGui.QDialog):
                 class_methods.append('mari.' + class_string_list[i] + '.' + method)
         for method in class_methods:
             class_method_list.addItem(method)
-            class_method_list.item(class_method_list.count - 1).setData(USER_ROLE_01, method)
+            class_method_list.item(class_method_list.count() - 1).setData(USER_ROLE_01, method)
        
-        selected_class_method_box = PythonQt.QtGui.QLineEdit()
-        class_method_list.connect('currentTextChanged(QString)', selected_class_method_box, 'setText(QString)')
+        selected_class_method_box = QtGui.QLineEdit()
+        class_method_list.currentTextChanged.connect(selected_class_method_box.setText)
         
         class_method_layout.addLayout(class_method_header_layout)
         class_method_layout.addWidget(class_method_list)
@@ -84,19 +83,12 @@ class classMethodFinderGUI(PythonQt.QtGui.QDialog):
 # ------------------------------------------------------------------------------
 def updateClassMethodFilter(filter_class_method_box, class_method_list):
     "For each item in the channel list display, set it to hidden if it doesn't match the filter text."
-    match_words = filter_class_method_box.text.lower().split()
-    for item_index in range(class_method_list.count):
+    match_words = filter_class_method_box.text().lower().split()
+    for item_index in range(class_method_list.count()):
         item = class_method_list.item(item_index)
         item_text_lower = item.text().lower()
         matches = all([word in item_text_lower for word in match_words])
-        item.setHidden(not matches)        
-        
-# ------------------------------------------------------------------------------  
-def setBold(widget):
-    "Sets text to bold."
-    font = widget.font
-    font.setWeight(75)
-    widget.setFont(font)        
+        item.setHidden(not matches)              
         
 # ------------------------------------------------------------------------------        
 def classMethodFinder():
@@ -105,8 +97,8 @@ def classMethodFinder():
         return
 
     #Create dialog
-    dialog = classMethodFinderGUI()
-    dialog.show()
+    ClassMethodFinderGUI.isinstance = ClassMethodFinderGUI()
+    ClassMethodFinderGUI.isinstance.show()
         
 # ------------------------------------------------------------------------------
 def isProjectSuitable():
